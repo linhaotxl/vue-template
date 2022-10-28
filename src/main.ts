@@ -1,7 +1,10 @@
 import { createApp } from 'vue'
 import './style.css'
 import App from './App.vue'
+import { VirtualList } from './core/useVirtualList'
 
-createApp(App).mount('#app')
+const app = createApp(App)
 
-process.cwd()
+app.component(VirtualList.name, VirtualList)
+
+app.mount('#app')
