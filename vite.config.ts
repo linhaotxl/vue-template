@@ -4,10 +4,13 @@ import setupExtend from 'vite-plugin-vue-setup-extend'
 import pages from 'vite-plugin-pages'
 import layouts from 'vite-plugin-vue-layouts'
 import { routerConfig } from './config/routes'
+import unocss from 'unocss/vite'
 
 export default defineConfig({
   plugins: [
     vue(),
+
+    unocss(),
 
     setupExtend(),
 
@@ -16,17 +19,11 @@ export default defineConfig({
       extensions: ['vue', 'tsx', 'jsx'],
       routeNameSeparator: '_',
       extendRoute(route) {
-        // console.log(route.path)
         return { ...route, ...routerConfig[route.path] }
       },
       importMode: path => {
-        // console.log(1, path, root)
         return routerConfig[path]?.importMode ?? 'async'
       },
-      // onRoutesGenerated(routes) {
-      //   // console.log('routes: ', routes)
-      //   return routes
-      // },
     }),
 
     layouts({

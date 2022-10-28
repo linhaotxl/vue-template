@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
+import { useDark } from '@vueuse/core'
 
+useDark()
 const router = useRouter()
 const routes = router.getRoutes()
 </script>
