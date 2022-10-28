@@ -1,25 +1,28 @@
 {
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
-    "jsx": "preserve",
     "sourceMap": true,
     "lib": [
       "esnext",
       "dom"
     ],
     "types": [
-      "node",
+
     ],
     "paths": {
       "@/*": [
         "./*"
       ]
-    }
+    },
+    "jsx": "preserve",
+    "jsxFactory": "h",
+    "jsxFragmentFactory": "Fragment",
   },
   "include": [
     "./**/*.ts",
     "./**/*.d.ts",
     "./**/*.tsx",
     "./**/*.vue"
-  ]
+  ],
+  "exclude": [".eslintrc.cjs"]
 }

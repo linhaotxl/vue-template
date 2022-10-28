@@ -1,33 +1,42 @@
 <script setup lang="ts">
-// This starter template is using Vue 3 <script setup> SFCs
-// Check out https://vuejs.org/api/sfc-script-setup.html#script-setup
-// import HelloWorld from './components/HelloWorld.vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+const routes = router.getRoutes()
 </script>
 
 <template>
-  <div>
-    <a href="https://vitejs.dev" target="_blank">
-      <img src="/vite.svg" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://vuejs.org/" target="_blank">
-      <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-    </a>
+  <div class="root">
+    <div class="header">
+      <router-link v-for="route in routes" :key="route.name" :to="route.path">
+        {{ route.name }}
+      </router-link>
+
+      <router-link to="/sbc"> 403 </router-link>
+    </div>
+
+    <div class="content">
+      <router-view />
+    </div>
   </div>
-  <HelloWorld v-hello="true" :msg="'Vite + Vue'" />
 </template>
 
 <style scoped>
-.logo {
-  padding: 1.5em;
-  height: 6em;
-  will-change: filter;
+.header {
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
 
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+.root {
+  display: flex;
+  overflow: auto;
+  padding: 32px;
+  height: 100%;
+  flex-direction: column;
 }
 
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
+.content {
+  flex: 1;
 }
 </style>
