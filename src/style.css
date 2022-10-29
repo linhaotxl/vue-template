@@ -14,9 +14,11 @@
 }
 
 body {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
+  /* display: flex; */
+
+  /* justify-content: center; */
+
+  /* align-items: flex-start; */
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
@@ -27,3 +29,11 @@ body,
 #app {
   height: 100%;
 }
+
+/* #app {
+  margin-top: 16px;
+  width: 400px;
+  height: 400px;
+  border: 1px solid #ffffffcc;
+  box-sizing: border-box;
+} */
