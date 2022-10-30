@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import vueJsx from '@vitejs/plugin-vue-jsx'
 import setupExtend from 'vite-plugin-vue-setup-extend'
 import pages from 'vite-plugin-pages'
 import layouts from 'vite-plugin-vue-layouts'
@@ -9,6 +10,8 @@ import unocss from 'unocss/vite'
 export default defineConfig({
   plugins: [
     vue(),
+
+    vueJsx(),
 
     unocss(),
 
@@ -31,9 +34,4 @@ export default defineConfig({
       defaultLayout: 'BasicLayout',
     }),
   ],
-
-  esbuild: {
-    jsxFactory: 'h',
-    jsxFragment: 'Fragment',
-  },
 })
