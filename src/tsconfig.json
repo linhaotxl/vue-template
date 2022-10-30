@@ -1,24 +1,16 @@
 {
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
-    "jsx": "preserve",
     "sourceMap": true,
-    "lib": [
-      "esnext",
-      "dom"
-    ],
-    "types": [
-    ],
+    "lib": ["esnext", "dom"],
+    "types": [],
     "paths": {
-      "@/*": [
-        "./*"
-      ]
-    }
+      "@/*": ["./*"]
+    },
+    "jsx": "preserve",
+    "jsxFactory": "h",
+    "jsxFragmentFactory": "Fragment"
   },
-  "include": [
-    "./**/*.ts",
-    "./**/*.d.ts",
-    "./**/*.tsx",
-    "./**/*.vue"
-  ]
+  "include": ["./**/*.ts", "./**/*.d.ts", "./**/*.tsx", "./**/*.vue"],
+  "exclude": [".eslintrc.cjs"]
 }

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Draggable } from './core/useDraggable'
-import { useDraggable } from './core/useDraggable'
+import { Draggable } from '../core/useDraggable'
+import { useDraggable } from '../core/useDraggable'
 // import { useDraggable } from '@vueuse/core'
 
 const box1 = ref<HTMLElement | undefined>()

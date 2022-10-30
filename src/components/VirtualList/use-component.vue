@@ -1,25 +1,20 @@
-<script setup lang="ts">
-import { useVirtualList } from '../core/useVirtualList'
+<script lang="ts" setup>
 import { ref } from 'vue'
-import { genData, itemHeight } from './utils'
+import { genData, itemHeight } from '../utils'
+import type { VirtualListInstance } from '../../core/useVirtualList'
 
 const initialData = genData(100)
 
 const allItems = ref(initialData)
 
+const virtualList = ref<VirtualListInstance | null>(null)
+
 const index = ref<number>()
 const containerHeight = ref(500)
 const length = ref(initialData.length)
 
-const { list, containerProps, wrapperProps, scrollTo } = useVirtualList(
-  allItems,
-  {
-    itemHeight: i => itemHeight(i) + 16,
-    overscan: 20,
-  }
-)
 const handleScrollTo = () => {
-  scrollTo(index.value!)
+  virtualList.value?.scrollTo(index.value!)
 }
 
 const handleChangeLength = () => {
@@ -28,7 +23,7 @@ const handleChangeLength = () => {
 </script>
 
 <template>
-  <h2>Virtual List - Hooks</h2>
+  <h2>Virtual List - Component</h2>
 
   <div class="input">
     <span>Jump to index</span>
@@ -47,30 +42,27 @@ const handleChangeLength = () => {
     <button type="button" @click="handleChangeLength">Change Length</button>
   </div>
 
-  <div
+  <VirtualList
+    ref="virtualList"
+    :item-height="i => itemHeight(i) + 16"
+    :source="allItems"
     class="container"
-    v-bind="containerProps"
     :style="{ height: `${containerHeight}px` }"
   >
-    <div class="wrap" v-bind="wrapperProps">
-      <div
-        v-for="{ data, index } in list"
-        :key="index"
-        :style="{ height: `${data.height}px` }"
-        class="item"
-      >
-        <!-- {{ data.label }} -->
+    <template #default="{ index, data }">
+      <div class="item" :style="{ height: `${data.height}px` }">
         Row {{ index }} {{ data.label }}
       </div>
-    </div>
-  </div>
+    </template>
+  </VirtualList>
 </template>
 
 <style scoped>
 .container {
   padding: 0.5rem;
   width: 400px;
-  height: 100%;
+
+  /* height: 100%; */
   border: 1px solid #ffffffcc;
   box-sizing: border-box;
 }
