@@ -1,5 +1,6 @@
 import { ref, computed, watch, unref, CSSProperties } from 'vue'
 import type { Ref, ComputedRef } from 'vue'
+import { useEventListener } from '../useEventListener'
 
 type MaybeRef<T> = T | Ref<T> | ComputedRef<T>
 
@@ -53,6 +54,9 @@ export interface UseDraggableOptions {
    */
   stopPropagation?: MaybeRef<boolean | undefined>
 
+  /**
+   * 实际拖转的元素
+   */
   handle?: MaybeRef<HTMLElement | undefined | null>
 }
 
@@ -84,9 +88,6 @@ export function useDraggable(
     preventDefault = false,
     boundary,
   } = options || {}
-  // console.log(draggingElement.value)
-
-  // console.log('boundary: ', boundary)
 
   const targetEl = computed(() => resolveUnref(target))
   const draggingEl = computed(() => resolveUnref(draggingElement))
@@ -114,39 +115,9 @@ export function useDraggable(
     { immediate: true }
   )
 
-  watch(
-    handleEl,
-    (element, oldElement) => {
-      if (element) {
-        element.addEventListener('pointerdown', onPointerDown)
-      }
-      if (oldElement) {
-        oldElement.removeEventListener('pointerdown', onPointerDown)
-      }
-    },
-    { immediate: true }
-  )
-
-  watch(
-    draggingEl,
-    (draggingElement, oldDraggingElement) => {
-      if (draggingElement) {
-        ;(draggingElement as any).addEventListener('pointermove', onPointerMove)
-        ;(draggingElement as any).addEventListener('pointerup', onPointerUp)
-      }
-      if (oldDraggingElement) {
-        ;(oldDraggingElement as any).removeEventListener(
-          'pointermove',
-          onPointerMove
-        )
-        ;(oldDraggingElement as any).removeEventListener(
-          'pointerup',
-          onPointerUp
-        )
-      }
-    },
-    { immediate: true }
-  )
+  useEventListener(handleEl, 'pointerdown', onPointerDown)
+  useEventListener(draggingEl, 'pointermove', onPointerMove)
+  useEventListener(draggingEl, 'pointerup', onPointerUp)
 
   /**
    * 指针按下事件
