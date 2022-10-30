@@ -1,11 +1,12 @@
 import HelloWorld from './components/HelloWorld.vue'
-import { VirtualList } from './core/useVirtualList'
+import { VirtualList, UMouse } from './core'
 import { vHello } from './directives/vHello'
 
 declare module 'vue' {
   export interface GlobalComponents {
     HelloWorld: typeof HelloWorld
     VirtualList: typeof VirtualList
+    UMouse: typeof UMouse
   }
 
   export interface GlobalDirectives {

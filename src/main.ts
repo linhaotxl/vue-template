@@ -11,7 +11,7 @@ import { createApp } from 'vue'
 
 import App from './App.vue'
 import HelloWorld from './components/HelloWorld.vue'
-import { VirtualList } from './core/useVirtualList'
+import { VirtualList, UMouse } from './core'
 import { router } from './router'
 
 const app = createApp(App)
@@ -20,5 +20,6 @@ app.use(router)
 
 app.component(HelloWorld.name, HelloWorld)
 app.component(VirtualList.name, VirtualList)
+app.component(UMouse.name, UMouse)
 
 app.mount('#app')
