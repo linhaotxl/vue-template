@@ -10,6 +10,8 @@ export default defineConfig({
     },
   },
 
+  rules: [[/^bg-(.+)$/, ([_, color]) => ({ 'background-color': `#${color}` })]],
+
   shortcuts: [
     [
       'icon-btn',
