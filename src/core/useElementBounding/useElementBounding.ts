@@ -1,4 +1,4 @@
-import { onMounted, Ref, ref, watch } from 'vue'
+import { computed, onMounted, Ref, ref, watch } from 'vue'
 import { MaybeRef, resolveUnref } from '../shared'
 import { useEventListener } from '../useEventListener'
 
@@ -57,12 +57,11 @@ export function useElementBounding(
   const right = ref(0)
   const bottom = ref(0)
 
-  watch(
-    () => target,
-    el => {
-      el && update()
-    }
-  )
+  const targetEl = computed(() => resolveUnref(target))
+
+  watch(targetEl, el => {
+    el && update()
+  })
 
   windowResize && useEventListener(window, 'resize', update)
   windowScroll && useEventListener(window, 'scroll', update)
