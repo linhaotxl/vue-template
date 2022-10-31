@@ -1,5 +1,5 @@
 import HelloWorld from './components/HelloWorld.vue'
-import { VirtualList, UMouse } from './core'
+import { VirtualList, UMouse, UElementBounding } from './core'
 import { vHello } from './directives/vHello'
 
 declare module 'vue' {
@@ -7,6 +7,7 @@ declare module 'vue' {
     HelloWorld: typeof HelloWorld
     VirtualList: typeof VirtualList
     UMouse: typeof UMouse
+    UElementBounding: typeof UElementBounding
   }
 
   export interface GlobalDirectives {
