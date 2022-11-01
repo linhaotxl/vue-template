@@ -9,12 +9,14 @@
     "preview": "vite preview",
     "lint:js": "eslint --fix --ext .js,.jsx,.ts,.tsx,.vue src/",
     "lint:style": "stylelint --fix \"src/**/*.{css,less,scss,sass,vue}\"",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "test": "vitest run"
   },
   "dependencies": {
     "@iconify/json": "^2.1.126",
     "@unocss/reset": "^0.45.30",
     "@vueuse/core": "^9.3.1",
+    "@vueuse/shared": "^9.4.0",
     "unocss": "^0.45.30",
     "vue": "^3.2.37",
     "vue-router": "^4.1.6"
@@ -32,6 +34,7 @@
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-vue": "^9.6.0",
+    "happy-dom": "^7.6.6",
     "husky": "^8.0.0",
     "lint-staged": "^13.0.3",
     "postcss": "^8.4.18",
@@ -50,6 +53,7 @@
     "vite-plugin-pages": "^0.27.1",
     "vite-plugin-vue-layouts": "^0.7.0",
     "vite-plugin-vue-setup-extend": "^0.4.0",
+    "vitest": "^0.24.4",
     "vue-tsc": "^0.40.4"
   }
 }
