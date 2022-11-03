@@ -1,0 +1,13 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["DOM", "ESNext"]
+  },
+  "include": [
+    "./global.d.ts",
+    "./*/src",
+    "./runtime-dom/types/jsx.d.ts",
+    "./*/__tests__",
+    "test-dts"
+  ]
+}

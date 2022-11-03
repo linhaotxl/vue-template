@@ -1,0 +1,11 @@
+{
+  "name": "@vue/runtime-core",
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+
+  },
+  "devDependencies": {
+
+  }
+}

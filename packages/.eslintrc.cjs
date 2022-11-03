@@ -4,31 +4,20 @@ module.exports = {
   env: {
     node: false,
     browser: true,
-    'vue/setup-compiler-macros': true,
   },
 
-  globals: {
-    uni: true,
-    wx: true,
-    UniNamespace: true,
-    getCurrentPages: true,
-  },
+  globals: {},
 
   extends: [
     'eslint:recommended',
-    'plugin:vue/vue3-recommended',
     'plugin:@typescript-eslint/recommended',
     'plugin:prettier/recommended',
   ],
 
-  plugins: ['vue', '@typescript-eslint'],
+  plugins: ['@typescript-eslint'],
 
-  parser: 'vue-eslint-parser',
-  parserOptions: {
-    ecmaVersion: 'latest',
-    parser: '@typescript-eslint/parser',
-    sourceType: 'module',
-  },
+  parser: '@typescript-eslint/parser',
+  parserOptions: {},
 
   rules: {
     'arrow-body-style': 'off',
@@ -39,6 +28,5 @@ module.exports = {
     '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/no-var-requires': 'off',
     '@typescript-eslint/ban-types': 'off',
-    'vue/multi-word-component-names': 'off',
   },
 }
