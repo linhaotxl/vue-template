@@ -19,6 +19,7 @@ import {
 } from '@vue/shared'
 import { queueJob, queuePostFlushCb, SchedulerJob } from './scheduler'
 import { warn } from './warning'
+import { callWithErrorHandling, ErrorCodes } from './errorHandling'
 
 export type StopHandle = () => void
 
@@ -192,7 +193,9 @@ function doWatch<T>(
    * @param onCleanupFn
    */
   const cleanup: OnCleanup = onCleanupFn => {
-    lastCleanupFn = onCleanupFn
+    lastCleanupFn = () => {
+      callWithErrorHandling(onCleanupFn, ErrorCodes.WATCH_CLEANUP)
+    }
   }
 
   // effect 的调度任务，当监听的值变化，引起 effect 调度时执行
@@ -223,7 +226,11 @@ function doWatch<T>(
             : value.some(hasChangedArrayItem)
           : hasChanged(oldValue, value))
       ) {
-        callback(value, oldValue, cleanup)
+        callWithErrorHandling(callback, ErrorCodes.WATCH_CALLBACK, [
+          value,
+          oldValue,
+          cleanup,
+        ])
         oldValue = value
       }
     }
@@ -259,7 +266,7 @@ function doWatch<T>(
         } else if (isReactive(item)) {
           return item
         } else if (isFunction(item)) {
-          return item()
+          return callWithErrorHandling(item, ErrorCodes.WATCH_GETTER)
         } else {
           warn('Invalid watch source: ', item)
         }
@@ -270,7 +277,7 @@ function doWatch<T>(
       getter = job as any
     } else {
       // watch，source 为函数，继续使用这个函数作为 getter
-      getter = source as () => T
+      getter = () => callWithErrorHandling(source, ErrorCodes.WATCH_GETTER)
     }
   } else {
     getter = NOOP as any
