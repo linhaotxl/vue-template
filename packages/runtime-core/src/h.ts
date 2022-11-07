@@ -1,4 +1,4 @@
-import { isPlanObject, isArray, isFunction, isString } from '@vue/shared'
+import { isPlainObject, isArray, isFunction, isString } from '@vue/shared'
 import { isVNode } from './vnode'
 import { createVNode } from './vnode'
 
@@ -14,7 +14,7 @@ export function h(...args: any[]) {
       return createVNode(type, null, [propsOrChildren])
     }
 
-    if (isPlanObject(propsOrChildren)) {
+    if (isPlainObject(propsOrChildren)) {
       return createVNode(type, propsOrChildren)
     }
 

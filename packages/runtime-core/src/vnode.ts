@@ -1,9 +1,8 @@
 import {
   isArray,
-  isBoolean,
   isFunction,
   isOn,
-  isPlanObject,
+  isPlainObject,
   isString,
   PatchFlags,
   ShapeFlags,
@@ -214,7 +213,7 @@ function normalizeShapeFlag(type: VNodeTypes, children: unknown) {
 
   let shapFlag: ShapeFlags = isString(type)
     ? ShapeFlags.ELEMENT
-    : isPlanObject(type)
+    : isPlainObject(type)
     ? ShapeFlags.STATEFUL_COMPONENT
     : isFunction(type)
     ? ShapeFlags.FUNCTIONAL_COMPONENT
@@ -222,7 +221,7 @@ function normalizeShapeFlag(type: VNodeTypes, children: unknown) {
 
   if (isArray(children)) {
     shapFlag |= ShapeFlags.ARRAY_CHILDREN
-  } else if (isPlanObject(children) || isFunction(children)) {
+  } else if (isPlainObject(children) || isFunction(children)) {
     shapFlag |= ShapeFlags.SLOTS_CHILDREN
   } else if (isString(children)) {
     shapFlag |= ShapeFlags.TEXT_CHILDREN
@@ -236,11 +235,13 @@ function normalizeShapeFlag(type: VNodeTypes, children: unknown) {
  * @param children
  * @returns
  */
-function normalizeChildren(children: unknown) {
+function normalizeChildren(children: any) {
   if (isFunction(children)) {
     return { default: children }
   }
-  if (isPlanObject(children) && isFunction(children.default)) {
+  // @ts-ignore
+  if (isPlainObject(children) && isFunction(children.default)) {
+    // @ts-ignore
     return children.default()
   }
   return children
@@ -300,7 +301,7 @@ export function mergeProps(...props: Props[]): Data {
  */
 export function normalizeVNode(children: unknown) {
   // 子节点为 null、undefined、true 或 false，均视为注释节点
-  if (children == null || isBoolean(children)) {
+  if (children == null || typeof children === 'boolean') {
     return createVNode(Comment)
   }
 
