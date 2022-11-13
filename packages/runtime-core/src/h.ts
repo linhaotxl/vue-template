@@ -18,13 +18,13 @@ export function h(...args: any[]) {
       return createVNode(type, propsOrChildren)
     }
 
-    if (
-      isArray(propsOrChildren) ||
-      isFunction(propsOrChildren) ||
-      isString(propsOrChildren)
-    ) {
-      return createVNode(type, null, propsOrChildren)
-    }
+    // if (
+    //   isArray(propsOrChildren) ||
+    //   isFunction(propsOrChildren) ||
+    //   isString(propsOrChildren)
+    // ) {
+    return createVNode(type, null, String(propsOrChildren))
+    // }
   }
 
   if (arguments.length === 3) {
