@@ -1,3 +1,4 @@
+import type { RendererElement } from './renderer'
 import {
   isArray,
   isFunction,
@@ -7,7 +8,11 @@ import {
   PatchFlags,
   ShapeFlags,
 } from '@vue/shared'
-import { isClassComponent } from './component'
+import {
+  Component,
+  ComponentInternalInstance,
+  isClassComponent,
+} from './component'
 import { warn } from './warning'
 
 export const Comment = Symbol('Comment')
@@ -20,7 +25,7 @@ export type VNodeTypes =
   | typeof Fragment
   | typeof Text
   | Function
-  | object
+  | Component
 
 export type Data = Record<string, any>
 
@@ -30,7 +35,7 @@ export type VNodeProps = {
 
 export type Props = (Data & VNodeProps) | null
 
-export interface VNode {
+export interface VNode<HostElement extends RendererElement = RendererElement> {
   __v_isVNode: boolean
 
   type: VNodeTypes
@@ -46,6 +51,13 @@ export interface VNode {
   patchFlag: PatchFlags
 
   dynamicChildren: VNode[] | null
+
+  /**
+   * 组件实例
+   */
+  component: ComponentInternalInstance | null
+
+  el: HostElement | null
 }
 
 /**
@@ -121,6 +133,8 @@ export function createVNode(
     shapeFlag: resolveShapeFlag,
     patchFlag,
     dynamicChildren: isBlock ? [] : null,
+    component: null,
+    el: null,
   }
 
   // patchFlag 存在且不是 HYDRATE_EVENTS 视为动态节点
