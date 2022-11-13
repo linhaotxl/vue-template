@@ -5,6 +5,7 @@ export const enum ErrorCodes {
   WATCH_CALLBACK,
   WATCH_CLEANUP,
   WATCH_GETTER,
+  SETUP_FUNCTION,
 }
 
 export const ErrorTypeStrings: Record<ErrorCodes, string> = {
@@ -14,6 +15,7 @@ export const ErrorTypeStrings: Record<ErrorCodes, string> = {
   [ErrorCodes.WATCH_CALLBACK]: 'watcher callback',
   [ErrorCodes.WATCH_CLEANUP]: 'watcher cleanup',
   [ErrorCodes.WATCH_GETTER]: 'watcher getter',
+  [ErrorCodes.SETUP_FUNCTION]: 'setup function',
 }
 
 export function callWithErrorHandling(
