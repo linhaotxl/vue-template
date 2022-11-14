@@ -6,11 +6,12 @@ import {
   initProps,
   NormalizedPropsOptions,
   normalizePropsOptions,
-  // PropOptions,
-  // PropType,
 } from './componentProps'
-import type { ComponentOptions } from './componentOptions'
-import { PublicInstanceProxyHandlers } from './componentPublicInstance'
+import { applyOptionsApi, ComponentOptions } from './componentOptions'
+import {
+  ComponentPublicCtx,
+  PublicInstanceProxyHandlers,
+} from './componentPublicInstance'
 import type { ComponentPublicInstance } from './componentPublicInstance'
 
 export type InternalRenderFunction = () => VNode
@@ -32,10 +33,14 @@ export interface SetupContext {
 
 type LifecycleHook = Function[] | null
 export const enum LifecycleHooks {
+  BEFORE_CREATE = 'bc',
+  CREATED = 'c',
   BEFORE_MOUNT = 'bm',
   MOUNTED = 'm',
   BEFORE_UPDATE = 'bu',
   UPDATED = 'u',
+  BEFORE_UNMOUNT = 'bum',
+  UNMOUNTED = 'um',
 }
 
 export interface ComponentInternalInstance {
@@ -81,7 +86,7 @@ export interface ComponentInternalInstance {
   /**
    * 作用域
    */
-  ctx: Record<string, any>
+  ctx: ComponentPublicCtx
 
   /**
    * 组件代理
@@ -99,12 +104,26 @@ export interface ComponentInternalInstance {
   subTree: VNode | null
 
   /**
+   * setup 状态
+   */
+  setupState: Record<string, any>
+
+  /**
+   * data 状态
+   */
+  data: Record<string, any>
+
+  /**
    * Lifecycle hooks
    */
+  [LifecycleHooks.BEFORE_CREATE]: LifecycleHook
+  [LifecycleHooks.CREATED]: LifecycleHook
   [LifecycleHooks.BEFORE_MOUNT]: LifecycleHook
   [LifecycleHooks.MOUNTED]: LifecycleHook
   [LifecycleHooks.BEFORE_UPDATE]: LifecycleHook
   [LifecycleHooks.UPDATED]: LifecycleHook
+  [LifecycleHooks.BEFORE_UNMOUNT]: LifecycleHook
+  [LifecycleHooks.UNMOUNTED]: LifecycleHook
 }
 
 // 当前正在运行的组件实例
@@ -136,17 +155,27 @@ export function createComponentInstance(
     isMounted: false,
     props: EMPTY_OBJ,
     attrs: EMPTY_OBJ,
-    ctx: EMPTY_OBJ,
+    ctx: {} as ComponentPublicCtx,
     proxy: null,
     effect: null,
     subTree: null,
+    setupState: EMPTY_OBJ,
+    data: EMPTY_OBJ,
+    [LifecycleHooks.BEFORE_CREATE]: null,
+    [LifecycleHooks.CREATED]: null,
     [LifecycleHooks.BEFORE_MOUNT]: null,
     [LifecycleHooks.MOUNTED]: null,
     [LifecycleHooks.BEFORE_UPDATE]: null,
     [LifecycleHooks.UPDATED]: null,
+    [LifecycleHooks.BEFORE_UNMOUNT]: null,
+    [LifecycleHooks.UNMOUNTED]: null,
   }
 
-  instance.ctx = { _: instance }
+  Object.defineProperty(instance.ctx, '_', {
+    writable: true,
+    enumerable: false,
+    value: instance,
+  })
 
   return instance
 }
@@ -201,6 +230,8 @@ function handleSetupResult(
   if (isFunction(setupResult)) {
     // setup 返回函数，将其作为渲染函数
     instance.render = setupResult as InternalRenderFunction
+  } else if (isPlainObject(setupResult)) {
+    instance.setupState = setupResult
   }
 
   // 兜底操作
@@ -216,6 +247,8 @@ export function finishComponent(instance: ComponentInternalInstance) {
     // 兜底，将组件上的 render 函数作为渲染函数
     instance.render = (instance.type.render || NOOP) as InternalRenderFunction
   }
+
+  applyOptionsApi(instance)
 }
 
 export const isClassComponent = (value: any): value is ClassComponent =>

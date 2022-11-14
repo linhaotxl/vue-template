@@ -316,7 +316,7 @@ export function mergeProps(...props: Props[]): Data {
 export function normalizeVNode(children: unknown) {
   // 子节点为 null、undefined、true 或 false，均视为注释节点
   if (children == null || typeof children === 'boolean') {
-    return createVNode(Comment)
+    return createVNode(Comment, null, '')
   }
 
   // 子节点为数组，视为 Fragment
@@ -405,4 +405,8 @@ export function createBlock(type: VNodeTypes, props: Props, children: unknown) {
 export let isBlockTreeEnabled = 1
 export function setBlockTracking(value: number) {
   isBlockTreeEnabled = value
+}
+
+export function isSameVNodeType(n1: VNode, n2: VNode) {
+  return n1.type === n2.type
 }

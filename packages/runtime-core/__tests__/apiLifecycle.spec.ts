@@ -9,8 +9,8 @@ import {
   onBeforeUpdate,
   nextTick,
   onUpdated,
-  // onBeforeUnmount,
-  // onUnmounted,
+  onBeforeUnmount,
+  onUnmounted,
   // onRenderTracked,
   // reactive,
   // TrackOpTypes,
@@ -118,150 +118,154 @@ describe('api: lifecycle hooks', () => {
     await nextTick()
     expect(fn).toHaveBeenCalledTimes(1)
   })
-  // it('onBeforeUnmount', async () => {
-  //   const toggle = ref(true)
-  //   const root = nodeOps.createElement('div')
-  //   const fn = jest.fn(() => {
-  //     // should be called before inner div is removed
-  //     expect(serializeInner(root)).toBe(`<div></div>`)
-  //   })
-  //   const Comp = {
-  //     setup() {
-  //       return () => (toggle.value ? h(Child) : null)
-  //     }
-  //   }
-  //   const Child = {
-  //     setup() {
-  //       onBeforeUnmount(fn)
-  //       return () => h('div')
-  //     }
-  //   }
-  //   render(h(Comp), root)
-  //   toggle.value = false
-  //   await nextTick()
-  //   expect(fn).toHaveBeenCalledTimes(1)
-  // })
-  // it('onUnmounted', async () => {
-  //   const toggle = ref(true)
-  //   const root = nodeOps.createElement('div')
-  //   const fn = jest.fn(() => {
-  //     // should be called after inner div is removed
-  //     expect(serializeInner(root)).toBe(`<!---->`)
-  //   })
-  //   const Comp = {
-  //     setup() {
-  //       return () => (toggle.value ? h(Child) : null)
-  //     }
-  //   }
-  //   const Child = {
-  //     setup() {
-  //       onUnmounted(fn)
-  //       return () => h('div')
-  //     }
-  //   }
-  //   render(h(Comp), root)
-  //   toggle.value = false
-  //   await nextTick()
-  //   expect(fn).toHaveBeenCalledTimes(1)
-  // })
-  // it('onBeforeUnmount in onMounted', async () => {
-  //   const toggle = ref(true)
-  //   const root = nodeOps.createElement('div')
-  //   const fn = jest.fn(() => {
-  //     // should be called before inner div is removed
-  //     expect(serializeInner(root)).toBe(`<div></div>`)
-  //   })
-  //   const Comp = {
-  //     setup() {
-  //       return () => (toggle.value ? h(Child) : null)
-  //     }
-  //   }
-  //   const Child = {
-  //     setup() {
-  //       onMounted(() => {
-  //         onBeforeUnmount(fn)
-  //       })
-  //       return () => h('div')
-  //     }
-  //   }
-  //   render(h(Comp), root)
-  //   toggle.value = false
-  //   await nextTick()
-  //   expect(fn).toHaveBeenCalledTimes(1)
-  // })
-  // it('lifecycle call order', async () => {
-  //   const count = ref(0)
-  //   const root = nodeOps.createElement('div')
-  //   const calls: string[] = []
-  //   const Root = {
-  //     setup() {
-  //       onBeforeMount(() => calls.push('root onBeforeMount'))
-  //       onMounted(() => calls.push('root onMounted'))
-  //       onBeforeUpdate(() => calls.push('root onBeforeUpdate'))
-  //       onUpdated(() => calls.push('root onUpdated'))
-  //       onBeforeUnmount(() => calls.push('root onBeforeUnmount'))
-  //       onUnmounted(() => calls.push('root onUnmounted'))
-  //       return () => h(Mid, { count: count.value })
-  //     }
-  //   }
-  //   const Mid = {
-  //     props: ['count'],
-  //     setup(props: any) {
-  //       onBeforeMount(() => calls.push('mid onBeforeMount'))
-  //       onMounted(() => calls.push('mid onMounted'))
-  //       onBeforeUpdate(() => calls.push('mid onBeforeUpdate'))
-  //       onUpdated(() => calls.push('mid onUpdated'))
-  //       onBeforeUnmount(() => calls.push('mid onBeforeUnmount'))
-  //       onUnmounted(() => calls.push('mid onUnmounted'))
-  //       return () => h(Child, { count: props.count })
-  //     }
-  //   }
-  //   const Child = {
-  //     props: ['count'],
-  //     setup(props: any) {
-  //       onBeforeMount(() => calls.push('child onBeforeMount'))
-  //       onMounted(() => calls.push('child onMounted'))
-  //       onBeforeUpdate(() => calls.push('child onBeforeUpdate'))
-  //       onUpdated(() => calls.push('child onUpdated'))
-  //       onBeforeUnmount(() => calls.push('child onBeforeUnmount'))
-  //       onUnmounted(() => calls.push('child onUnmounted'))
-  //       return () => h('div', props.count)
-  //     }
-  //   }
-  //   // mount
-  //   render(h(Root), root)
-  //   expect(calls).toEqual([
-  //     'root onBeforeMount',
-  //     'mid onBeforeMount',
-  //     'child onBeforeMount',
-  //     'child onMounted',
-  //     'mid onMounted',
-  //     'root onMounted'
-  //   ])
-  //   calls.length = 0
-  //   // update
-  //   count.value++
-  //   await nextTick()
-  //   expect(calls).toEqual([
-  //     'root onBeforeUpdate',
-  //     'mid onBeforeUpdate',
-  //     'child onBeforeUpdate',
-  //     'child onUpdated',
-  //     'mid onUpdated',
-  //     'root onUpdated'
-  //   ])
-  //   calls.length = 0
-  //   // unmount
-  //   render(null, root)
-  //   expect(calls).toEqual([
-  //     'root onBeforeUnmount',
-  //     'mid onBeforeUnmount',
-  //     'child onBeforeUnmount',
-  //     'child onUnmounted',
-  //     'mid onUnmounted',
-  //     'root onUnmounted'
-  //   ])
-  // })
+  it('onBeforeUnmount', async () => {
+    // debugger
+    const toggle = ref(true)
+    const root = nodeOps.createElement('div')
+    const fn = jest.fn(() => {
+      // should be called before inner div is removed
+      expect(serializeInner(root)).toBe(`<div></div>`)
+    })
+    const Comp = {
+      setup() {
+        return () => (toggle.value ? h(Child) : null)
+      },
+    }
+    const Child = {
+      setup() {
+        onBeforeUnmount(fn)
+        return () => h('div')
+      },
+    }
+    render(h(Comp), root)
+    toggle.value = false
+    await nextTick()
+    expect(fn).toHaveBeenCalledTimes(1)
+  })
+  it('onUnmounted', async () => {
+    // debugger
+    const toggle = ref(true)
+    const root = nodeOps.createElement('div')
+    const fn = jest.fn(() => {
+      // should be called after inner div is removed
+      expect(serializeInner(root)).toBe(`<!---->`)
+    })
+    const Comp = {
+      setup() {
+        return () => (toggle.value ? h(Child) : null)
+      },
+    }
+    const Child = {
+      setup() {
+        onUnmounted(fn)
+        return () => h('div')
+      },
+    }
+    render(h(Comp), root)
+    toggle.value = false
+    await nextTick()
+    expect(fn).toHaveBeenCalledTimes(1)
+  })
+  it('onBeforeUnmount in onMounted', async () => {
+    // debugger
+    const toggle = ref(true)
+    const root = nodeOps.createElement('div')
+    const fn = jest.fn(() => {
+      // should be called before inner div is removed
+      expect(serializeInner(root)).toBe(`<div></div>`)
+    })
+    const Comp = {
+      setup() {
+        return () => (toggle.value ? h(Child) : null)
+      },
+    }
+    const Child = {
+      setup() {
+        onMounted(() => {
+          onBeforeUnmount(fn)
+        })
+        return () => h('div')
+      },
+    }
+    render(h(Comp), root)
+    toggle.value = false
+    await nextTick()
+    expect(fn).toHaveBeenCalledTimes(1)
+  })
+  it('lifecycle call order', async () => {
+    // debugger
+    const count = ref(0)
+    const root = nodeOps.createElement('div')
+    const calls: string[] = []
+    const Root = {
+      setup() {
+        onBeforeMount(() => calls.push('root onBeforeMount'))
+        onMounted(() => calls.push('root onMounted'))
+        onBeforeUpdate(() => calls.push('root onBeforeUpdate'))
+        onUpdated(() => calls.push('root onUpdated'))
+        onBeforeUnmount(() => calls.push('root onBeforeUnmount'))
+        onUnmounted(() => calls.push('root onUnmounted'))
+        return () => h(Mid, { count: count.value })
+      },
+    }
+    const Mid = {
+      props: ['count'],
+      setup(props: any) {
+        onBeforeMount(() => calls.push('mid onBeforeMount'))
+        onMounted(() => calls.push('mid onMounted'))
+        onBeforeUpdate(() => calls.push('mid onBeforeUpdate'))
+        onUpdated(() => calls.push('mid onUpdated'))
+        onBeforeUnmount(() => calls.push('mid onBeforeUnmount'))
+        onUnmounted(() => calls.push('mid onUnmounted'))
+        return () => h(Child, { count: props.count })
+      },
+    }
+    const Child = {
+      props: ['count'],
+      setup(props: any) {
+        onBeforeMount(() => calls.push('child onBeforeMount'))
+        onMounted(() => calls.push('child onMounted'))
+        onBeforeUpdate(() => calls.push('child onBeforeUpdate'))
+        onUpdated(() => calls.push('child onUpdated'))
+        onBeforeUnmount(() => calls.push('child onBeforeUnmount'))
+        onUnmounted(() => calls.push('child onUnmounted'))
+        return () => h('div', props.count)
+      },
+    }
+    // mount
+    render(h(Root), root)
+    expect(calls).toEqual([
+      'root onBeforeMount',
+      'mid onBeforeMount',
+      'child onBeforeMount',
+      'child onMounted',
+      'mid onMounted',
+      'root onMounted',
+    ])
+    calls.length = 0
+    // update
+    count.value++
+    await nextTick()
+    expect(calls).toEqual([
+      'root onBeforeUpdate',
+      'mid onBeforeUpdate',
+      'child onBeforeUpdate',
+      'child onUpdated',
+      'mid onUpdated',
+      'root onUpdated',
+    ])
+    calls.length = 0
+    // unmount
+    render(null, root)
+    expect(calls).toEqual([
+      'root onBeforeUnmount',
+      'mid onBeforeUnmount',
+      'child onBeforeUnmount',
+      'child onUnmounted',
+      'mid onUnmounted',
+      'root onUnmounted',
+    ])
+  })
   // it('onRenderTracked', () => {
   //   const events: DebuggerEvent[] = []
   //   const onTrack = jest.fn((e: DebuggerEvent) => {
@@ -338,25 +342,26 @@ describe('api: lifecycle hooks', () => {
   //     newValue: 3
   //   })
   // })
-  // it('runs shared hook fn for each instance', async () => {
-  //   const fn = jest.fn()
-  //   const toggle = ref(true)
-  //   const Comp = {
-  //     setup() {
-  //       return () => (toggle.value ? [h(Child), h(Child)] : null)
-  //     }
-  //   }
-  //   const Child = {
-  //     setup() {
-  //       onMounted(fn)
-  //       onBeforeUnmount(fn)
-  //       return () => h('div')
-  //     }
-  //   }
-  //   render(h(Comp), nodeOps.createElement('div'))
-  //   expect(fn).toHaveBeenCalledTimes(2)
-  //   toggle.value = false
-  //   await nextTick()
-  //   expect(fn).toHaveBeenCalledTimes(4)
-  // })
+  it('runs shared hook fn for each instance', async () => {
+    // debugger
+    const fn = jest.fn()
+    const toggle = ref(true)
+    const Comp = {
+      setup() {
+        return () => (toggle.value ? [h(Child), h(Child)] : null)
+      },
+    }
+    const Child = {
+      setup() {
+        onMounted(fn)
+        onBeforeUnmount(fn)
+        return () => h('div')
+      },
+    }
+    render(h(Comp), nodeOps.createElement('div'))
+    expect(fn).toHaveBeenCalledTimes(2)
+    toggle.value = false
+    await nextTick()
+    expect(fn).toHaveBeenCalledTimes(4)
+  })
 })

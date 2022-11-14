@@ -1,3 +1,4 @@
+import { LifecycleHooks } from './component'
 import { warn } from './warning'
 
 export const enum ErrorCodes {
@@ -8,7 +9,9 @@ export const enum ErrorCodes {
   SETUP_FUNCTION,
 }
 
-export const ErrorTypeStrings: Record<ErrorCodes, string> = {
+export type ErrorTypes = ErrorCodes | LifecycleHooks
+
+export const ErrorTypeStrings: Record<ErrorTypes, string> = {
   [ErrorCodes.SCHEDULER]:
     'scheduler flush. This is likely a Vue internals bug. ' +
     'Please open an issue at https://new-issue.vuejs.org/?repo=vuejs/core',
@@ -16,11 +19,20 @@ export const ErrorTypeStrings: Record<ErrorCodes, string> = {
   [ErrorCodes.WATCH_CLEANUP]: 'watcher cleanup',
   [ErrorCodes.WATCH_GETTER]: 'watcher getter',
   [ErrorCodes.SETUP_FUNCTION]: 'setup function',
+
+  [LifecycleHooks.BEFORE_CREATE]: 'beforeCreate hook',
+  [LifecycleHooks.CREATED]: 'created hook',
+  [LifecycleHooks.BEFORE_MOUNT]: 'beforeMount hook',
+  [LifecycleHooks.MOUNTED]: 'mouted hook',
+  [LifecycleHooks.BEFORE_UPDATE]: 'beforeUpdate hook',
+  [LifecycleHooks.UPDATED]: 'updated hook',
+  [LifecycleHooks.BEFORE_UNMOUNT]: 'beforeUnmount hook',
+  [LifecycleHooks.UNMOUNTED]: 'unmounted hook',
 }
 
 export function callWithErrorHandling(
   fn: Function,
-  code: ErrorCodes,
+  code: ErrorTypes,
   args?: unknown[]
 ) {
   let result
@@ -33,7 +45,7 @@ export function callWithErrorHandling(
   return result
 }
 
-export function handleError(error: unknown, code: ErrorCodes) {
+export function handleError(error: unknown, code: ErrorTypes) {
   const info = ErrorTypeStrings[code]
   warn(`Unhandler error${info ? info : ''}`)
 }

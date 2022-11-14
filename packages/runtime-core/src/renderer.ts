@@ -6,12 +6,18 @@ import {
   setupComponent,
 } from './component'
 import type { ComponentInternalInstance } from './component'
-import { h } from './h'
-import { isVNode, normalizeVNode, Text, VNode } from './vnode'
+import {
+  Comment,
+  Fragment,
+  isSameVNodeType,
+  normalizeVNode,
+  Text,
+  VNode,
+} from './vnode'
 import { renderComponentRoot } from './componentRenderUtils'
 import { updateProps } from './componentProps'
 import { effect } from '@vue/reactivity'
-import { queueJob } from './scheduler'
+import { flushPostFlushCbs, queueJob, queuePostFlushCb } from './scheduler'
 
 export interface Renderer<HostElement = RendererElement> {
   render: RootRenderFunction<HostElement>
@@ -19,7 +25,7 @@ export interface Renderer<HostElement = RendererElement> {
 }
 
 export type RootRenderFunction<HostElement = RendererElement> = (
-  vNode: VNode,
+  vNode: VNode | null,
   container: HostElement
 ) => void
 
@@ -42,13 +48,50 @@ export interface RendererOptions<
 > {
   patchProp(el: HostElement, key: string, prevValue: any, nextValue: any): void
 
+  /**
+   * 插入节点
+   * @param el 插入的节点
+   * @param container 容器
+   */
   insert(el: HostElement, container: HostElement): void
 
+  /**
+   * 创建文本节点
+   * @param text 文本节点内容
+   */
   createText(text: string): HostElement
+
+  /**
+   * 创建元素节点
+   * @param type 标签名
+   */
   createElement(type: string): HostElement
 
+  /**
+   * 创建注释节点
+   * @param text 注释内容
+   */
+  createComment(text: string): HostElement
+
+  /**
+   * 设置文本节点内容
+   * @param node 文本节点
+   * @param text 更新内容
+   */
   setText(node: HostElement, text: string): void
+
+  /**
+   * 设置元素节点内容
+   * @param node 元素节点
+   * @param text 更新文本
+   */
   setElementText(node: HostElement, text: string): void
+
+  /**
+   * 移除节点
+   * @param el
+   */
+  remove(el: HostElement): void
 }
 
 export function createRenderer(options: RendererOptions) {
@@ -61,19 +104,33 @@ function baseRenderer<HostElement extends RendererElement = RendererElement>(
   const {
     createElement: hostCreateElement,
     createText: hostCreateText,
+    createComment: hostCreateComment,
     insert: hostInsert,
     patchProp: hostPatchProps,
     setText: hostSetText,
     setElementText: hostSetElementText,
+    remove: hostRemove,
   } = options
 
   const patch: PatchFn<HostElement> = (n1, n2, container) => {
-    if (n2.shapeFlag & ShapeFlags.ELEMENT) {
-      processElement(n1, n2, container)
-    } else if (n2.shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
-      processComponent(n1, n2, container)
-    } else {
+    // 如果新旧节点不是同一类型的节点时，需要卸载旧节点，并挂在 n2
+    if (n1 && !isSameVNodeType(n1, n2)) {
+      unmount(n1, true)
+      n1 = null
+    }
+
+    if (n2.type === Comment) {
+      processCommment(n1, n2, container)
+    } else if (n2.type === Text) {
       processText(n1, n2, container)
+    } else if (n2.type === Fragment) {
+      processFragment(n1, n2, container)
+    } else {
+      if (n2.shapeFlag & ShapeFlags.ELEMENT) {
+        processElement(n1, n2, container)
+      } else if (n2.shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
+        processComponent(n1, n2, container)
+      }
     }
   }
 
@@ -131,6 +188,39 @@ function baseRenderer<HostElement extends RendererElement = RendererElement>(
   }
 
   /**
+   * 处理注释节点
+   * @param n1
+   * @param n2
+   * @param container
+   */
+  const processCommment = (
+    n1: VNode | null,
+    n2: VNode,
+    container: HostElement
+  ) => {
+    if (!n1) {
+      n2.el = hostCreateComment(n2.children as string)
+      hostInsert(n2.el as HostElement, container)
+    }
+  }
+
+  /**
+   * 处理 Fragment
+   * @param n1
+   * @param n2
+   * @param container
+   */
+  const processFragment = (
+    n1: VNode | null,
+    n2: VNode,
+    container: HostElement
+  ) => {
+    if (!n1) {
+      mountChildren(n2.children, container)
+    }
+  }
+
+  /**
    * 挂载元素
    * @param vNode
    * @param container
@@ -176,7 +266,7 @@ function baseRenderer<HostElement extends RendererElement = RendererElement>(
   }
 
   /**
-   * 更新组件
+   * 更新组件，由父组件的更新引起
    * @param instance
    * @param container
    */
@@ -187,6 +277,7 @@ function baseRenderer<HostElement extends RendererElement = RendererElement>(
     // 渲染前执行一些其他逻辑
     updateComponentPreRender(instance, n1, n2)
 
+    // 调用组件的更新函数
     instance.effect!.effect.run()
   }
 
@@ -232,6 +323,9 @@ function baseRenderer<HostElement extends RendererElement = RendererElement>(
 
         // 挂载子节点树
         patch(null, subTree, container)
+
+        // 组件的 vNode.el 实际指向子节点的 el
+        instance.vNode.el = subTree.el
 
         // 标识组件挂载完成
         instance.isMounted = true
@@ -286,8 +380,102 @@ function baseRenderer<HostElement extends RendererElement = RendererElement>(
     hostInsert(text, container)
   }
 
+  /**
+   * 卸载节点
+   * @param vNode
+   * @param doRemove
+   */
+  const unmount = (vNode: VNode, doRemove = false) => {
+    // 卸载 Fragment
+    if (vNode.type === Fragment) {
+      unmountFragment(vNode, doRemove)
+      return
+    }
+
+    // 卸载组件
+    if (vNode.shapeFlag & ShapeFlags.COMPONENT) {
+      unmountComponent(vNode, false)
+    }
+
+    // 删除真实节点
+    if (doRemove) {
+      vNode.el && hostRemove(vNode.el as HostElement)
+    }
+  }
+
+  /**
+   * 卸载 Fragment 组件
+   * @param vNode
+   * @param doRemove
+   */
+  const unmountFragment = (vNode: VNode, doRemove: boolean) => {
+    const children = vNode.children as VNode[]
+
+    // 首先卸载每个子节点
+    unmountChildren(children, false)
+
+    // 再删除每个子节点
+    for (let i = 0; i < children.length; ++i) {
+      const el = children[i].el
+      if (el) {
+        hostRemove(el as HostElement)
+      }
+    }
+  }
+
+  /**
+   * 卸载组件
+   * @param vNode
+   * @param doRemove
+   */
+  const unmountComponent = (vNode: VNode, doRemove: boolean) => {
+    const { component } = vNode
+    const {
+      [LifecycleHooks.BEFORE_UNMOUNT]: bum,
+      [LifecycleHooks.UNMOUNTED]: um,
+      subTree,
+    } = component!
+
+    // 执行 beforeUnmount hook
+    if (bum) {
+      invokeArrayFns(bum)
+    }
+
+    // 卸载子节点树，子节点树并不会删除真实的节点
+    if (subTree) {
+      unmount(subTree, doRemove)
+    }
+
+    // 子节点卸载完成，将 unmouted hook 放入任务队列等待执行
+    // 由于此时组件对应的真实节点还没有移除，所以不能同步执行
+    if (um) {
+      queuePostFlushCb(() => {
+        invokeArrayFns(um)
+      })
+    }
+  }
+
+  /**
+   * 卸载子节点列表
+   * @param children
+   * @param doRemove
+   */
+  const unmountChildren = (children: VNode[], doRemove: boolean) => {
+    for (let i = 0; i < children.length; ++i) {
+      unmount(children[i], doRemove)
+    }
+  }
+
   const render: RootRenderFunction<HostElement> = (vNode, container: any) => {
-    patch(container.__root || null, vNode, container)
+    if (vNode == null) {
+      unmount(container.__root, true)
+    } else {
+      patch(container.__root || null, vNode, container)
+    }
+
+    // TODO:
+    flushPostFlushCbs()
+
     container.__root = vNode
   }
 
