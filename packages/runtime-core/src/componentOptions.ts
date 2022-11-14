@@ -29,6 +29,8 @@ export interface ComponentOptionsBase<Props, RawBindings>
 
   props?: ComponentPropsOptions<Props>
 
+  components?: Record<string, Component>
+
   setup?: () => RenderFunction | RawBindings
 
   data?: () => Record<string, any>
@@ -62,6 +64,7 @@ export function applyOptionsApi(instance: ComponentInternalInstance) {
     mounted,
     beforeUpdate,
     updated,
+    components,
   } = Component
 
   // 调用 beforeCreate hook
@@ -78,6 +81,14 @@ export function applyOptionsApi(instance: ComponentInternalInstance) {
       instance.data = data()
     } else {
       warn('')
+    }
+  }
+
+  // 注册本地组件
+  if (components) {
+    for (const name in components) {
+      instance.components ||= Object.create(null)
+      instance.components![name] = components[name]
     }
   }
 

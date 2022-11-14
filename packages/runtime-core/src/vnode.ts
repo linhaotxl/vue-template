@@ -14,6 +14,7 @@ import {
   isClassComponent,
 } from './component'
 import { warn } from './warning'
+import { AppContext } from './apiCreateApp'
 
 export const Comment = Symbol('Comment')
 export const Text = Symbol('Text')
@@ -36,28 +37,59 @@ export type VNodeProps = {
 export type Props = (Data & VNodeProps) | null
 
 export interface VNode<HostElement extends RendererElement = RendererElement> {
+  /**
+   * 标识是一个 vNode 对象
+   */
   __v_isVNode: boolean
 
+  /**
+   * vNode 类型
+   */
   type: VNodeTypes
 
+  /**
+   * 实际传递的 props
+   * <div foo="foo" bar="bar" />
+   */
   props: Props
 
+  /**
+   * 子节点
+   */
   children: unknown
 
+  /**
+   * vNode 上的 key
+   * <div key="1" />
+   */
   key: string | number | null
 
+  /**
+   * shapeFlag：由组件自身的 type 和 children 共同决定
+   */
   shapeFlag: ShapeFlags
 
   patchFlag: PatchFlags
 
+  /**
+   * 动态子节点列表
+   */
   dynamicChildren: VNode[] | null
 
   /**
-   * 组件实例
+   * 组件实例，只有组件 vNode 才会有
    */
   component: ComponentInternalInstance | null
 
+  /**
+   * vNode 对应的真实节点，如果是组件则指向第一个子节点
+   */
   el: HostElement | null
+
+  /**
+   * 全局作用域
+   */
+  appContext: AppContext | null
 }
 
 /**
@@ -135,6 +167,7 @@ export function createVNode(
     dynamicChildren: isBlock ? [] : null,
     component: null,
     el: null,
+    appContext: null,
   }
 
   // patchFlag 存在且不是 HYDRATE_EVENTS 视为动态节点

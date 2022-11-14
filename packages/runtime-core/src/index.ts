@@ -6,5 +6,8 @@ export * from './h'
 export * from './component'
 export * from './renderer'
 export * from './apiLifecycle'
+export * from './apiCreateApp'
+export * from './apiDefineComponent'
+export * from './helpers/resolveAssets'
 
 export * from '@vue/reactivity'

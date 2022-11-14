@@ -18,6 +18,7 @@ import { renderComponentRoot } from './componentRenderUtils'
 import { updateProps } from './componentProps'
 import { effect } from '@vue/reactivity'
 import { flushPostFlushCbs, queueJob, queuePostFlushCb } from './scheduler'
+import { createAppAPI } from './apiCreateApp'
 
 export interface Renderer<HostElement = RendererElement> {
   render: RootRenderFunction<HostElement>
@@ -32,7 +33,8 @@ export type RootRenderFunction<HostElement = RendererElement> = (
 export type PatchFn<HostElement = RendererElement> = (
   n1: VNode | null,
   n2: VNode,
-  container: HostElement
+  container: HostElement,
+  parent?: ComponentInternalInstance
 ) => void
 
 // export interface RendererNode {
@@ -112,7 +114,7 @@ function baseRenderer<HostElement extends RendererElement = RendererElement>(
     remove: hostRemove,
   } = options
 
-  const patch: PatchFn<HostElement> = (n1, n2, container) => {
+  const patch: PatchFn<HostElement> = (n1, n2, container, parent) => {
     // 如果新旧节点不是同一类型的节点时，需要卸载旧节点，并挂在 n2
     if (n1 && !isSameVNodeType(n1, n2)) {
       unmount(n1, true)
@@ -128,8 +130,11 @@ function baseRenderer<HostElement extends RendererElement = RendererElement>(
     } else {
       if (n2.shapeFlag & ShapeFlags.ELEMENT) {
         processElement(n1, n2, container)
-      } else if (n2.shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
-        processComponent(n1, n2, container)
+      } else if (
+        n2.shapeFlag & ShapeFlags.STATEFUL_COMPONENT ||
+        n2.shapeFlag & ShapeFlags.FUNCTIONAL_COMPONENT
+      ) {
+        processComponent(n1, n2, container, parent)
       }
     }
   }
@@ -178,10 +183,11 @@ function baseRenderer<HostElement extends RendererElement = RendererElement>(
   const processComponent = (
     n1: VNode | null,
     n2: VNode,
-    container: HostElement
+    container: HostElement,
+    parent?: ComponentInternalInstance
   ) => {
     if (!n1) {
-      mountComponent(n2, container)
+      mountComponent(n2, container, parent)
     } else {
       updateComponent(n1, n2)
     }
@@ -251,9 +257,13 @@ function baseRenderer<HostElement extends RendererElement = RendererElement>(
    * @param vNode
    * @param container
    */
-  const mountComponent = (vNode: VNode, container: HostElement) => {
+  const mountComponent = (
+    vNode: VNode,
+    container: HostElement,
+    parent?: ComponentInternalInstance
+  ) => {
     // 1. 创建组件实例
-    const instance = (vNode.component = createComponentInstance(vNode))
+    const instance = (vNode.component = createComponentInstance(vNode, parent))
 
     // 设置当前正在执行的组件
     setCurrentInstance(instance)
@@ -322,7 +332,7 @@ function baseRenderer<HostElement extends RendererElement = RendererElement>(
         const subTree = (instance.subTree = renderComponentRoot(instance))
 
         // 挂载子节点树
-        patch(null, subTree, container)
+        patch(null, subTree, container, instance)
 
         // 组件的 vNode.el 实际指向子节点的 el
         instance.vNode.el = subTree.el
@@ -492,6 +502,6 @@ function baseRenderer<HostElement extends RendererElement = RendererElement>(
 
   return {
     render,
-    createApp() {},
+    createApp: createAppAPI(render),
   }
 }

@@ -10,7 +10,7 @@ export function h(...args: any[]) {
   }
 
   if (args.length === 2) {
-    if (isVNode(propsOrChildren)) {
+    if (propsOrChildren && isVNode(propsOrChildren)) {
       return createVNode(type, null, [propsOrChildren])
     }
 
@@ -18,13 +18,15 @@ export function h(...args: any[]) {
       return createVNode(type, propsOrChildren)
     }
 
-    // if (
-    //   isArray(propsOrChildren) ||
-    //   isFunction(propsOrChildren) ||
-    //   isString(propsOrChildren)
-    // ) {
-    return createVNode(type, null, String(propsOrChildren))
-    // }
+    if (
+      isArray(propsOrChildren) ||
+      isFunction(propsOrChildren) ||
+      isString(propsOrChildren)
+    ) {
+      return createVNode(type, null, propsOrChildren)
+    }
+
+    return createVNode(type)
   }
 
   if (arguments.length === 3) {

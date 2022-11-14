@@ -1,6 +1,12 @@
 import { ReactiveEffectRunner } from './../../reactivity/src/effect'
 import type { VNode } from './vnode'
-import { EMPTY_OBJ, isFunction, isPlainObject, NOOP } from '@vue/shared'
+import {
+  EMPTY_OBJ,
+  isFunction,
+  isPlainObject,
+  NOOP,
+  ShapeFlags,
+} from '@vue/shared'
 import { callWithErrorHandling, ErrorCodes } from './errorHandling'
 import {
   initProps,
@@ -13,6 +19,7 @@ import {
   PublicInstanceProxyHandlers,
 } from './componentPublicInstance'
 import type { ComponentPublicInstance } from './componentPublicInstance'
+import { AppContext, defaultAppContext } from './apiCreateApp'
 
 export type InternalRenderFunction = () => VNode
 
@@ -114,6 +121,16 @@ export interface ComponentInternalInstance {
   data: Record<string, any>
 
   /**
+   * 本地注册组件
+   */
+  components: Record<string, Component> | null
+
+  /**
+   * app 作用域
+   */
+  appContext: AppContext
+
+  /**
    * Lifecycle hooks
    */
   [LifecycleHooks.BEFORE_CREATE]: LifecycleHook
@@ -143,11 +160,13 @@ export function setCurrentInstance(instance: ComponentInternalInstance | null) {
  * @returns
  */
 export function createComponentInstance(
-  vNode: VNode
+  vNode: VNode,
+  parent?: ComponentInternalInstance
 ): ComponentInternalInstance {
   const type = vNode.type as ConcreteComponent
 
   const instance: ComponentInternalInstance = {
+    appContext: vNode.appContext || (parent?.appContext ?? defaultAppContext),
     type,
     vNode,
     render: null,
@@ -161,6 +180,7 @@ export function createComponentInstance(
     subTree: null,
     setupState: EMPTY_OBJ,
     data: EMPTY_OBJ,
+    components: null,
     [LifecycleHooks.BEFORE_CREATE]: null,
     [LifecycleHooks.CREATED]: null,
     [LifecycleHooks.BEFORE_MOUNT]: null,
@@ -188,8 +208,10 @@ export function setupComponent(instance: ComponentInternalInstance) {
   // 初始化 props
   initProps(instance)
 
-  // 安装状态组件
-  setupStatefulComponent(instance)
+  if (instance.vNode.shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
+    // 安装状态组件
+    setupStatefulComponent(instance)
+  }
 }
 
 /**
