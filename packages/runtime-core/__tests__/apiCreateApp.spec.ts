@@ -5,8 +5,8 @@ import {
   h,
   nodeOps,
   serializeInner,
-  // provide,
-  // inject,
+  provide,
+  inject,
   resolveComponent,
   // resolveDirective,
   // withDirectives,
@@ -68,36 +68,38 @@ describe('api: createApp', () => {
     app.unmount()
     expect(serializeInner(root)).toBe(``)
   })
-  // test('provide', () => {
-  //   const Root = {
-  //     setup() {
-  //       // test override
-  //       provide('foo', 3)
-  //       return () => h(Child)
-  //     }
-  //   }
-  //   const Child = {
-  //     setup() {
-  //       const foo = inject('foo')
-  //       const bar = inject('bar')
-  //       try {
-  //         inject('__proto__')
-  //       } catch (e: any) {}
-  //       return () => `${foo},${bar}`
-  //     }
-  //   }
-  //   const app = createApp(Root)
-  //   app.provide('foo', 1)
-  //   app.provide('bar', 2)
-  //   const root = nodeOps.createElement('div')
-  //   app.mount(root)
-  //   expect(serializeInner(root)).toBe(`3,2`)
-  //   expect('[Vue warn]: injection "__proto__" not found.').toHaveBeenWarned()
-  //   const app2 = createApp(Root)
-  //   app2.provide('bar', 1)
-  //   app2.provide('bar', 2)
-  //   expect(`App already provides property with key "bar".`).toHaveBeenWarned()
-  // })
+  test('provide', () => {
+    debugger
+    const Root = {
+      setup() {
+        // test override
+        provide('foo', 3)
+        return () => h(Child)
+      },
+    }
+    const Child = {
+      setup() {
+        const foo = inject('foo')
+        const bar = inject('bar')
+        try {
+          inject('__proto__')
+          // eslint-disable-next-line no-empty
+        } catch (e: any) {}
+        return () => `${foo},${bar}`
+      },
+    }
+    const app = createApp(Root)
+    app.provide('foo', 1)
+    app.provide('bar', 2)
+    const root = nodeOps.createElement('div')
+    app.mount(root)
+    expect(serializeInner(root)).toBe(`3,2`)
+    expect('[Vue warn]: injection "__proto__" not found.').toHaveBeenWarned()
+    const app2 = createApp(Root)
+    app2.provide('bar', 1)
+    app2.provide('bar', 2)
+    expect(`App already provides property with key "bar".`).toHaveBeenWarned()
+  })
   test('component', () => {
     // debugger
     const Root = {
@@ -309,7 +311,7 @@ describe('api: createApp', () => {
     expect(handler).toHaveBeenCalled()
   })
   test('config.warnHandler', () => {
-    debugger
+    // debugger
     let ctx: any
     const handler = jest.fn((msg, instance, trace) => {
       expect(msg).toMatch(`Component is missing template or render function`)

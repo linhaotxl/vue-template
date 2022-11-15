@@ -4,6 +4,7 @@ import { h } from './h'
 import type { RendererElement, RootRenderFunction } from './renderer'
 import type { Props } from './vnode'
 import { warn } from './warning'
+import type { InjectionKey } from './apiInject'
 
 export interface App<HostElement = RendererElement> {
   /**
@@ -24,6 +25,8 @@ export interface App<HostElement = RendererElement> {
    */
   component(name: string): Component | undefined
   component(name: string, component: Component): this
+
+  provide<T>(key: string | InjectionKey<T>, value: T): void
 
   /**
    * 全局作用域
@@ -57,15 +60,23 @@ export interface AppContext {
   components: Record<string, Component>
 
   /**
+   * 全局 Provider
+   */
+  providers: Record<any, any>
+
+  /**
    * 全局配置
    */
   config: AppConfig
 }
 
-export const defaultAppContext: AppContext = {
+export const genDefaultAppContext = (): AppContext => ({
   components: Object.create(null),
   config: Object.create(null),
-}
+  providers: Object.create(null),
+})
+
+export const defaultAppContext = genDefaultAppContext()
 
 export type CreateAppFunction = (comp: Component, rootProps?: Props) => App
 
@@ -78,7 +89,7 @@ export function createAppAPI<
     let appMounted = false
 
     // 创建全局作用域
-    const ctx = defaultAppContext
+    const ctx = genDefaultAppContext()
 
     const app: App<HostElement> = {
       ctx,
@@ -140,6 +151,14 @@ export function createAppAPI<
 
         app.ctx.components[name] = comp
         return this
+      },
+
+      provide(key, value) {
+        if ((key as string) in app.ctx.providers) {
+          warn(`App already provides property with key "${key}".`)
+          return
+        }
+        app.ctx.providers[key as string] = value
       },
     }
 

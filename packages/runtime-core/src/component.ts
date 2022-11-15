@@ -64,6 +64,11 @@ export interface ComponentInternalInstance {
   vNode: VNode
 
   /**
+   * 父组件
+   */
+  parent: ComponentInternalInstance | null
+
+  /**
    * 组件渲染函数
    */
   render:
@@ -133,6 +138,11 @@ export interface ComponentInternalInstance {
   appContext: AppContext
 
   /**
+   * provide 提供的数据容器
+   */
+  provides: Record<string | symbol | number, any>
+
+  /**
    * Lifecycle hooks
    */
   [LifecycleHooks.BEFORE_CREATE]: LifecycleHook
@@ -167,9 +177,13 @@ export function createComponentInstance(
 ): ComponentInternalInstance {
   const type = vNode.type as ConcreteComponent
 
+  const appContext =
+    vNode.appContext || (parent?.appContext ?? defaultAppContext)
+
   const instance: ComponentInternalInstance = {
-    appContext: vNode.appContext || (parent?.appContext ?? defaultAppContext),
+    appContext,
     type,
+    parent: parent || null,
     vNode,
     render: null,
     propOptions: normalizePropsOptions(vNode),
@@ -183,6 +197,8 @@ export function createComponentInstance(
     setupState: EMPTY_OBJ,
     data: EMPTY_OBJ,
     components: null,
+    // 每个组件的 provider 向上继承，根组件继承全局 provider
+    provides: parent ? parent.provides : Object.create(appContext.providers),
     [LifecycleHooks.BEFORE_CREATE]: null,
     [LifecycleHooks.CREATED]: null,
     [LifecycleHooks.BEFORE_MOUNT]: null,
