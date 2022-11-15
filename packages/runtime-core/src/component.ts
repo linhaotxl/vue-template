@@ -20,6 +20,8 @@ import {
 } from './componentPublicInstance'
 import type { ComponentPublicInstance } from './componentPublicInstance'
 import { AppContext, defaultAppContext } from './apiCreateApp'
+import { proxyRefs } from '@vue/reactivity'
+import { warn } from './warning'
 
 export type InternalRenderFunction = () => VNode
 
@@ -253,7 +255,8 @@ function handleSetupResult(
     // setup 返回函数，将其作为渲染函数
     instance.render = setupResult as InternalRenderFunction
   } else if (isPlainObject(setupResult)) {
-    instance.setupState = setupResult
+    // 对 setup 状态进行代理，主要处理 ref 解绑 value
+    instance.setupState = proxyRefs(setupResult)
   }
 
   // 兜底操作
@@ -268,6 +271,10 @@ export function finishComponent(instance: ComponentInternalInstance) {
   if (!instance.render) {
     // 兜底，将组件上的 render 函数作为渲染函数
     instance.render = (instance.type.render || NOOP) as InternalRenderFunction
+  }
+
+  if (instance.render === (NOOP as any)) {
+    warn('Component is missing template or render function')
   }
 
   applyOptionsApi(instance)

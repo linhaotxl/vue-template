@@ -1,7 +1,11 @@
 import { hasOwn, isString } from '@vue/shared'
 import type { ComponentInternalInstance } from './component'
 
-export type ComponentPublicInstance = {}
+export type ComponentPublicInstance = {
+  $props: Record<string, any>
+  $attrs: Record<string, any>
+  $el: any
+}
 
 export type ComponentPublicCtx = {
   _: ComponentInternalInstance

@@ -11,8 +11,8 @@ import {
   // resolveDirective,
   // withDirectives,
   // Plugin,
-  // ref,
-  // getCurrentInstance,
+  ref,
+  getCurrentInstance,
   defineComponent,
 } from '@vue/runtime-test'
 
@@ -99,7 +99,7 @@ describe('api: createApp', () => {
   //   expect(`App already provides property with key "bar".`).toHaveBeenWarned()
   // })
   test('component', () => {
-    debugger
+    // debugger
     const Root = {
       // local override
       components: {
@@ -135,7 +135,7 @@ describe('api: createApp', () => {
   //   const Root = {
   //     // local override
   //     directives: {
-  //       BarBaz: { mounted: spy3 }
+  //       BarBaz: { mounted: spy3 },
   //     },
   //     setup() {
   //       // resolve in setup
@@ -145,17 +145,17 @@ describe('api: createApp', () => {
   //         const BarBaz = resolveDirective('bar-baz')!
   //         return withDirectives(h('div'), [[FooBar], [BarBaz]])
   //       }
-  //     }
+  //     },
   //   }
   //   const app = createApp(Root)
   //   const FooBar = { mounted: spy1 }
   //   app.directive('FooBar', FooBar)
   //   expect(app.directive('FooBar')).toBe(FooBar)
   //   app.directive('BarBaz', {
-  //     mounted: spy2
+  //     mounted: spy2,
   //   })
   //   app.directive('BarBaz', {
-  //     mounted: spy2
+  //     mounted: spy2,
   //   })
   //   expect(
   //     'Directive "BarBaz" has already been registered in target app.'
@@ -250,7 +250,7 @@ describe('api: createApp', () => {
   // test('use', () => {
   //   const PluginA: Plugin = app => app.provide('foo', 1)
   //   const PluginB: Plugin = {
-  //     install: (app, arg1, arg2) => app.provide('bar', arg1 + arg2)
+  //     install: (app, arg1, arg2) => app.provide('bar', arg1 + arg2),
   //   }
   //   class PluginC {
   //     someProperty = {}
@@ -264,7 +264,7 @@ describe('api: createApp', () => {
   //       const foo = inject('foo')
   //       const bar = inject('bar')
   //       return () => `${foo},${bar}`
-  //     }
+  //     },
   //   }
   //   const app = createApp(Root)
   //   app.use(PluginA)
@@ -283,48 +283,50 @@ describe('api: createApp', () => {
   //       `function.`
   //   ).toHaveBeenWarnedTimes(1)
   // })
-  // test('config.errorHandler', () => {
-  //   const error = new Error()
-  //   const count = ref(0)
-  //   const handler = jest.fn((err, instance, info) => {
-  //     expect(err).toBe(error)
-  //     expect((instance as any).count).toBe(count.value)
-  //     expect(info).toBe(`render function`)
-  //   })
-  //   const Root = {
-  //     setup() {
-  //       const count = ref(0)
-  //       return {
-  //         count
-  //       }
-  //     },
-  //     render() {
-  //       throw error
-  //     }
-  //   }
-  //   const app = createApp(Root)
-  //   app.config.errorHandler = handler
-  //   app.mount(nodeOps.createElement('div'))
-  //   expect(handler).toHaveBeenCalled()
-  // })
-  // test('config.warnHandler', () => {
-  //   let ctx: any
-  //   const handler = jest.fn((msg, instance, trace) => {
-  //     expect(msg).toMatch(`Component is missing template or render function`)
-  //     expect(instance).toBe(ctx.proxy)
-  //     expect(trace).toMatch(`Hello`)
-  //   })
-  //   const Root = {
-  //     name: 'Hello',
-  //     setup() {
-  //       ctx = getCurrentInstance()
-  //     }
-  //   }
-  //   const app = createApp(Root)
-  //   app.config.warnHandler = handler
-  //   app.mount(nodeOps.createElement('div'))
-  //   expect(handler).toHaveBeenCalledTimes(1)
-  // })
+  test('config.errorHandler', () => {
+    // debugger
+    const error = new Error()
+    const count = ref(0)
+    const handler = jest.fn((err, instance, info) => {
+      expect(err).toBe(error)
+      expect((instance as any).count).toBe(count.value)
+      expect(info).toBe(`render function`)
+    })
+    const Root = {
+      setup() {
+        const count = ref(0)
+        return {
+          count,
+        }
+      },
+      render() {
+        throw error
+      },
+    }
+    const app = createApp(Root)
+    app.config.errorHandler = handler
+    app.mount(nodeOps.createElement('div'))
+    expect(handler).toHaveBeenCalled()
+  })
+  test('config.warnHandler', () => {
+    debugger
+    let ctx: any
+    const handler = jest.fn((msg, instance, trace) => {
+      expect(msg).toMatch(`Component is missing template or render function`)
+      expect(instance).toBe(ctx.proxy)
+      // expect(trace).toMatch(`Hello`)
+    })
+    const Root = {
+      name: 'Hello',
+      setup() {
+        ctx = getCurrentInstance()
+      },
+    }
+    const app = createApp(Root)
+    app.config.warnHandler = handler
+    app.mount(nodeOps.createElement('div'))
+    expect(handler).toHaveBeenCalledTimes(1)
+  })
   // describe('config.isNativeTag', () => {
   //   const isNativeTag = jest.fn(tag => tag === 'div')
   //   test('Component.name', () => {

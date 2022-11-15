@@ -1,4 +1,5 @@
-import { LifecycleHooks } from './component'
+import { AppConfig } from './apiCreateApp'
+import { getCurrentInstance, LifecycleHooks } from './component'
 import { warn } from './warning'
 
 export const enum ErrorCodes {
@@ -7,6 +8,8 @@ export const enum ErrorCodes {
   WATCH_CLEANUP,
   WATCH_GETTER,
   SETUP_FUNCTION,
+  RENDER_FUNCTION,
+  APP_WARN_HANDLER,
 }
 
 export type ErrorTypes = ErrorCodes | LifecycleHooks
@@ -19,6 +22,8 @@ export const ErrorTypeStrings: Record<ErrorTypes, string> = {
   [ErrorCodes.WATCH_CLEANUP]: 'watcher cleanup',
   [ErrorCodes.WATCH_GETTER]: 'watcher getter',
   [ErrorCodes.SETUP_FUNCTION]: 'setup function',
+  [ErrorCodes.RENDER_FUNCTION]: 'render function',
+  [ErrorCodes.APP_WARN_HANDLER]: 'app warnHandler',
 
   [LifecycleHooks.BEFORE_CREATE]: 'beforeCreate hook',
   [LifecycleHooks.CREATED]: 'created hook',
@@ -47,5 +52,15 @@ export function callWithErrorHandling(
 
 export function handleError(error: unknown, code: ErrorTypes) {
   const info = ErrorTypeStrings[code]
+  const instance = getCurrentInstance()
+  let errorHandler: AppConfig['errorHandler']
+
+  if (instance) {
+    if ((errorHandler = instance.appContext.config.errorHandler)) {
+      errorHandler(error, instance.proxy, info)
+      return
+    }
+  }
+
   warn(`Unhandler error${info ? info : ''}`)
 }

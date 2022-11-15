@@ -3,6 +3,7 @@ import type { ComponentInternalInstance } from './component'
 import type { RenderFunction } from './componentOptions'
 import { Comment, createVNode, normalizeVNode } from './vnode'
 import type { VNode } from './vnode'
+import { ErrorCodes, handleError } from './errorHandling'
 
 export function renderComponentRoot(
   instance: ComponentInternalInstance
@@ -25,6 +26,7 @@ export function renderComponentRoot(
     }
   } catch (e) {
     result = createVNode(Comment)
+    handleError(e, ErrorCodes.RENDER_FUNCTION)
   }
 
   return result

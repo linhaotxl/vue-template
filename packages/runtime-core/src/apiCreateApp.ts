@@ -1,3 +1,4 @@
+import { ComponentPublicInstance } from './componentPublicInstance'
 import type { Component } from './component'
 import { h } from './h'
 import type { RendererElement, RootRenderFunction } from './renderer'
@@ -28,6 +29,25 @@ export interface App<HostElement = RendererElement> {
    * 全局作用域
    */
   ctx: AppContext
+
+  /**
+   * 全局配置
+   */
+  config: AppConfig
+}
+
+export interface AppConfig {
+  errorHandler?: (
+    error: unknown,
+    instance: ComponentPublicInstance | null,
+    errorInfo: string
+  ) => void
+
+  warnHandler?: (
+    msg: string,
+    instance: ComponentPublicInstance | null,
+    trace: string
+  ) => void
 }
 
 export interface AppContext {
@@ -35,10 +55,16 @@ export interface AppContext {
    * 全局组件列表
    */
   components: Record<string, Component>
+
+  /**
+   * 全局配置
+   */
+  config: AppConfig
 }
 
 export const defaultAppContext: AppContext = {
   components: Object.create(null),
+  config: Object.create(null),
 }
 
 export type CreateAppFunction = (comp: Component, rootProps?: Props) => App
@@ -56,6 +82,8 @@ export function createAppAPI<
 
     const app: App<HostElement> = {
       ctx,
+
+      config: ctx.config,
 
       mount(container) {
         if ((comp as any).__container === container) {
