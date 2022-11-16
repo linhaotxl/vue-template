@@ -22,6 +22,11 @@ import type { ComponentPublicInstance } from './componentPublicInstance'
 import { AppContext, defaultAppContext } from './apiCreateApp'
 import { proxyRefs } from '@vue/reactivity'
 import { warn } from './warning'
+import {
+  emit,
+  normalizeEmitsOptions,
+  ObjectEmitsOptions,
+} from './componentEmits'
 
 export type InternalRenderFunction = () => VNode
 
@@ -38,6 +43,7 @@ export type Component<RawBindings = any> = ConcreteComponent<RawBindings>
 
 export interface SetupContext {
   attrs: Record<string, any>
+  emit: ComponentInternalInstance['emit']
 }
 
 type LifecycleHook = Function[] | null
@@ -81,6 +87,11 @@ export interface ComponentInternalInstance {
    * 1: 需要处理属性值的属性名集合，包括 Boolean 的转换，默认值等
    */
   propOptions: NormalizedPropsOptions
+
+  /**
+   * 事件触发相关配置
+   */
+  emitOptions: ObjectEmitsOptions | null
 
   /**
    * 是否挂在
@@ -143,6 +154,16 @@ export interface ComponentInternalInstance {
   provides: Record<string | symbol | number, any>
 
   /**
+   * emit 函数
+   */
+  emit: (name: string, ...args: unknown[]) => void
+
+  /**
+   * once 事件处理标识
+   */
+  emitted: Record<string, boolean> | null
+
+  /**
    * Lifecycle hooks
    */
   [LifecycleHooks.BEFORE_CREATE]: LifecycleHook
@@ -187,16 +208,19 @@ export function createComponentInstance(
     vNode,
     render: null,
     propOptions: normalizePropsOptions(vNode),
+    emitOptions: normalizeEmitsOptions(vNode),
     isMounted: false,
     props: EMPTY_OBJ,
     attrs: EMPTY_OBJ,
     ctx: {} as ComponentPublicCtx,
     proxy: null,
+    emit: null!,
     effect: null,
     subTree: null,
     setupState: EMPTY_OBJ,
     data: EMPTY_OBJ,
     components: null,
+    emitted: null,
     // 每个组件的 provider 向上继承，根组件继承全局 provider
     provides: parent ? parent.provides : Object.create(appContext.providers),
     [LifecycleHooks.BEFORE_CREATE]: null,
@@ -207,6 +231,10 @@ export function createComponentInstance(
     [LifecycleHooks.UPDATED]: null,
     [LifecycleHooks.BEFORE_UNMOUNT]: null,
     [LifecycleHooks.UNMOUNTED]: null,
+  }
+
+  instance.emit = (name: string, ...args: unknown[]) => {
+    emit(instance, name, ...args)
   }
 
   Object.defineProperty(instance.ctx, '_', {
@@ -307,5 +335,6 @@ export const isClassComponent = (value: any): value is ClassComponent =>
 function createSetupContext(instance: ComponentInternalInstance): SetupContext {
   return {
     attrs: instance.attrs,
+    emit: instance.emit,
   }
 }

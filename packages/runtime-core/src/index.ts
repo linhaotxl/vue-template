@@ -9,6 +9,7 @@ export * from './apiLifecycle'
 export * from './apiCreateApp'
 export * from './apiDefineComponent'
 export * from './helpers/resolveAssets'
+export * from './helpers/toHandlers'
 export * from './apiInject'
 
 export * from '@vue/reactivity'

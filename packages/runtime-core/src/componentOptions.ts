@@ -11,6 +11,7 @@ import {
   ComponentInternalInstance,
   LifecycleHooks,
 } from './component'
+import type { EmitOptions } from './componentEmits'
 import type { ComponentPropsOptions } from './componentProps'
 import { callWithErrorHandling } from './errorHandling'
 import type { VNode } from './vnode'
@@ -34,6 +35,8 @@ export interface ComponentOptionsBase<Props, RawBindings>
   setup?: () => RenderFunction | RawBindings
 
   data?: () => Record<string, any>
+
+  emits?: EmitOptions
 
   render?: Function
 
@@ -70,7 +73,7 @@ export function applyOptionsApi(instance: ComponentInternalInstance) {
   // 调用 beforeCreate hook
   if (beforeCreated) {
     callWithErrorHandling(
-      beforeCreated.bind(instance),
+      beforeCreated.bind(instance.proxy),
       LifecycleHooks.BEFORE_CREATE
     )
   }
@@ -94,7 +97,7 @@ export function applyOptionsApi(instance: ComponentInternalInstance) {
 
   // 调用 created hook
   if (created) {
-    callWithErrorHandling(created.bind(instance), LifecycleHooks.CREATED)
+    callWithErrorHandling(created.bind(instance.proxy), LifecycleHooks.CREATED)
   }
 
   function registerHooks(

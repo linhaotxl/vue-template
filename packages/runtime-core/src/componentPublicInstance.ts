@@ -4,6 +4,7 @@ import type { ComponentInternalInstance } from './component'
 export type ComponentPublicInstance = {
   $props: Record<string, any>
   $attrs: Record<string, any>
+  $emit: ComponentInternalInstance['emit']
   $el: any
 }
 
@@ -18,6 +19,7 @@ const publicPropertiesMap: Record<
 > = {
   $props: instance => instance.props,
   $attrs: instance => instance.attrs,
+  $emit: instance => instance.emit,
   $el: instance => instance.vNode.el,
 }
 

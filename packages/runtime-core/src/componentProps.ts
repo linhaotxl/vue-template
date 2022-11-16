@@ -8,6 +8,7 @@ import {
   isPlainObject,
 } from '@vue/shared'
 import type { ComponentInternalInstance, ConcreteComponent } from './component'
+import { isEmitListener } from './componentEmits'
 import type { Props as VNodeProps, VNode } from './vnode'
 import { warn } from './warning'
 
@@ -195,8 +196,8 @@ export function setFullProps(
     if (hasOwn(propsOptions, camelRawName)) {
       // 存在，将驼峰化的属性名和值存储
       props[camelRawName] = rawProps[rawName]
-    } else {
-      // 不存在，将原始属性名和值存储
+    } else if (!isEmitListener(rawProps, rawName)) {
+      // 不存在，将原始属性名和值存储，排除事件监听器
       attrs[rawName] = rawProps[rawName]
     }
   }
