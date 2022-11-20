@@ -10,9 +10,11 @@ const routes = router.getRoutes()
 <template>
   <div class="root">
     <div class="header">
-      <router-link v-for="route in routes" :key="route.name" :to="route.path">
-        {{ route.name }}
-      </router-link>
+      <el-button v-for="route in routes" :key="route.name">
+        <router-link :to="route.path">
+          {{ route.name }}
+        </router-link>
+      </el-button>
 
       <router-link to="/sbc"> 403 </router-link>
     </div>

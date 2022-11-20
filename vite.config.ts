@@ -6,9 +6,20 @@ import pages from 'vite-plugin-pages'
 import layouts from 'vite-plugin-vue-layouts'
 import { routerConfig } from './config/routes'
 import unocss from 'unocss/vite'
+import Components from 'unplugin-vue-components/vite'
+import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 
 export default defineConfig({
   plugins: [
+    Components({
+      dirs: ['./src/components'],
+      resolvers: [ElementPlusResolver()],
+      extensions: ['vue', 'tsx'],
+      dts: './src/components.d.ts',
+      importPathTransform: path =>
+        path.endsWith('.tsx') ? path.slice(0, -4) : path,
+    }),
+
     vue(),
 
     vueJsx(),
