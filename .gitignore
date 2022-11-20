@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+packages/reactivity
+packages/runtime-test
+packages/shared
