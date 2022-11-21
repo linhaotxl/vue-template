@@ -5,9 +5,19 @@
 
   <TextCompTsx />
 
+  <el-button type="primary" @click="handleClickButton">Click</el-button>
+
   <el-link href="https://element.eleme.io" target="_blank">default</el-link>
 
   <router-view />
 </template>
 
-<script lang="ts" setup name="DashboardLayout"></script>
+<script lang="ts" setup name="DashboardLayout">
+const count = ref(0)
+const handleClickButton = () => {
+  ElMessage({
+    message: '111',
+    type: 'success',
+  })
+}
+</script>

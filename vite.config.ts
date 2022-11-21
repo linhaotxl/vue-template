@@ -12,29 +12,10 @@ import {
   createStyleImportPlugin,
   ElementPlusResolve as StyleElementPlusResolve,
 } from 'vite-plugin-style-import'
+import AutoImport from 'unplugin-auto-import/vite'
 
 export default defineConfig({
   plugins: [
-    Components({
-      dirs: ['./src/components'],
-      resolvers: [ElementPlusResolver()],
-      extensions: ['vue', 'tsx'],
-      dts: './src/components.d.ts',
-      importPathTransform: path =>
-        path.endsWith('.tsx') ? path.slice(0, -4) : path,
-    }),
-
-    createStyleImportPlugin({
-      resolves: [StyleElementPlusResolve()],
-      libs: [
-        {
-          esModule: true,
-          libraryName: 'element-plus',
-          resolveStyle: name => `element-plus/theme-chalk/${name}.css`,
-        },
-      ],
-    }),
-
     vue(),
 
     vueJsx(),
@@ -58,6 +39,50 @@ export default defineConfig({
     layouts({
       extensions: ['vue', 'tsx', 'jsx'],
       defaultLayout: 'BasicLayout',
+    }),
+
+    AutoImport({
+      include: [/\.vue$/, /\.[tj]sx?$/],
+
+      resolvers: [ElementPlusResolver()],
+
+      imports: ['vue', 'vue/macros', 'vue-router', '@vueuse/core'],
+
+      dirs: [
+        './src/components',
+        './src/directives',
+        './src/layouts',
+        './src/pages',
+      ],
+
+      dts: './src/auto-imports.d.ts',
+
+      vueTemplate: true,
+
+      eslintrc: {
+        enabled: true,
+        filepath: './src/.eslintrc-auto-import.json',
+      },
+    }),
+
+    Components({
+      dirs: ['./src/components'],
+      resolvers: [ElementPlusResolver()],
+      extensions: ['vue', 'tsx'],
+      dts: './src/components.d.ts',
+      importPathTransform: path =>
+        path.endsWith('.tsx') ? path.slice(0, -4) : path,
+    }),
+
+    createStyleImportPlugin({
+      resolves: [StyleElementPlusResolve()],
+      libs: [
+        {
+          esModule: true,
+          libraryName: 'element-plus',
+          resolveStyle: name => `element-plus/theme-chalk/${name}.css`,
+        },
+      ],
     }),
   ],
 })

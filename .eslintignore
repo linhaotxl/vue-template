@@ -4,3 +4,5 @@ node_modules
 dist
 /public
 .eslintrc.js
+src/auto-imports.d.ts
+src/components.d.ts

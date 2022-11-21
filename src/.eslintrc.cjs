@@ -7,18 +7,14 @@ module.exports = {
     'vue/setup-compiler-macros': true,
   },
 
-  globals: {
-    uni: true,
-    wx: true,
-    UniNamespace: true,
-    getCurrentPages: true,
-  },
+  globals: {},
 
   extends: [
     'eslint:recommended',
     'plugin:vue/vue3-recommended',
     'plugin:@typescript-eslint/recommended',
     'plugin:prettier/recommended',
+    './.eslintrc-auto-import.json',
   ],
 
   plugins: ['vue', '@typescript-eslint'],

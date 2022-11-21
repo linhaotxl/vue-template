@@ -1,5 +1,3 @@
-import { defineComponent, h } from 'vue'
-
 const Monitor = defineComponent({
   name: 'DashboardMonitor',
 
