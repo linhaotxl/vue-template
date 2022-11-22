@@ -1,4 +1,3 @@
-import { ReactiveEffectRunner } from './../../reactivity/src/effect'
 import type { VNode } from './vnode'
 import {
   EMPTY_OBJ,
@@ -9,6 +8,7 @@ import {
 } from '@vue/shared'
 import { callWithErrorHandling, ErrorCodes } from './errorHandling'
 import {
+  ComponentPropsOptions,
   initProps,
   NormalizedPropsOptions,
   normalizePropsOptions,
@@ -21,25 +21,30 @@ import {
 import type { ComponentPublicInstance } from './componentPublicInstance'
 import { AppContext, defaultAppContext } from './apiCreateApp'
 import { proxyRefs } from '@vue/reactivity'
+import type { ReactiveEffectRunner } from '@vue/reactivity'
 import { warn } from './warning'
 import {
   emit,
+  EmitOptions,
   normalizeEmitsOptions,
   ObjectEmitsOptions,
 } from './componentEmits'
-
-export type InternalRenderFunction = () => VNode
+import { markAttrsAccessed } from './componentRenderUtils'
 
 export interface ClassComponent {
   __vccOpts: object
 }
 
-export type ConcreteComponent<
-  Props = any,
-  RawBindings = any
-> = ComponentOptions<Props, RawBindings>
+export interface FunctionalComponent<P extends {} = {}> {
+  (props: P, ctx: SetupContext): VNode
+  props?: ComponentPropsOptions<P>
+  inheritAttrs?: boolean
+  emits: EmitOptions
+}
 
-export type Component<RawBindings = any> = ConcreteComponent<RawBindings>
+export type Component<Props extends {} = {}, RawBindings = {}> =
+  | ComponentOptions<Props, RawBindings>
+  | FunctionalComponent<Props>
 
 export interface SetupContext {
   attrs: Record<string, any>
@@ -62,7 +67,7 @@ export interface ComponentInternalInstance {
   /**
    * vNode.type
    */
-  type: ConcreteComponent
+  type: Component
 
   /**
    * 组件对应的 vNode
@@ -75,7 +80,7 @@ export interface ComponentInternalInstance {
   parent: ComponentInternalInstance | null
 
   /**
-   * 组件渲染函数
+   * 状态组件渲染函数，而不是函数组件
    */
   render:
     | ((this: ComponentPublicInstance, ctx: ComponentPublicInstance) => VNode)
@@ -196,7 +201,7 @@ export function createComponentInstance(
   vNode: VNode,
   parent?: ComponentInternalInstance
 ): ComponentInternalInstance {
-  const type = vNode.type as ConcreteComponent
+  const type = vNode.type as Component
 
   const appContext =
     vNode.appContext || (parent?.appContext ?? defaultAppContext)
@@ -251,10 +256,14 @@ export function createComponentInstance(
  * @param instance
  */
 export function setupComponent(instance: ComponentInternalInstance) {
-  // 初始化 props
-  initProps(instance)
+  const isStatefulComponent = !!(
+    instance.vNode.shapeFlag & ShapeFlags.STATEFUL_COMPONENT
+  )
 
-  if (instance.vNode.shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
+  // 初始化 props
+  initProps(instance, isStatefulComponent)
+
+  if (isStatefulComponent) {
     // 安装状态组件
     setupStatefulComponent(instance)
   }
@@ -270,7 +279,7 @@ export function setupStatefulComponent(instance: ComponentInternalInstance) {
   // 创建 ctx 的代理对象，访问组件上的任何属性都会被代理
   instance.proxy = new Proxy(instance.ctx, PublicInstanceProxyHandlers)
 
-  const { setup } = type
+  const { setup } = type as ComponentOptions
   if (isFunction(setup)) {
     // 存在 setup，调用
     const setupResult = callWithErrorHandling(
@@ -297,7 +306,7 @@ function handleSetupResult(
 ) {
   if (isFunction(setupResult)) {
     // setup 返回函数，将其作为渲染函数
-    instance.render = setupResult as InternalRenderFunction
+    instance.render = setupResult as ComponentInternalInstance['render']
   } else if (isPlainObject(setupResult)) {
     // 对 setup 状态进行代理，主要处理 ref 解绑 value
     instance.setupState = proxyRefs(setupResult)
@@ -314,7 +323,8 @@ function handleSetupResult(
 export function finishComponent(instance: ComponentInternalInstance) {
   if (!instance.render) {
     // 兜底，将组件上的 render 函数作为渲染函数
-    instance.render = (instance.type.render || NOOP) as InternalRenderFunction
+    instance.render = ((instance.type as ComponentOptions).render ||
+      NOOP) as ComponentInternalInstance['render']
   }
 
   if (instance.render === (NOOP as any)) {
@@ -328,13 +338,22 @@ export const isClassComponent = (value: any): value is ClassComponent =>
   isFunction(value) && isPlainObject(value.__vccOpts)
 
 /**
- * 创建 setup 函数的第二个参数
+ * 创建 setup 函数的作用域，即第二个参数
  * @param instance
  * @returns
  */
 function createSetupContext(instance: ComponentInternalInstance): SetupContext {
+  // 创建 attrs 的代理，当尝试访问其中属性时，需要标识访问 attrs 的开关
+  // 在每次 render 开始时，首先会将开关置为 false，如果在 render 中访问了则会将其置为 true
+  const attrsProxy = new Proxy(instance.attrs, {
+    get(target, p, receiver) {
+      markAttrsAccessed()
+      return Reflect.get(target, p, receiver)
+    },
+  })
+
   return {
-    attrs: instance.attrs,
+    attrs: attrsProxy,
     emit: instance.emit,
   }
 }

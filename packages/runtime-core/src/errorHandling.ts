@@ -1,9 +1,13 @@
 import { isFunction } from '@vue/shared'
 import { AppConfig } from './apiCreateApp'
-import { getCurrentInstance, LifecycleHooks } from './component'
+import {
+  ComponentInternalInstance,
+  getCurrentInstance,
+  LifecycleHooks,
+} from './component'
 import { warn } from './warning'
 
-export const enum ErrorCodes {
+export enum ErrorCodes {
   SCHEDULER,
   WATCH_CALLBACK,
   WATCH_CLEANUP,
@@ -12,6 +16,7 @@ export const enum ErrorCodes {
   RENDER_FUNCTION,
   APP_WARN_HANDLER,
   COMPONENT_EVENT_HANDLER,
+  NATIVE_EVENT_HANDLER,
 }
 
 export type ErrorTypes = ErrorCodes | LifecycleHooks
@@ -27,6 +32,7 @@ export const ErrorTypeStrings: Record<ErrorTypes, string> = {
   [ErrorCodes.RENDER_FUNCTION]: 'render function',
   [ErrorCodes.APP_WARN_HANDLER]: 'app warnHandler',
   [ErrorCodes.COMPONENT_EVENT_HANDLER]: 'component event handler',
+  [ErrorCodes.NATIVE_EVENT_HANDLER]: 'netive event handler',
 
   [LifecycleHooks.BEFORE_CREATE]: 'beforeCreate hook',
   [LifecycleHooks.CREATED]: 'created hook',
@@ -55,6 +61,7 @@ export function callWithErrorHandling(
 
 export function callWithAsyncErrorHandling(
   fn: Function | Function[],
+  instance: ComponentInternalInstance,
   code: ErrorCodes,
   args?: unknown[]
 ) {

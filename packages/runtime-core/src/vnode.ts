@@ -87,7 +87,8 @@ export interface VNode<HostElement extends RendererElement = RendererElement> {
   el: HostElement | null
 
   /**
-   * 全局作用域
+   * 全局作用域，只会在根 vNode 上存在，在 app.mount 中设置
+   * 之后会挂载在每一个组件实例上
    */
   appContext: AppContext | null
 }
@@ -294,37 +295,52 @@ function normalizeChildren(children: any) {
   return children
 }
 
+/**
+ * 合并 props
+ * @param props
+ * @returns
+ */
 export function mergeProps(...props: Props[]): Data {
+  // 合并结果
   const merged: Data = {}
 
+  // 遍历每一个需要合并的 props
   for (let i = 0; i < props.length; ++i) {
     const prop = props[i]
     if (!prop) {
       continue
     }
 
+    // 遍历每一个 props 中的所有属性
     for (const key in prop) {
+      // 合并 class
       if (key === 'class') {
         merged.class ||= ''
         merged.class += ` ${normalizeClass(prop.class)}`
         continue
       }
 
+      // 合并 style
       if (key === 'style') {
         merged.style ||= {}
         Object.assign(merged.style, normalizeStyle(prop.style))
         continue
       }
 
-      if (isOn(key)) {
-        if (isFunction(prop[key])) {
-          if (!merged[key]) {
-            merged[key] = prop[key]
-          } else if (isFunction(merged[key])) {
-            merged[key] = [merged[key], prop[key]]
-          } else {
-            merged[key].push(prop[key])
-          }
+      // 合并时间处理函数
+      if (isOn(key) && isFunction(prop[key])) {
+        const existing = merged[key]
+        const income = prop[key]
+
+        if (!existing) {
+          // 还没有合并过处理函数，直接赋值
+          merged[key] = income
+        } else if (isFunction(existing) && existing !== income) {
+          // 已经合并过同一个事件函数，且新合并的与旧的不是同一个，则将两个合并为数组
+          merged[key] = [existing, income]
+        } else if (isArray(existing) && !existing.includes(income)) {
+          // 已经合并为数组，若新合并的函数不再数组中，直接 push
+          merged[key].push(income)
         }
 
         continue

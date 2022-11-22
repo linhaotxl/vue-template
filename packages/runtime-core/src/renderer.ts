@@ -153,9 +153,7 @@ function baseRenderer<HostElement extends RendererElement = RendererElement>(
     if (!n1) {
       mountElement(n2, container)
     } else {
-      n2.el = n1.el
-      // TODO:
-      hostSetElementText(n2.el as any, n2.children as string)
+      updateElement(n1, n2, container)
     }
   }
 
@@ -250,6 +248,19 @@ function baseRenderer<HostElement extends RendererElement = RendererElement>(
 
     // 插入容器节点
     hostInsert(el, container)
+  }
+
+  const updateElement = (n1: VNode, n2: VNode, container: HostElement) => {
+    const el = (n2.el = n1.el)
+    const oldProps = n1.props
+    const newProps = n2.props
+
+    for (const key in newProps) {
+      hostPatchProps(el as HostElement, key, oldProps?.[key], newProps[key])
+    }
+
+    // TODO:
+    hostSetElementText(n2.el as any, n2.children as string)
   }
 
   /**

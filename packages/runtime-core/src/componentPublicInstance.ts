@@ -1,5 +1,6 @@
 import { hasOwn, isString } from '@vue/shared'
 import type { ComponentInternalInstance } from './component'
+import { markAttrsAccessed } from './componentRenderUtils'
 
 export type ComponentPublicInstance = {
   $props: Record<string, any>
@@ -18,7 +19,10 @@ const publicPropertiesMap: Record<
   (instance: ComponentInternalInstance) => any
 > = {
   $props: instance => instance.props,
-  $attrs: instance => instance.attrs,
+  $attrs: instance => {
+    markAttrsAccessed()
+    return instance.attrs
+  },
   $emit: instance => instance.emit,
   $el: instance => instance.vNode.el,
 }

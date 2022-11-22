@@ -142,6 +142,7 @@ export function emit(
     if (handlers) {
       callWithAsyncErrorHandling(
         handlers,
+        instance,
         ErrorCodes.COMPONENT_EVENT_HANDLER,
         resolveArgs
       )
@@ -159,6 +160,7 @@ export function emit(
       ;(instance.emitted ||= Object.create(null))[onceEventName] = true
       callWithAsyncErrorHandling(
         handlers,
+        instance,
         ErrorCodes.COMPONENT_EVENT_HANDLER,
         resolveArgs
       )

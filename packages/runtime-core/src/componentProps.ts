@@ -1,13 +1,15 @@
 import {
   camelize,
+  EMPTY_ARR,
   EMPTY_OBJ,
   hasOwn,
   hyphenate,
   isArray,
   isFunction,
+  isModelListener,
   isPlainObject,
 } from '@vue/shared'
-import type { ComponentInternalInstance, ConcreteComponent } from './component'
+import type { Component, ComponentInternalInstance } from './component'
 import { isEmitListener } from './componentEmits'
 import type { Props as VNodeProps, VNode } from './vnode'
 import { warn } from './warning'
@@ -47,11 +49,11 @@ export const enum BooleanFlags {
  */
 export function normalizePropsOptions(vNode: VNode): NormalizedPropsOptions {
   // 获取组件声明的 props 选项
-  const props = (vNode.type as ConcreteComponent).props
+  const props = (vNode.type as Component).props
 
   // 不存在 props 的情况
   if (!props) {
-    return [{}, []]
+    return [EMPTY_OBJ, EMPTY_ARR as any as string[]]
   }
 
   // 格式化好的 props 集合
@@ -68,7 +70,7 @@ export function normalizePropsOptions(vNode: VNode): NormalizedPropsOptions {
   } else if (isPlainObject(props)) {
     // prop 为对象，将属性名驼峰化进行存储
     for (const key in props) {
-      const raw = props[key]
+      const raw = (props as any)[key]
       const camelizeName = camelize(key)
       let opt: NormalizedProp
 
@@ -104,7 +106,10 @@ export function normalizePropsOptions(vNode: VNode): NormalizedPropsOptions {
  * 初始化 props
  * @param instance 组件实例
  */
-export function initProps(instance: ComponentInternalInstance) {
+export function initProps(
+  instance: ComponentInternalInstance,
+  isStatefulComponent: boolean
+) {
   // props 集合
   const props: Record<string, unknown> = {}
   // attrs 集合
@@ -116,8 +121,13 @@ export function initProps(instance: ComponentInternalInstance) {
   // 验证 props 值的合法性
   validateProps(props, instance.propOptions[0])
 
-  // 将存储好的 props 和 attrs 记录在组件实例撒好难过
-  instance.props = props
+  if (isStatefulComponent) {
+    instance.props = props
+  } else {
+    instance.props = instance.propOptions[0] === EMPTY_OBJ ? attrs : props
+  }
+  // 将存储好的 props 和 attrs 记录在组件实例上
+
   instance.attrs = attrs
 }
 
@@ -186,7 +196,10 @@ export function setFullProps(
   attrs: Record<string, unknown>
 ) {
   // 获取处理好的组件声明的 props，是一个对象，key 是 prop name，value 是对象，存在 type、default、required、validator
-  const [propsOptions, needCastCamelPropNames] = instance.propOptions
+  const {
+    propOptions: [propsOptions, needCastCamelPropNames],
+    emitOptions,
+  } = instance
 
   // 遍历传递的所有 props
   for (const rawName in rawProps) {
@@ -196,7 +209,10 @@ export function setFullProps(
     if (hasOwn(propsOptions, camelRawName)) {
       // 存在，将驼峰化的属性名和值存储
       props[camelRawName] = rawProps[rawName]
-    } else if (!isEmitListener(rawProps, rawName)) {
+    } else if (
+      !isEmitListener(emitOptions, rawName) &&
+      !isModelListener(rawName)
+    ) {
       // 不存在，将原始属性名和值存储，排除事件监听器
       attrs[rawName] = rawProps[rawName]
     }

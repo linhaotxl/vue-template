@@ -1,3 +1,4 @@
+import type { ComponentPublicInstance } from './componentPublicInstance'
 import { isFunction } from '@vue/shared'
 import {
   createHook,
@@ -17,12 +18,12 @@ import { callWithErrorHandling } from './errorHandling'
 import type { VNode } from './vnode'
 import { warn } from './warning'
 
-export type RenderFunction = () => VNode
+export type RenderFunction = (props: Record<string, any>) => VNode
 
-export type ComponentOptions<Props, RawBindings> = ComponentOptionsBase<
-  Props,
-  RawBindings
->
+export type ComponentOptions<
+  Props = {},
+  RawBindings = {}
+> = ComponentOptionsBase<Props, RawBindings>
 
 export interface ComponentOptionsBase<Props, RawBindings>
   extends LegacyOptions {
@@ -39,6 +40,8 @@ export interface ComponentOptionsBase<Props, RawBindings>
   emits?: EmitOptions
 
   render?: Function
+
+  inheritAttrs?: boolean
 
   beforeCreated?: () => void
 
@@ -58,7 +61,7 @@ export interface LegacyOptions {
 }
 
 export function applyOptionsApi(instance: ComponentInternalInstance) {
-  const Component = instance.vNode.type as Component
+  const Component = instance.vNode.type as ComponentOptions
   const {
     data,
     beforeCreated,

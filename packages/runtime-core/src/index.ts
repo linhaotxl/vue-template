@@ -11,5 +11,8 @@ export * from './apiDefineComponent'
 export * from './helpers/resolveAssets'
 export * from './helpers/toHandlers'
 export * from './apiInject'
+export * from './warning'
 
 export * from '@vue/reactivity'
+
+export * from '@vue/shared'

@@ -49,12 +49,24 @@ importers:
   packages/runtime-core:
     specifiers:
       '@vue/reactivity': workspace:*
+      '@vue/runtime-dom': workspace:*
       '@vue/runtime-test': workspace:*
       '@vue/shared': workspace:*
     dependencies:
       '@vue/reactivity': link:../reactivity
+      '@vue/runtime-dom': link:../runtime-dom
       '@vue/runtime-test': link:../runtime-test
       '@vue/shared': link:../shared
+
+  packages/runtime-dom:
+    specifiers:
+      '@vue/runtime-core': workspace:*
+      '@vue/shared': workspace:*
+      csstype: ^2.6.8
+    dependencies:
+      '@vue/runtime-core': link:../runtime-core
+      '@vue/shared': link:../shared
+      csstype: 2.6.21
 
   packages/runtime-test:
     specifiers:
@@ -1709,6 +1721,10 @@ packages:
     dependencies:
       cssom: 0.3.8
     dev: true
+
+  /csstype/2.6.21:
+    resolution: {integrity: sha512-Z1PhmomIfypOpoMjRQB70jfvy/wxT50qW08YXO5lMIJkrdq4yOTR+AW7FqutScmB9NkLwxo+jU+kZLbofZZq/w==}
+    dev: false
 
   /cz-git/1.3.12:
     resolution: {integrity: sha512-grTgbgjsRpvkYNjm8kmpvHHw/LkkS3SlQOOwgamhRZo7c5qQfts1QZdkJ6RP0K61BcxyH5siMz8qC/MDoW/tBA==}

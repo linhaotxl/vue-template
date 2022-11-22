@@ -26,11 +26,11 @@ export function h(...args: any[]) {
       return createVNode(type, null, propsOrChildren)
     }
 
-    return createVNode(type)
+    return createVNode(type, null, propsOrChildren)
   }
 
   if (arguments.length === 3) {
-    if (isVNode(children)) {
+    if (children && isVNode(children)) {
       return createVNode(type, propsOrChildren, [children])
     }
 
