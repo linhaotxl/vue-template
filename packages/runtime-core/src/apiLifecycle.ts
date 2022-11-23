@@ -1,4 +1,4 @@
-import { getCurrentInstance, LifecycleHooks } from './component'
+import { LifecycleHooks, getCurrentInstance } from './component'
 
 export function createHook(type: LifecycleHooks) {
   return function (hook: () => any, instance = getCurrentInstance()) {

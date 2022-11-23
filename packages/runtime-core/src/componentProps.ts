@@ -1,7 +1,7 @@
 import {
-  camelize,
   EMPTY_ARR,
   EMPTY_OBJ,
+  camelize,
   hasOwn,
   hyphenate,
   isArray,
@@ -9,10 +9,12 @@ import {
   isModelListener,
   isPlainObject,
 } from '@vue/shared'
-import type { Component, ComponentInternalInstance } from './component'
+
 import { isEmitListener } from './componentEmits'
-import type { Props as VNodeProps, VNode } from './vnode'
 import { warn } from './warning'
+
+import type { Component, ComponentInternalInstance } from './component'
+import type { VNode, Props as VNodeProps } from './vnode'
 
 export type ComponentPropsOptions<P> = string[] | ComponentObjectPropsOptions<P>
 export type ComponentObjectPropsOptions<P> = {

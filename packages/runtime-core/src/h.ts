@@ -1,4 +1,5 @@
-import { isPlainObject, isArray, isFunction, isString } from '@vue/shared'
+import { isArray, isFunction, isPlainObject, isString } from '@vue/shared'
+
 import { isVNode } from './vnode'
 import { createVNode } from './vnode'
 

@@ -1,35 +1,34 @@
-import type { VNode } from './vnode'
+import { proxyRefs } from '@vue/reactivity'
 import {
   EMPTY_OBJ,
-  isFunction,
-  isPlainObject,
   NOOP,
   ShapeFlags,
+  isFunction,
+  isPlainObject,
 } from '@vue/shared'
-import { callWithErrorHandling, ErrorCodes } from './errorHandling'
-import {
-  ComponentPropsOptions,
-  initProps,
-  NormalizedPropsOptions,
-  normalizePropsOptions,
-} from './componentProps'
-import { applyOptionsApi, ComponentOptions } from './componentOptions'
-import {
-  ComponentPublicCtx,
-  PublicInstanceProxyHandlers,
-} from './componentPublicInstance'
-import type { ComponentPublicInstance } from './componentPublicInstance'
-import { AppContext, defaultAppContext } from './apiCreateApp'
-import { proxyRefs } from '@vue/reactivity'
-import type { ReactiveEffectRunner } from '@vue/reactivity'
-import { warn } from './warning'
-import {
-  emit,
-  EmitOptions,
-  normalizeEmitsOptions,
-  ObjectEmitsOptions,
-} from './componentEmits'
+
+import { defaultAppContext } from './apiCreateApp'
+import { emit, normalizeEmitsOptions } from './componentEmits'
+import { applyOptionsApi } from './componentOptions'
+import { initProps, normalizePropsOptions } from './componentProps'
+import { PublicInstanceProxyHandlers } from './componentPublicInstance'
 import { markAttrsAccessed } from './componentRenderUtils'
+import { ErrorCodes, callWithErrorHandling } from './errorHandling'
+import { warn } from './warning'
+
+import type { AppContext } from './apiCreateApp'
+import type { EmitOptions, ObjectEmitsOptions } from './componentEmits'
+import type { ComponentOptions } from './componentOptions'
+import type {
+  ComponentPropsOptions,
+  NormalizedPropsOptions,
+} from './componentProps'
+import type {
+  ComponentPublicCtx,
+  ComponentPublicInstance,
+} from './componentPublicInstance'
+import type { VNode } from './vnode'
+import type { ReactiveEffectRunner } from '@vue/reactivity'
 
 export interface ClassComponent {
   __vccOpts: object

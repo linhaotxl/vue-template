@@ -1,6 +1,7 @@
-import { AppConfig } from './apiCreateApp'
 import { getCurrentInstance } from './component'
-import { callWithErrorHandling, ErrorCodes } from './errorHandling'
+import { ErrorCodes, callWithErrorHandling } from './errorHandling'
+
+import type { AppConfig } from './apiCreateApp'
 
 export function warn(msg: string, ...args: unknown[]) {
   const instance = getCurrentInstance()

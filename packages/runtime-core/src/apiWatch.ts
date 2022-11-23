@@ -1,25 +1,21 @@
-import { isPlainObject } from './../../shared/src/index'
+import { effect, isReactive, isRef, isShallow } from '@vue/reactivity'
 import {
-  DebuggerEvent,
-  effect,
-  EffectScheduler,
-  isReactive,
-  isRef,
-  isShallow,
-  Ref,
-} from '@vue/reactivity'
-import {
+  NOOP,
+  hasChanged,
   isArray,
   isFunction,
   isMap,
   isObject,
   isSet,
-  NOOP,
-  hasChanged,
 } from '@vue/shared'
-import { queueJob, queuePostFlushCb, SchedulerJob } from './scheduler'
+
+import { isPlainObject } from './../../shared/src/index'
+import { ErrorCodes, callWithErrorHandling } from './errorHandling'
+import { queueJob, queuePostFlushCb } from './scheduler'
 import { warn } from './warning'
-import { callWithErrorHandling, ErrorCodes } from './errorHandling'
+
+import type { SchedulerJob } from './scheduler'
+import type { DebuggerEvent, EffectScheduler, Ref } from '@vue/reactivity'
 
 export type StopHandle = () => void
 

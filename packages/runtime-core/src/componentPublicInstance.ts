@@ -1,6 +1,8 @@
 import { hasOwn, isString } from '@vue/shared'
-import type { ComponentInternalInstance } from './component'
+
 import { markAttrsAccessed } from './componentRenderUtils'
+
+import type { ComponentInternalInstance } from './component'
 
 export type ComponentPublicInstance = {
   $props: Record<string, any>
@@ -31,7 +33,7 @@ const publicPropertiesMap: Record<
  * 对 instance.ctx 的代理行为
  */
 export const PublicInstanceProxyHandlers: ProxyHandler<any> = {
-  get(ctx: ComponentPublicCtx, p, receiver) {
+  get(ctx: ComponentPublicCtx, p) {
     const { _: instance } = ctx
 
     if (isString(p) && p.startsWith('$') && hasOwn(publicPropertiesMap, p)) {
@@ -95,7 +97,7 @@ export const PublicInstanceProxyHandlers: ProxyHandler<any> = {
 
   defineProperty(target: ComponentPublicCtx, p, attributes) {
     const {
-      _: { setupState, data, props },
+      _: { setupState, data },
     } = target
 
     if (hasOwn(setupState, p)) {

@@ -1,22 +1,20 @@
-import type { ComponentPublicInstance } from './componentPublicInstance'
 import { isFunction } from '@vue/shared'
+
 import {
-  createHook,
   onBeforeMount,
   onBeforeUpdate,
   onMounted,
   onUpdated,
 } from './apiLifecycle'
-import {
-  Component,
-  ComponentInternalInstance,
-  LifecycleHooks,
-} from './component'
+import { LifecycleHooks } from './component'
+import { callWithErrorHandling } from './errorHandling'
+import { warn } from './warning'
+
+import type { createHook } from './apiLifecycle'
+import type { Component, ComponentInternalInstance } from './component'
 import type { EmitOptions } from './componentEmits'
 import type { ComponentPropsOptions } from './componentProps'
-import { callWithErrorHandling } from './errorHandling'
 import type { VNode } from './vnode'
-import { warn } from './warning'
 
 export type RenderFunction = (props: Record<string, any>) => VNode
 

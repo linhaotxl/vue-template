@@ -1,20 +1,19 @@
-import type { RendererElement } from './renderer'
 import {
+  PatchFlags,
+  ShapeFlags,
   isArray,
   isFunction,
   isOn,
   isPlainObject,
   isString,
-  PatchFlags,
-  ShapeFlags,
 } from '@vue/shared'
-import {
-  Component,
-  ComponentInternalInstance,
-  isClassComponent,
-} from './component'
+
+import { isClassComponent } from './component'
 import { warn } from './warning'
-import { AppContext } from './apiCreateApp'
+
+import type { AppContext } from './apiCreateApp'
+import type { Component, ComponentInternalInstance } from './component'
+import type { RendererElement } from './renderer'
 
 export const Comment = Symbol('Comment')
 export const Text = Symbol('Text')

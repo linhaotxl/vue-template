@@ -1,12 +1,14 @@
 import { warn } from '@vue/runtime-core'
-import { EMPTY_OBJ, isOn, ShapeFlags } from '@vue/shared'
+import { EMPTY_OBJ, ShapeFlags, isOn } from '@vue/shared'
+
+import { ErrorCodes, handleError } from './errorHandling'
+import { Comment, cloneVNode, createVNode, normalizeVNode } from './vnode'
+
 import type {
   ComponentInternalInstance,
   FunctionalComponent,
 } from './component'
-import { cloneVNode, Comment, createVNode, normalizeVNode } from './vnode'
 import type { VNode } from './vnode'
-import { ErrorCodes, handleError } from './errorHandling'
 
 // 全局变量：是否在 render 渲染函数中访问了 $attrs
 let accessedAttrs = false

@@ -14,7 +14,7 @@ module.exports = {
     'plugin:prettier/recommended',
   ],
 
-  plugins: ['@typescript-eslint'],
+  plugins: ['@typescript-eslint', 'import'],
 
   parser: '@typescript-eslint/parser',
   parserOptions: {},
@@ -33,7 +33,41 @@ module.exports = {
     '@typescript-eslint/no-empty-interface': 'off',
     '@typescript-eslint/no-this-alias': 'off',
     '@typescript-eslint/no-unnecessary-type-constraint': 'off',
+    '@typescript-eslint/consistent-type-imports': 'error',
     'no-prototype-builtins': 'off',
     'no-control-regex': 'off',
+    'import/order': [
+      'error',
+      {
+        groups: [
+          'builtin',
+          'external',
+          'internal',
+          'sibling',
+          'parent',
+          'index',
+          'unknown',
+          'object',
+          'type',
+        ],
+        'newlines-between': 'always',
+        alphabetize: {
+          order: 'asc',
+          caseInsensitive: true,
+        },
+        // pathGroups: [
+        //   {
+        //     pattern: ''
+        //   }
+        // ]
+      },
+    ],
+    'sort-imports': [
+      'error',
+      {
+        allowSeparatedGroups: true,
+        ignoreDeclarationSort: true,
+      },
+    ],
   },
 }

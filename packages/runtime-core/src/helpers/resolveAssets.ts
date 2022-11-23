@@ -1,6 +1,8 @@
 import { camelize, capitalize } from '@vue/shared'
-import type { Component } from '../component'
+
 import { getCurrentInstance } from '../component'
+
+import type { Component } from '../component'
 
 /**
  * 解析组件

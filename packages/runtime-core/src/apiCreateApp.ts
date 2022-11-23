@@ -1,10 +1,11 @@
-import { ComponentPublicInstance } from './componentPublicInstance'
-import type { Component } from './component'
 import { h } from './h'
+import { warn } from './warning'
+
+import type { InjectionKey } from './apiInject'
+import type { Component } from './component'
+import type { ComponentPublicInstance } from './componentPublicInstance'
 import type { RendererElement, RootRenderFunction } from './renderer'
 import type { Props } from './vnode'
-import { warn } from './warning'
-import type { InjectionKey } from './apiInject'
 
 export interface App<HostElement = RendererElement> {
   /**

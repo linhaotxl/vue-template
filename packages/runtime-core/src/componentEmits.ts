@@ -4,15 +4,17 @@ import {
   hyphenate,
   isArray,
   isFunction,
-  isOn,
-  toHandlerKey,
   isModelListener,
+  isOn,
   isString,
+  toHandlerKey,
 } from '@vue/shared'
-import type { Component, ComponentInternalInstance } from './component'
-import { callWithAsyncErrorHandling, ErrorCodes } from './errorHandling'
-import type { VNode } from './vnode'
+
+import { ErrorCodes, callWithAsyncErrorHandling } from './errorHandling'
 import { warn } from './warning'
+
+import type { Component, ComponentInternalInstance } from './component'
+import type { VNode } from './vnode'
 
 export type ObjectEmitsOptions = Record<
   string,

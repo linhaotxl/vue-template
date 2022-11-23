@@ -1,11 +1,10 @@
 import { isFunction } from '@vue/shared'
-import { AppConfig } from './apiCreateApp'
-import {
-  ComponentInternalInstance,
-  getCurrentInstance,
-  LifecycleHooks,
-} from './component'
+
+import { LifecycleHooks, getCurrentInstance } from './component'
 import { warn } from './warning'
+
+import type { AppConfig } from './apiCreateApp'
+import type { ComponentInternalInstance } from './component'
 
 export enum ErrorCodes {
   SCHEDULER,

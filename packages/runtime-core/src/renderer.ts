@@ -1,24 +1,26 @@
-import { invokeArrayFns, isArray, ShapeFlags } from '@vue/shared'
+import { effect } from '@vue/reactivity'
+import { ShapeFlags, invokeArrayFns, isArray } from '@vue/shared'
+
+import { createAppAPI } from './apiCreateApp'
 import {
-  createComponentInstance,
   LifecycleHooks,
+  createComponentInstance,
   setCurrentInstance,
   setupComponent,
 } from './component'
-import type { ComponentInternalInstance } from './component'
+import { updateProps } from './componentProps'
+import { renderComponentRoot } from './componentRenderUtils'
+import { flushPostFlushCbs, queueJob, queuePostFlushCb } from './scheduler'
 import {
   Comment,
   Fragment,
+  Text,
   isSameVNodeType,
   normalizeVNode,
-  Text,
-  VNode,
 } from './vnode'
-import { renderComponentRoot } from './componentRenderUtils'
-import { updateProps } from './componentProps'
-import { effect } from '@vue/reactivity'
-import { flushPostFlushCbs, queueJob, queuePostFlushCb } from './scheduler'
-import { createAppAPI } from './apiCreateApp'
+
+import type { ComponentInternalInstance } from './component'
+import type { VNode } from './vnode'
 
 export interface Renderer<HostElement = RendererElement> {
   render: RootRenderFunction<HostElement>
@@ -251,6 +253,7 @@ function baseRenderer<HostElement extends RendererElement = RendererElement>(
   }
 
   const updateElement = (n1: VNode, n2: VNode, container: HostElement) => {
+    container
     const el = (n2.el = n1.el)
     const oldProps = n1.props
     const newProps = n2.props
@@ -430,6 +433,7 @@ function baseRenderer<HostElement extends RendererElement = RendererElement>(
    * @param doRemove
    */
   const unmountFragment = (vNode: VNode, doRemove: boolean) => {
+    doRemove
     const children = vNode.children as VNode[]
 
     // 首先卸载每个子节点
