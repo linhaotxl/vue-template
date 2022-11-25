@@ -17,7 +17,7 @@ module.exports = {
     './.eslintrc-auto-import.json',
   ],
 
-  plugins: ['vue', '@typescript-eslint'],
+  plugins: ['vue', '@typescript-eslint', 'import'],
 
   parser: 'vue-eslint-parser',
   parserOptions: {
@@ -36,5 +36,26 @@ module.exports = {
     '@typescript-eslint/no-var-requires': 'off',
     '@typescript-eslint/ban-types': 'off',
     'vue/multi-word-component-names': 'off',
+    'import/order': [
+      'error',
+      {
+        groups: [
+          'builtin',
+          'external',
+          'internal',
+          'sibling',
+          'parent',
+          'index',
+          'unknown',
+          'object',
+          'type',
+        ],
+        'newlines-between': 'always',
+        alphabetize: {
+          order: 'asc',
+          caseInsensitive: true,
+        },
+      },
+    ],
   },
 }
