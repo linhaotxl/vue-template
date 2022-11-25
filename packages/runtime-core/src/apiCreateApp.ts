@@ -27,6 +27,11 @@ export interface App<HostElement = RendererElement> {
   component(name: string): Component | undefined
   component(name: string, component: Component): this
 
+  /**
+   * provide 方法
+   * @param key 名称
+   * @param value 值
+   */
   provide<T>(key: string | InjectionKey<T>, value: T): void
 
   /**
@@ -52,6 +57,8 @@ export interface AppConfig {
     instance: ComponentPublicInstance | null,
     trace: string
   ) => void
+
+  globalProperties: Record<any, any>
 }
 
 export interface AppContext {
@@ -71,11 +78,17 @@ export interface AppContext {
   config: AppConfig
 }
 
-export const genDefaultAppContext = (): AppContext => ({
-  components: Object.create(null),
-  config: Object.create(null),
-  providers: Object.create(null),
-})
+export const genDefaultAppContext = () => {
+  const ctx: AppContext = {
+    components: Object.create(null),
+    config: Object.create(null),
+    providers: Object.create(null),
+  }
+
+  ctx.config.globalProperties = Object.create(null)
+
+  return ctx
+}
 
 export const defaultAppContext = genDefaultAppContext()
 
@@ -92,6 +105,7 @@ export function createAppAPI<
     // 创建全局作用域
     const ctx = genDefaultAppContext()
 
+    // app 对象
     const app: App<HostElement> = {
       ctx,
 

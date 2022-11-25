@@ -124,11 +124,13 @@ export function initProps(
   validateProps(props, instance.propOptions[0])
 
   if (isStatefulComponent) {
+    // 状态组件将 props 挂载在实例上
     instance.props = props
   } else {
+    // 没有声明 props 的函数组件，props 和 attrs 均指向 attrs
+    // 声明 props 的函数组件和状态组件一样
     instance.props = instance.propOptions[0] === EMPTY_OBJ ? attrs : props
   }
-  // 将存储好的 props 和 attrs 记录在组件实例上
 
   instance.attrs = attrs
 }
@@ -165,8 +167,8 @@ export function updateProps(
       !hasOwn(rawProps, hyphenate(prop))
     ) {
       if (
-        // 属性在上次渲染传递过，rawPrevProps 只会包含实际传递的属性，不会包含应默认值生成的属性
-        // 索引由默认值生成的属性是会直接跳过的
+        // 本次实际没有传入，而上次实际传入了，需要重置
+        // 不会处理由默认值生成的 props，它们不会存在实际传递的 props 中
         rawPrevProps &&
         (rawPrevProps[prop] !== undefined ||
           rawPrevProps[hyphenate(prop)] !== undefined)
@@ -176,7 +178,7 @@ export function updateProps(
     }
   }
 
-  // 遍历混合的 attrs，如果属性名不在传递的 props 中，则删除
+  // 遍历混合的 attrs，如果属性名不在本次传递的 props 中，则删除
   for (const prop in attrs) {
     if (rawProps && !hasOwn(rawProps, prop)) {
       delete attrs[prop]
@@ -187,7 +189,7 @@ export function updateProps(
 /**
  * 全量设置 props 和 attrs
  * @param instance 组件实例
- * @param rawProps 传递给组件的 props 集合
+ * @param rawProps 实际传递给组件的 props 集合
  * @param props
  * @param attrs
  */
@@ -233,7 +235,7 @@ export function setFullProps(
 
 /**
  * 解析 prop 的值
- * @param camelPropName
+ * @param camelPropName 驼峰属性名
  * @param rawValue
  * @param propOptions
  * @returns
@@ -245,13 +247,13 @@ function resolvePropValue(
 ) {
   // 需要进行布尔值的转换，带有 ShouldCast 说明声明的 type 带有 Boolean
   if (propOptions[BooleanFlags.ShouldCast] != null) {
-    // props: { foo: Boolean }
+    // props: { fooBar: Boolean }
     if (typeof rawValue === 'undefined') {
       // 没有传值，默认为 false；<comp />
       return false
     }
     if (rawValue === '' || rawValue === camelPropName) {
-      // <comp foo="foo" />
+      // <comp fooBar="fooBar" />
       return true
     }
     warn(`type check failed for prop "${camelPropName}"`)

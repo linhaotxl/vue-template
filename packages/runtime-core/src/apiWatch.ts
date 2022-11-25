@@ -236,8 +236,9 @@ function doWatch<T>(
   let getter: () => any
 
   if (isRef(source)) {
-    // source 为 ref 则读取 value，当 value 变化时会引起 effect 调度
+    // source 为 shallowRef，则需要开启强制触发，因为无法监听到 shallowRef 的深度变化，所以一旦修改，就会触发
     forceTrigger = isShallow(source)
+    // source 为 ref 则读取 value，当 value 变化时会引起 effect 调度
     getter = () => source.value
   } else if (isReactive(source)) {
     // source 为 reactive 则直接返回响应对象，在接来下会重写 getter 进行深度追踪，递归遍历对象里的每一个属性

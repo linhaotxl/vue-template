@@ -3,13 +3,14 @@
 // ./rendererAttrsFallthrough.spec.ts.
 
 import {
-  render,
   defineComponent,
   h,
   nodeOps,
+  render,
   toHandlers,
   // nextTick,
 } from '@vue/runtime-test'
+
 import { isEmitListener } from '../src/componentEmits'
 
 describe('component: emit', () => {
@@ -25,6 +26,7 @@ describe('component: emit', () => {
       },
     })
 
+    // debugger
     const onfoo = jest.fn()
     const onBar = jest.fn()
     const onBaz = jest.fn()
@@ -249,6 +251,7 @@ describe('component: emit', () => {
   // })
 
   test('.once', () => {
+    // debugger
     const Foo = defineComponent({
       render() {},
       emits: {

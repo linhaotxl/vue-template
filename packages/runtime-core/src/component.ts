@@ -98,7 +98,7 @@ export interface ComponentInternalInstance {
   emitOptions: ObjectEmitsOptions | null
 
   /**
-   * 是否挂在
+   * 是否挂载
    */
   isMounted: boolean
 
@@ -202,8 +202,17 @@ export function createComponentInstance(
 ): ComponentInternalInstance {
   const type = vNode.type as Component
 
+  // 设置组件的 app context，根组件直接从 vNode 上获取（vNode 上的 appContext 在 mount 时设置）
+  // 子组件继承父组件
   const appContext =
     vNode.appContext || (parent?.appContext ?? defaultAppContext)
+
+  // 设置组件的 provides
+  // 根组件继承 appContext 上的内容，子组件和父组件使用同一个
+  // 如果使用了 provide 函数，则会重新创建一个继承父组件的 provides
+  const provides = parent
+    ? parent.provides
+    : Object.create(appContext.providers)
 
   const instance: ComponentInternalInstance = {
     appContext,
@@ -225,8 +234,8 @@ export function createComponentInstance(
     data: EMPTY_OBJ,
     components: null,
     emitted: null,
-    // 每个组件的 provider 向上继承，根组件继承全局 provider
-    provides: parent ? parent.provides : Object.create(appContext.providers),
+    provides,
+
     [LifecycleHooks.BEFORE_CREATE]: null,
     [LifecycleHooks.CREATED]: null,
     [LifecycleHooks.BEFORE_MOUNT]: null,
@@ -241,6 +250,7 @@ export function createComponentInstance(
     emit(instance, name, ...args)
   }
 
+  // 定义 ctx._ 指向组件实例，且不可枚举
   Object.defineProperty(instance.ctx, '_', {
     writable: true,
     enumerable: false,
@@ -255,6 +265,7 @@ export function createComponentInstance(
  * @param instance
  */
 export function setupComponent(instance: ComponentInternalInstance) {
+  // 是否是状态组件
   const isStatefulComponent = !!(
     instance.vNode.shapeFlag & ShapeFlags.STATEFUL_COMPONENT
   )
@@ -308,6 +319,7 @@ function handleSetupResult(
     instance.render = setupResult as ComponentInternalInstance['render']
   } else if (isPlainObject(setupResult)) {
     // 对 setup 状态进行代理，主要处理 ref 解绑 value
+    // 即访问 setupState 中的值是 ref 时，会自动获取 .value
     instance.setupState = proxyRefs(setupResult)
   }
 
@@ -330,6 +342,7 @@ export function finishComponent(instance: ComponentInternalInstance) {
     warn('Component is missing template or render function')
   }
 
+  // 兼容 option api
   applyOptionsApi(instance)
 }
 

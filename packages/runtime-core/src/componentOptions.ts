@@ -82,7 +82,9 @@ export function applyOptionsApi(instance: ComponentInternalInstance) {
   // 处理 data
   if (data) {
     if (isFunction(data)) {
-      instance.data = data()
+      // 调用 data 获取 state，并挂载在实例上
+      const dataState = data()
+      instance.data = dataState
     } else {
       warn('')
     }
@@ -101,10 +103,16 @@ export function applyOptionsApi(instance: ComponentInternalInstance) {
     callWithErrorHandling(created.bind(instance.proxy), LifecycleHooks.CREATED)
   }
 
+  /**
+   * 注册生命周期函数
+   * @param hook 实际需要执行的生命周期函数
+   * @param register 生命周期对应的 hook
+   */
   function registerHooks(
     hook: (() => void) | undefined,
     register: ReturnType<typeof createHook>
   ) {
+    // 将生命周期函数通过 register 注册，并绑定 this 为 instance.proxy
     if (hook) {
       register(hook.bind(instance.proxy))
     }

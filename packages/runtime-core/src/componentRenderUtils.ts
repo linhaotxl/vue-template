@@ -90,8 +90,8 @@ export function renderComponentRoot(
       ) {
         // 只有当子节点是组件或者元素才可以继承
         result = cloneVNode(result, fallthrough)
-      } else if (!accessedAttrs) {
-        // 当子节点不是有效节点时，是需要抛出警告的
+      } else if (!accessedAttrs && result.type !== Comment) {
+        // 当子节点不是有效节点时(注释除外)，是需要抛出警告的
         // 如果在 render 中访问了 attrs 是不需要警告的，因为可能是手动设置了需要继承的节点
         let eventAttrs
         let otherAttrs

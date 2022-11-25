@@ -62,12 +62,5 @@ module.exports = {
         // ]
       },
     ],
-    'sort-imports': [
-      'error',
-      {
-        allowSeparatedGroups: true,
-        ignoreDeclarationSort: true,
-      },
-    ],
   },
 }

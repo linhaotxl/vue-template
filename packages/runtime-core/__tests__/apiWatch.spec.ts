@@ -1,6 +1,16 @@
 // @ts-nocheck
 
 import {
+  ITERATE_KEY,
+  TrackOpTypes,
+  TriggerOpTypes,
+  triggerRef,
+  shallowRef,
+  // Ref,
+  // effectScope,
+} from '@vue/reactivity'
+
+import {
   watch,
   watchEffect,
   reactive,
@@ -13,6 +23,8 @@ import {
   // ComponentInternalInstance,
   // ComponentPublicInstance,
 } from '../src/index'
+
+import type { DebuggerEvent } from '@vue/reactivity'
 // import {
 //   render,
 //   nodeOps,
@@ -24,16 +36,6 @@ import {
 //   watchSyncEffect,
 //   onMounted,
 // } from '@vue/runtime-test'
-import {
-  ITERATE_KEY,
-  DebuggerEvent,
-  TrackOpTypes,
-  TriggerOpTypes,
-  triggerRef,
-  shallowRef,
-  // Ref,
-  // effectScope,
-} from '@vue/reactivity'
 
 // reference: https://vue-composition-api-rfc.netlify.com/api.html#watch
 
@@ -1052,4 +1054,19 @@ describe('api: watch', () => {
   //   // own update effect
   //   expect(instance!.scope.effects.length).toBe(1)
   // })
+
+  test('ref object', async () => {
+    debugger
+    const info = ref({ name: 'Nicholas' })
+    let count = 0
+
+    watch(info, () => {
+      count++
+    })
+
+    expect(count).toBe(0)
+
+    info.value.name = 'IconMan'
+    expect(count).toBe(1)
+  })
 })

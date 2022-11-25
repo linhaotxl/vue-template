@@ -30,45 +30,67 @@ const publicPropertiesMap: Record<
 }
 
 /**
- * 对 instance.ctx 的代理行为
+ * 对 instance.ctx 的代理行为，即访问 instance.proxy 都会被代理
  */
 export const PublicInstanceProxyHandlers: ProxyHandler<any> = {
   get(ctx: ComponentPublicCtx, p) {
     const { _: instance } = ctx
 
-    if (isString(p) && p.startsWith('$') && hasOwn(publicPropertiesMap, p)) {
+    // 如果访问的是内部实例，则从内部实例中获取
+    if (isString(p) && hasOwn(publicPropertiesMap, p)) {
       return publicPropertiesMap[p](instance)
     }
 
-    const { props, setupState, data } = instance
+    const {
+      props,
+      setupState,
+      data,
+      appContext: {
+        config: { globalProperties },
+      },
+    } = instance
 
+    // 从 setupState 中获取
     if (hasOwn(setupState, p)) {
       return setupState[p]
     }
 
+    // 从 data 中获取
     if (hasOwn(data, p)) {
       return data[p]
     }
 
+    // 从 props 中获取
     if (hasOwn(props, p)) {
       return props[p]
     }
 
+    // 从 ctx 上获取
     if (hasOwn(ctx, p)) {
       return ctx[p]
     }
+
+    // 从 global 上获取
+    if (hasOwn(globalProperties, p)) {
+      return globalProperties[p]
+    }
   },
 
+  // setter 拦截
+  // 注意 setter 时不会设置 globalProperties
   set(ctx: ComponentPublicCtx, p, value) {
     const {
       _: { setupState, data },
     } = ctx
 
     if (hasOwn(setupState, p)) {
+      // TODO: 修改 setupState 中的值
       setupState[p] = value
     } else if (hasOwn(data, p)) {
+      // TODO: 修改 data 中的值
       data[p] = value
     } else {
+      // 兜底修改 ctx 中的值
       ctx[p] = value
     }
 
@@ -80,34 +102,27 @@ export const PublicInstanceProxyHandlers: ProxyHandler<any> = {
       _: { setupState, data, props },
     } = ctx
 
-    if (hasOwn(publicPropertiesMap, p)) {
-      return true
-    } else if (hasOwn(setupState, p)) {
-      return true
-    } else if (hasOwn(data, p)) {
-      return true
-    } else if (hasOwn(props, p)) {
-      return true
-    } else if (hasOwn(ctx, p)) {
-      return ctx[p]
-    }
-
-    return false
+    // 依次检查
+    // 1. 内部属性
+    // 2. setup 状态
+    // 3. data 状态
+    // 4. props
+    // 5. 兜底 ctx
+    return (
+      hasOwn(publicPropertiesMap, p) ||
+      hasOwn(setupState, p) ||
+      hasOwn(data, p) ||
+      hasOwn(props, p) ||
+      hasOwn(ctx, p)
+    )
   },
 
+  // defineProperty 拦截
   defineProperty(target: ComponentPublicCtx, p, attributes) {
-    const {
-      _: { setupState, data },
-    } = target
-
-    if (hasOwn(setupState, p)) {
-      return Reflect.defineProperty(setupState, p, attributes)
-    } else if (hasOwn(data, p)) {
-      return Reflect.defineProperty(data, p, attributes)
-    } else if (hasOwn(target, p)) {
-      return Reflect.defineProperty(target, p, attributes)
+    if (hasOwn(attributes, 'value')) {
+      this.set!(target, p, attributes.value, this)
     }
 
-    return false
+    return Reflect.defineProperty(target, p, attributes)
   },
 }

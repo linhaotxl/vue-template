@@ -52,9 +52,9 @@ export function normalizeEmitsOptions(vNode: VNode) {
 }
 
 /**
- * 检测是否是声明的事件处理器
+ * 检测 eventName 是否是声明的事件处理器
  * @param options 事件处理器声明对象
- * @param eventName 事件名称
+ * @param eventName 待检测事件名称
  * @returns
  */
 export function isEmitListener(
@@ -66,14 +66,14 @@ export function isEmitListener(
     return false
   }
 
-  // 截取开头的 on 和结尾的 Once，保留真正的事件名
+  // 截取开头的 on 和结尾的 Once，保留真正的事件名，此时的事件名是首字母大写的
   const name = eventName.slice(2).replace(/Once$/, '')
 
-  // 以下三个事件名只要任意一个在配置中即可
+  // 事件名只要满足以下三个任意条件即视为成功
   // emits: { barQux: null, qux-bar: null, BazBar: null }
   // 1. 事件名属于驼峰；onBarQux
   // 2. 事件名属于 kabab；onQuxBar
-  // 3. 事件名；onBazBar
+  // 3. 事件名本身；onBazBar
   return options
     ? hasOwn(options, name[0].toLowerCase() + name.slice(1)) ||
         hasOwn(options, hyphenate(name)) ||
@@ -99,10 +99,13 @@ export function emit(
     propOptions: [propOption],
   } = instance
 
+  // 将需要触发的事件名转换为 “on + 首字母大写” 形式
   const handleKey = toHandlerKey(eventName)
 
   // 检查 emits 选项中是否存在触发的事件名
-  const emitHasEvent = emitOptions ? hasOwn(emitOptions, eventName) : true
+  const emitHasEvent = emitOptions
+    ? isEmitListener(emitOptions, handleKey)
+    : true
 
   // 如果 emits 中和 props 中都不存在，则抛错
   if (!emitHasEvent && !hasOwn(propOption, handleKey)) {
@@ -110,6 +113,7 @@ export function emit(
     return
   }
 
+  // 如果 emit 声明了事件，则调用验证函数
   if (emitHasEvent) {
     let validator
     if (emitOptions && isFunction((validator = emitOptions[eventName]))) {
@@ -122,15 +126,22 @@ export function emit(
   }
 
   let resolveArgs = args
+
   if (isModelListener(handleKey)) {
+    // 如果是 model 的更新事件，则会处理修饰符对参数的影响
     const argsName = handleKey.replace('onUpdate:', '')
+    // v-model 的修饰符属性名是 modelModifiers，其余情况 v-model:xxx 的修饰符属性名是 xxxModifiers
     const modifiersKey =
       argsName === 'modelValue' ? 'modelModifiers' : `${argsName}Modifiers`
     if (props && hasOwn(props, modifiersKey)) {
+      // 传递了对应的修饰符属性
+
+      // 消除参数空格，对每个字符串参数执行2 trim
       if (props[modifiersKey].trim === true) {
         resolveArgs = args.map(s => (isString(s) ? s.trim() : s))
       }
 
+      // 数值化，对每个参数数值化
       if (props[modifiersKey].number === true) {
         resolveArgs = args.map(Number)
       }

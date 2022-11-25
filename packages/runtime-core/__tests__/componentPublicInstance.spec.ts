@@ -3,10 +3,11 @@ import {
   render,
   getCurrentInstance,
   nodeOps,
-  // createApp,
+  createApp,
   shallowReadonly,
 } from '@vue/runtime-test'
-import {
+
+import type {
   ComponentInternalInstance,
   // ComponentOptions
 } from '../src/component'
@@ -112,7 +113,6 @@ describe('component: proxy', () => {
   // })
 
   test('user attached properties', async () => {
-    // debugger
     let instance: ComponentInternalInstance
     let instanceProxy: any
     const Comp = {
@@ -136,100 +136,49 @@ describe('component: proxy', () => {
     expect(instance!.ctx.$store).toBe(obj)
   })
 
-  // test('globalProperties', () => {
-  //   let instance: ComponentInternalInstance
-  //   let instanceProxy: any
-  //   const Comp = {
-  //     setup() {
-  //       return () => null
-  //     },
-  //     mounted() {
-  //       instance = getCurrentInstance()!
-  //       instanceProxy = this
-  //     },
-  //   }
+  test('globalProperties', () => {
+    let instance: ComponentInternalInstance
+    let instanceProxy: any
+    const Comp = {
+      setup() {
+        return () => null
+      },
+      mounted() {
+        instance = getCurrentInstance()!
+        instanceProxy = this
+      },
+    }
 
-  //   const app = createApp(Comp)
-  //   app.config.globalProperties.foo = 1
-  //   app.mount(nodeOps.createElement('div'))
+    const app = createApp(Comp)
+    app.config.globalProperties.foo = 1
+    app.mount(nodeOps.createElement('div'))
 
-  //   expect(instanceProxy.foo).toBe(1)
+    expect(instanceProxy.foo).toBe(1)
 
-  //   // set should overwrite globalProperties with local
-  //   instanceProxy.foo = 2
-  //   // expect(instanceProxy.foo).toBe(2)
-  //   expect(instance!.ctx.foo).toBe(2)
-  //   // should not affect global
-  //   expect(app.config.globalProperties.foo).toBe(1)
-  // })
+    // set should overwrite globalProperties with local
+    instanceProxy.foo = 2
+    // expect(instanceProxy.foo).toBe(2)
+    expect(instance!.ctx.foo).toBe(2)
+    // should not affect global
+    expect(app.config.globalProperties.foo).toBe(1)
+  })
 
-  // test('has check', () => {
-  //   // debugger
-  //   let instanceProxy: any
-  //   const Comp = {
-  //     render() {},
-  //     props: {
-  //       msg: String,
-  //     },
-  //     data() {
-  //       return {
-  //         foo: 0,
-  //       }
-  //     },
-  //     setup() {
-  //       return {
-  //         bar: 1,
-  //       }
-  //     },
-  //     mounted() {
-  //       // eslint-disable-next-line @typescript-eslint/no-this-alias
-  //       instanceProxy = this
-  //     },
-  //   }
-
-  //   // const app = createApp(Comp, { msg: 'hello' })
-  //   // app.config.globalProperties.global = 1
-
-  //   // app.mount(nodeOps.createElement('div'))
-  //   render(h(Comp, { msg: 'hello' }), nodeOps.createElement('div'))
-
-  //   // props
-  //   expect('msg' in instanceProxy).toBe(true)
-  //   // data
-  //   expect('foo' in instanceProxy).toBe(true)
-  //   // ctx
-  //   expect('bar' in instanceProxy).toBe(true)
-  //   // public properties
-  //   expect('$el' in instanceProxy).toBe(true)
-  //   // global properties
-  //   // expect('global' in instanceProxy).toBe(true)
-
-  //   // non-existent
-  //   expect('$foobar' in instanceProxy).toBe(false)
-  //   expect('baz' in instanceProxy).toBe(false)
-
-  //   // #4962 triggering getter should not cause non-existent property to
-  //   // pass the has check
-  //   instanceProxy.baz
-  //   expect('baz' in instanceProxy).toBe(false)
-
-  //   // set non-existent (goes into proxyTarget sink)
-  //   instanceProxy.baz = 1
-  //   expect('baz' in instanceProxy).toBe(true)
-
-  //   // dev mode ownKeys check for console inspection
-  //   // should only expose own keys
-  //   const keys = Object.keys(instanceProxy)
-  //   expect(keys).toMatchObject(['msg', 'bar', 'foo', 'baz'])
-  // })
-
-  test('allow updating proxy with Object.defineProperty', () => {
+  test('has check', () => {
+    // debugger
     let instanceProxy: any
     const Comp = {
       render() {},
+      props: {
+        msg: String,
+      },
+      data() {
+        return {
+          foo: 0,
+        }
+      },
       setup() {
         return {
-          isDisplayed: true,
+          bar: 1,
         }
       },
       mounted() {
@@ -238,38 +187,91 @@ describe('component: proxy', () => {
       },
     }
 
-    // const app = createApp(Comp)
+    const app = createApp(Comp, { msg: 'hello' })
+    app.config.globalProperties.global = 1
 
-    // app.mount(nodeOps.createElement('div'))
-    render(h(Comp), nodeOps.createElement('div'))
+    app.mount(nodeOps.createElement('div'))
 
-    Object.defineProperty(instanceProxy, 'isDisplayed', { value: false })
+    // props
+    expect('msg' in instanceProxy).toBe(true)
+    // data
+    expect('foo' in instanceProxy).toBe(true)
+    // ctx
+    expect('bar' in instanceProxy).toBe(true)
+    // public properties
+    expect('$el' in instanceProxy).toBe(true)
+    // global properties
+    // expect('global' in instanceProxy).toBe(true)
 
-    expect(instanceProxy.isDisplayed).toBe(false)
+    // non-existent
+    expect('$foobar' in instanceProxy).toBe(false)
+    expect('baz' in instanceProxy).toBe(false)
 
-    Object.defineProperty(instanceProxy, 'isDisplayed', { value: true })
+    // #4962 triggering getter should not cause non-existent property to
+    // pass the has check
+    instanceProxy.baz
+    expect('baz' in instanceProxy).toBe(false)
 
-    expect(instanceProxy.isDisplayed).toBe(true)
+    // set non-existent (goes into proxyTarget sink)
+    instanceProxy.baz = 1
+    expect('baz' in instanceProxy).toBe(true)
 
-    Object.defineProperty(instanceProxy, 'isDisplayed', {
-      get() {
-        return false
-      },
-    })
-
-    expect(instanceProxy.isDisplayed).toBe(false)
-
-    Object.defineProperty(instanceProxy, 'isDisplayed', {
-      get() {
-        return true
-      },
-    })
-
-    expect(instanceProxy.isDisplayed).toBe(true)
+    // dev mode ownKeys check for console inspection
+    // should only expose own keys
+    // const keys = Object.keys(instanceProxy)
+    // expect(keys).toMatchObject(['msg', 'bar', 'foo', 'baz'])
   })
+
+  // test('allow updating proxy with Object.defineProperty', () => {
+  //   let instanceProxy: any
+  //   const Comp = {
+  //     render() {},
+  //     setup() {
+  //       return {
+  //         isDisplayed: true,
+  //       }
+  //     },
+  //     mounted() {
+  //       // eslint-disable-next-line @typescript-eslint/no-this-alias
+  //       instanceProxy = this
+  //     },
+  //   }
+
+  //   const app = createApp(Comp)
+
+  //   app.mount(nodeOps.createElement('div'))
+
+  //   Object.defineProperty(instanceProxy, 'name', { value: 'IconMan' })
+  //   Object.defineProperty(instanceProxy, 'name', { value: 'Nicholas' })
+
+  //   Object.defineProperty(instanceProxy, 'isDisplayed', { value: false })
+
+  //   expect(instanceProxy.isDisplayed).toBe(false)
+
+  //   // Object.defineProperty(instanceProxy, 'isDisplayed', { value: true })
+
+  //   expect(instanceProxy.isDisplayed).toBe(true)
+
+  //   Object.defineProperty(instanceProxy, 'isDisplayed', {
+  //     get() {
+  //       return false
+  //     },
+  //   })
+
+  //   expect(instanceProxy.isDisplayed).toBe(false)
+
+  //   Object.defineProperty(instanceProxy, 'isDisplayed', {
+  //     get() {
+  //       return true
+  //     },
+  //   })
+
+  //   expect(instanceProxy.isDisplayed).toBe(true)
+  // })
 
   // test('allow jest spying on proxy methods with Object.defineProperty', () => {
   //   // #5417
+  //   debugger
   //   let instanceProxy: any
   //   const Comp = {
   //     render() {},
@@ -285,10 +287,9 @@ describe('component: proxy', () => {
   //     },
   //   }
 
-  //   // const app = createApp(Comp)
+  //   const app = createApp(Comp)
 
-  //   // app.mount(nodeOps.createElement('div'))
-  //   render(h(Comp), nodeOps.createElement('div'))
+  //   app.mount(nodeOps.createElement('div'))
 
   //   // access 'toggle' to ensure key is cached
   //   const v1 = instanceProxy.toggle()
