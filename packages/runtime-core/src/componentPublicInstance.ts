@@ -1,6 +1,7 @@
 import { hasOwn, isString } from '@vue/shared'
 
 import { markAttrsAccessed } from './componentRenderUtils'
+import { warn } from './warning'
 
 import type { ComponentInternalInstance } from './component'
 
@@ -80,7 +81,7 @@ export const PublicInstanceProxyHandlers: ProxyHandler<any> = {
   // 注意 setter 时不会设置 globalProperties
   set(ctx: ComponentPublicCtx, p, value) {
     const {
-      _: { setupState, data },
+      _: { setupState, data, props },
     } = ctx
 
     if (hasOwn(setupState, p)) {
@@ -89,6 +90,9 @@ export const PublicInstanceProxyHandlers: ProxyHandler<any> = {
     } else if (hasOwn(data, p)) {
       // TODO: 修改 data 中的值
       data[p] = value
+    } else if (hasOwn(props, p)) {
+      warn(`Attempting to mutate prop "${p}"`)
+      throw new TypeError('error')
     } else {
       // 兜底修改 ctx 中的值
       ctx[p] = value

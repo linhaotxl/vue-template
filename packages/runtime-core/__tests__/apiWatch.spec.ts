@@ -9,6 +9,17 @@ import {
   // Ref,
   // effectScope,
 } from '@vue/reactivity'
+import {
+  render,
+  nodeOps,
+  serializeInner,
+  TestElement,
+  h,
+  createApp,
+  watchPostEffect,
+  watchSyncEffect,
+  onMounted,
+} from '@vue/runtime-test'
 
 import {
   watch,
@@ -17,25 +28,14 @@ import {
   computed,
   nextTick,
   ref,
-  // effect,
-  // defineComponent,
-  // getCurrentInstance,
-  // ComponentInternalInstance,
-  // ComponentPublicInstance,
+  effect,
+  defineComponent,
+  getCurrentInstance,
+  ComponentInternalInstance,
+  ComponentPublicInstance,
 } from '../src/index'
 
 import type { DebuggerEvent } from '@vue/reactivity'
-// import {
-//   render,
-//   nodeOps,
-//   serializeInner,
-//   TestElement,
-//   h,
-//   createApp,
-//   watchPostEffect,
-//   watchSyncEffect,
-//   onMounted,
-// } from '@vue/runtime-test'
 
 // reference: https://vue-composition-api-rfc.netlify.com/api.html#watch
 
@@ -72,6 +72,7 @@ describe('api: watch', () => {
   })
 
   it('watching single source: getter', async () => {
+    // debugger
     const state = reactive({ count: 0 })
     let dummy
     watch(
@@ -279,6 +280,7 @@ describe('api: watch', () => {
     expect(dummy).toBe(1)
   })
   it('cleanup registration (effect)', async () => {
+    // debugger
     const state = reactive({ count: 0 })
     const cleanup = jest.fn()
     let dummy
@@ -313,258 +315,261 @@ describe('api: watch', () => {
     stop()
     expect(cleanup).toHaveBeenCalledTimes(2)
   })
-  // it('flush timing: pre (default)', async () => {
-  //   const count = ref(0)
-  //   const count2 = ref(0)
-  //   let callCount = 0
-  //   let result1
-  //   let result2
-  //   const assertion = jest.fn((count, count2Value) => {
-  //     callCount++
-  //     // on mount, the watcher callback should be called before DOM render
-  //     // on update, should be called before the count is updated
-  //     const expectedDOM = callCount === 1 ? `` : `${count - 1}`
-  //     result1 = serializeInner(root) === expectedDOM
-  //     // in a pre-flush callback, all state should have been updated
-  //     const expectedState = callCount - 1
-  //     result2 = count === expectedState && count2Value === expectedState
-  //   })
-  //   const Comp = {
-  //     setup() {
-  //       watchEffect(() => {
-  //         assertion(count.value, count2.value)
-  //       })
-  //       return () => count.value
-  //     },
-  //   }
-  //   const root = nodeOps.createElement('div')
-  //   render(h(Comp), root)
-  //   expect(assertion).toHaveBeenCalledTimes(1)
-  //   expect(result1).toBe(true)
-  //   expect(result2).toBe(true)
-  //   count.value++
-  //   count2.value++
-  //   await nextTick()
-  //   // two mutations should result in 1 callback execution
-  //   expect(assertion).toHaveBeenCalledTimes(2)
-  //   expect(result1).toBe(true)
-  //   expect(result2).toBe(true)
-  // })
-  // it('flush timing: post', async () => {
-  //   const count = ref(0)
-  //   let result
-  //   const assertion = jest.fn(count => {
-  //     result = serializeInner(root) === `${count}`
-  //   })
-  //   const Comp = {
-  //     setup() {
-  //       watchEffect(
-  //         () => {
-  //           assertion(count.value)
-  //         },
-  //         { flush: 'post' }
-  //       )
-  //       return () => count.value
-  //     }
-  //   }
-  //   const root = nodeOps.createElement('div')
-  //   render(h(Comp), root)
-  //   expect(assertion).toHaveBeenCalledTimes(1)
-  //   expect(result).toBe(true)
-  //   count.value++
-  //   await nextTick()
-  //   expect(assertion).toHaveBeenCalledTimes(2)
-  //   expect(result).toBe(true)
-  // })
-  // it('watchPostEffect', async () => {
-  //   const count = ref(0)
-  //   let result
-  //   const assertion = jest.fn(count => {
-  //     result = serializeInner(root) === `${count}`
-  //   })
-  //   const Comp = {
-  //     setup() {
-  //       watchPostEffect(() => {
-  //         assertion(count.value)
-  //       })
-  //       return () => count.value
-  //     }
-  //   }
-  //   const root = nodeOps.createElement('div')
-  //   render(h(Comp), root)
-  //   expect(assertion).toHaveBeenCalledTimes(1)
-  //   expect(result).toBe(true)
-  //   count.value++
-  //   await nextTick()
-  //   expect(assertion).toHaveBeenCalledTimes(2)
-  //   expect(result).toBe(true)
-  // })
-  // it('flush timing: sync', async () => {
-  //   const count = ref(0)
-  //   const count2 = ref(0)
-  //   let callCount = 0
-  //   let result1
-  //   let result2
-  //   const assertion = jest.fn(count => {
-  //     callCount++
-  //     // on mount, the watcher callback should be called before DOM render
-  //     // on update, should be called before the count is updated
-  //     const expectedDOM = callCount === 1 ? `` : `${count - 1}`
-  //     result1 = serializeInner(root) === expectedDOM
-  //     // in a sync callback, state mutation on the next line should not have
-  //     // executed yet on the 2nd call, but will be on the 3rd call.
-  //     const expectedState = callCount < 3 ? 0 : 1
-  //     result2 = count2.value === expectedState
-  //   })
-  //   const Comp = {
-  //     setup() {
-  //       watchEffect(
-  //         () => {
-  //           assertion(count.value)
-  //         },
-  //         {
-  //           flush: 'sync'
-  //         }
-  //       )
-  //       return () => count.value
-  //     }
-  //   }
-  //   const root = nodeOps.createElement('div')
-  //   render(h(Comp), root)
-  //   expect(assertion).toHaveBeenCalledTimes(1)
-  //   expect(result1).toBe(true)
-  //   expect(result2).toBe(true)
-  //   count.value++
-  //   count2.value++
-  //   await nextTick()
-  //   expect(assertion).toHaveBeenCalledTimes(3)
-  //   expect(result1).toBe(true)
-  //   expect(result2).toBe(true)
-  // })
-  // it('watchSyncEffect', async () => {
-  //   const count = ref(0)
-  //   const count2 = ref(0)
-  //   let callCount = 0
-  //   let result1
-  //   let result2
-  //   const assertion = jest.fn(count => {
-  //     callCount++
-  //     // on mount, the watcher callback should be called before DOM render
-  //     // on update, should be called before the count is updated
-  //     const expectedDOM = callCount === 1 ? `` : `${count - 1}`
-  //     result1 = serializeInner(root) === expectedDOM
-  //     // in a sync callback, state mutation on the next line should not have
-  //     // executed yet on the 2nd call, but will be on the 3rd call.
-  //     const expectedState = callCount < 3 ? 0 : 1
-  //     result2 = count2.value === expectedState
-  //   })
-  //   const Comp = {
-  //     setup() {
-  //       watchSyncEffect(() => {
-  //         assertion(count.value)
-  //       })
-  //       return () => count.value
-  //     }
-  //   }
-  //   const root = nodeOps.createElement('div')
-  //   render(h(Comp), root)
-  //   expect(assertion).toHaveBeenCalledTimes(1)
-  //   expect(result1).toBe(true)
-  //   expect(result2).toBe(true)
-  //   count.value++
-  //   count2.value++
-  //   await nextTick()
-  //   expect(assertion).toHaveBeenCalledTimes(3)
-  //   expect(result1).toBe(true)
-  //   expect(result2).toBe(true)
-  // })
-  // it('should not fire on component unmount w/ flush: post', async () => {
-  //   const toggle = ref(true)
-  //   const cb = jest.fn()
-  //   const Comp = {
-  //     setup() {
-  //       watch(toggle, cb, { flush: 'post' })
-  //     },
-  //     render() {}
-  //   }
-  //   const App = {
-  //     render() {
-  //       return toggle.value ? h(Comp) : null
-  //     }
-  //   }
-  //   render(h(App), nodeOps.createElement('div'))
-  //   expect(cb).not.toHaveBeenCalled()
-  //   toggle.value = false
-  //   await nextTick()
-  //   expect(cb).not.toHaveBeenCalled()
-  // })
-  // // #2291
-  // it('should not fire on component unmount w/ flush: pre', async () => {
-  //   const toggle = ref(true)
-  //   const cb = jest.fn()
-  //   const Comp = {
-  //     setup() {
-  //       watch(toggle, cb, { flush: 'pre' })
-  //     },
-  //     render() {}
-  //   }
-  //   const App = {
-  //     render() {
-  //       return toggle.value ? h(Comp) : null
-  //     }
-  //   }
-  //   render(h(App), nodeOps.createElement('div'))
-  //   expect(cb).not.toHaveBeenCalled()
-  //   toggle.value = false
-  //   await nextTick()
-  //   expect(cb).not.toHaveBeenCalled()
-  // })
-  // // #1763
-  // it('flush: pre watcher watching props should fire before child update', async () => {
-  //   const a = ref(0)
-  //   const b = ref(0)
-  //   const c = ref(0)
-  //   const calls: string[] = []
-  //   const Comp = {
-  //     props: ['a', 'b'],
-  //     setup(props: any) {
-  //       watch(
-  //         () => props.a + props.b,
-  //         () => {
-  //           calls.push('watcher 1')
-  //           c.value++
-  //         },
-  //         { flush: 'pre' }
-  //       )
-  //       // #1777 chained pre-watcher
-  //       watch(
-  //         c,
-  //         () => {
-  //           calls.push('watcher 2')
-  //         },
-  //         { flush: 'pre' }
-  //       )
-  //       return () => {
-  //         c.value
-  //         calls.push('render')
-  //       }
-  //     }
-  //   }
-  //   const App = {
-  //     render() {
-  //       return h(Comp, { a: a.value, b: b.value })
-  //     }
-  //   }
-  //   render(h(App), nodeOps.createElement('div'))
-  //   expect(calls).toEqual(['render'])
-  //   // both props are updated
-  //   // should trigger pre-flush watcher first and only once
-  //   // then trigger child render
-  //   a.value++
-  //   b.value++
-  //   await nextTick()
-  //   expect(calls).toEqual(['render', 'watcher 1', 'watcher 2', 'render'])
-  // })
+  it('flush timing: pre (default)', async () => {
+    // debugger
+    const count = ref(0)
+    const count2 = ref(0)
+    let callCount = 0
+    let result1
+    let result2
+    const assertion = jest.fn((count, count2Value) => {
+      callCount++
+      // on mount, the watcher callback should be called before DOM render
+      // on update, should be called before the count is updated
+      const expectedDOM = callCount === 1 ? `` : `${count - 1}`
+      result1 = serializeInner(root) === expectedDOM
+      // in a pre-flush callback, all state should have been updated
+      const expectedState = callCount - 1
+      result2 = count === expectedState && count2Value === expectedState
+    })
+    const Comp = {
+      setup() {
+        watchEffect(() => {
+          assertion(count.value, count2.value)
+        })
+        return () => count.value
+      },
+    }
+    const root = nodeOps.createElement('div')
+    render(h(Comp), root)
+    expect(assertion).toHaveBeenCalledTimes(1)
+    expect(result1).toBe(true)
+    expect(result2).toBe(true)
+    count.value++
+    count2.value++
+    await nextTick()
+    // two mutations should result in 1 callback execution
+    expect(assertion).toHaveBeenCalledTimes(2)
+    expect(result1).toBe(true)
+    expect(result2).toBe(true)
+  })
+  it('flush timing: post', async () => {
+    const count = ref(0)
+    let result
+    const assertion = jest.fn(count => {
+      result = serializeInner(root) === `${count}`
+    })
+    const Comp = {
+      setup() {
+        watchEffect(
+          () => {
+            assertion(count.value)
+          },
+          { flush: 'post' }
+        )
+        return () => count.value
+      },
+    }
+    const root = nodeOps.createElement('div')
+    render(h(Comp), root)
+    expect(assertion).toHaveBeenCalledTimes(1)
+    expect(result).toBe(true)
+    count.value++
+    await nextTick()
+    expect(assertion).toHaveBeenCalledTimes(2)
+    expect(result).toBe(true)
+  })
+  it('watchPostEffect', async () => {
+    const count = ref(0)
+    let result
+    const assertion = jest.fn(count => {
+      result = serializeInner(root) === `${count}`
+    })
+    const Comp = {
+      setup() {
+        watchPostEffect(() => {
+          assertion(count.value)
+        })
+        return () => count.value
+      },
+    }
+    const root = nodeOps.createElement('div')
+    render(h(Comp), root)
+    expect(assertion).toHaveBeenCalledTimes(1)
+    expect(result).toBe(true)
+    count.value++
+    await nextTick()
+    expect(assertion).toHaveBeenCalledTimes(2)
+    expect(result).toBe(true)
+  })
+  it('flush timing: sync', async () => {
+    const count = ref(0)
+    const count2 = ref(0)
+    let callCount = 0
+    let result1
+    let result2
+    const assertion = jest.fn(count => {
+      callCount++
+      // on mount, the watcher callback should be called before DOM render
+      // on update, should be called before the count is updated
+      const expectedDOM = callCount === 1 ? `` : `${count - 1}`
+      result1 = serializeInner(root) === expectedDOM
+      // in a sync callback, state mutation on the next line should not have
+      // executed yet on the 2nd call, but will be on the 3rd call.
+      const expectedState = callCount < 3 ? 0 : 1
+      result2 = count2.value === expectedState
+    })
+    const Comp = {
+      setup() {
+        watchEffect(
+          () => {
+            assertion(count.value)
+          },
+          {
+            flush: 'sync',
+          }
+        )
+        return () => count.value
+      },
+    }
+    const root = nodeOps.createElement('div')
+    render(h(Comp), root)
+    expect(assertion).toHaveBeenCalledTimes(1)
+    expect(result1).toBe(true)
+    expect(result2).toBe(true)
+    count.value++
+    count2.value++
+    await nextTick()
+    expect(assertion).toHaveBeenCalledTimes(3)
+    expect(result1).toBe(true)
+    expect(result2).toBe(true)
+  })
+  it('watchSyncEffect', async () => {
+    const count = ref(0)
+    const count2 = ref(0)
+    let callCount = 0
+    let result1
+    let result2
+    const assertion = jest.fn(count => {
+      callCount++
+      // on mount, the watcher callback should be called before DOM render
+      // on update, should be called before the count is updated
+      const expectedDOM = callCount === 1 ? `` : `${count - 1}`
+      result1 = serializeInner(root) === expectedDOM
+      // in a sync callback, state mutation on the next line should not have
+      // executed yet on the 2nd call, but will be on the 3rd call.
+      const expectedState = callCount < 3 ? 0 : 1
+      result2 = count2.value === expectedState
+    })
+    const Comp = {
+      setup() {
+        watchSyncEffect(() => {
+          assertion(count.value)
+        })
+        return () => count.value
+      },
+    }
+    const root = nodeOps.createElement('div')
+    render(h(Comp), root)
+    expect(assertion).toHaveBeenCalledTimes(1)
+    expect(result1).toBe(true)
+    expect(result2).toBe(true)
+    count.value++
+    count2.value++
+    await nextTick()
+    expect(assertion).toHaveBeenCalledTimes(3)
+    expect(result1).toBe(true)
+    expect(result2).toBe(true)
+  })
+  it('should not fire on component unmount w/ flush: post', async () => {
+    // debugger
+    const toggle = ref(true)
+    const cb = jest.fn()
+    const Comp = {
+      setup() {
+        watch(toggle, cb, { flush: 'post' })
+      },
+      render() {},
+    }
+    const App = {
+      render() {
+        return toggle.value ? h(Comp) : null
+      },
+    }
+    render(h(App), nodeOps.createElement('div'))
+    expect(cb).not.toHaveBeenCalled()
+    toggle.value = false
+    await nextTick()
+    expect(cb).not.toHaveBeenCalled()
+  })
+  // #2291
+  it('should not fire on component unmount w/ flush: pre', async () => {
+    const toggle = ref(true)
+    const cb = jest.fn()
+    const Comp = {
+      setup() {
+        watch(toggle, cb, { flush: 'pre' })
+      },
+      render() {},
+    }
+    const App = {
+      render() {
+        return toggle.value ? h(Comp) : null
+      },
+    }
+    render(h(App), nodeOps.createElement('div'))
+    expect(cb).not.toHaveBeenCalled()
+    toggle.value = false
+    await nextTick()
+    expect(cb).not.toHaveBeenCalled()
+  })
+  // #1763
+  it('flush: pre watcher watching props should fire before child update', async () => {
+    debugger
+    const a = ref(0)
+    const b = ref(0)
+    const c = ref(0)
+    const calls: string[] = []
+    const Comp = {
+      props: ['a', 'b'],
+      setup(props: any) {
+        watch(
+          () => props.a + props.b,
+          () => {
+            calls.push('watcher 1')
+            c.value++
+          },
+          { flush: 'pre' }
+        )
+        // #1777 chained pre-watcher
+        watch(
+          c,
+          () => {
+            calls.push('watcher 2')
+          },
+          { flush: 'pre' }
+        )
+        return () => {
+          c.value
+          calls.push('render')
+        }
+      },
+    }
+    const App = {
+      render() {
+        return h(Comp, { a: a.value, b: b.value })
+      },
+    }
+    render(h(App), nodeOps.createElement('div'))
+    expect(calls).toEqual(['render'])
+    // both props are updated
+    // should trigger pre-flush watcher first and only once
+    // then trigger child render
+    a.value++
+    b.value++
+    await nextTick()
+    expect(calls).toEqual(['render', 'watcher 1', 'watcher 2', 'render'])
+  })
   // // #5721
   // it('flush: pre triggered in component setup should be buffered and called before mounted', () => {
   //   const count = ref(0)
@@ -1055,18 +1060,18 @@ describe('api: watch', () => {
   //   expect(instance!.scope.effects.length).toBe(1)
   // })
 
-  test('ref object', async () => {
-    debugger
-    const info = ref({ name: 'Nicholas' })
-    let count = 0
+  // test('ref object', async () => {
+  //   debugger
+  //   const info = ref({ name: 'Nicholas' })
+  //   let count = 0
 
-    watch(info, () => {
-      count++
-    })
+  //   watch(info, () => {
+  //     count++
+  //   })
 
-    expect(count).toBe(0)
+  //   expect(count).toBe(0)
 
-    info.value.name = 'IconMan'
-    expect(count).toBe(1)
-  })
+  //   info.value.name = 'IconMan'
+  //   expect(count).toBe(1)
+  // })
 })

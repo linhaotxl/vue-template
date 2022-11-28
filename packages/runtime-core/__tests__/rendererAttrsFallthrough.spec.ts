@@ -9,14 +9,17 @@ import {
   ref,
   onUpdated,
   defineComponent,
-  // openBlock,
-  // createBlock,
-  FunctionalComponent,
   // createCommentVNode,
   // Fragment,
   // withModifiers,
 } from '@vue/runtime-dom'
 import { PatchFlags } from '@vue/shared/src'
+
+import type {
+  // openBlock,
+  // createBlock,
+  FunctionalComponent,
+} from '@vue/runtime-dom'
 
 describe('attribute fallthrough', () => {
   it('should allow attrs to fallthrough', async () => {

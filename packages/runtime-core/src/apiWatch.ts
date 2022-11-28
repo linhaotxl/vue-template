@@ -10,6 +10,7 @@ import {
 } from '@vue/shared'
 
 import { isPlainObject } from './../../shared/src/index'
+import { getCurrentInstance } from './component'
 import { ErrorCodes, callWithErrorHandling } from './errorHandling'
 import { queueJob, queuePostFlushCb } from './scheduler'
 import { warn } from './warning'
@@ -86,6 +87,9 @@ export type WatchCallback<T> = (
   onCleanup: OnCleanup
 ) => void
 
+// watch immediate 初始值，用于判断，不用做实际传递
+const INITIAL_WATCHER_VALUE = Object.create(null)
+
 /**
  * 监听单个数据源
  */
@@ -117,6 +121,20 @@ export function watchEffect(
   options: WatchEffectOptions = {}
 ) {
   return doWatch(callback, null, options)
+}
+
+export function watchPostEffect(
+  callback: (cb: OnCleanup) => void,
+  options: WatchEffectOptions = {}
+) {
+  return watchEffect(callback, { ...options, flush: 'post' })
+}
+
+export function watchSyncEffect(
+  callback: (cb: OnCleanup) => void,
+  options: WatchEffectOptions = {}
+) {
+  return watchEffect(callback, { ...options, flush: 'sync' })
 }
 
 /**
@@ -196,6 +214,10 @@ function doWatch<T>(
 
   // effect 的调度任务，当监听的值变化，引起 effect 调度时执行
   const job: SchedulerJob = () => {
+    if (!_effect.effect.active) {
+      return
+    }
+
     // 每次变化首先调用清除副作用的函数
     lastCleanupFn?.()
 
@@ -205,11 +227,11 @@ function doWatch<T>(
       ;(source as WatchEffectSource)(cleanup)
     } else {
       // watch
-      // 调用 effect 的回调获取最新值
+      // 调用 effect 的原始函数获取最新值
       const value = _effect.effect.run()
 
       // 以下情况会调用回调
-      // 1. 深度监听
+      // 1. 深度监听，此时不需要检测新旧值，也无法检测，一旦修改，可以直接触发，如果修改的值没有发生变化，在 setter 中就会被过滤，不会走到这里
       // 2. 强制监听
       // 3. 数据源为数组：数组中的值发生变化
       // 4. 数据源不会数组：数据发生变化
@@ -217,14 +239,14 @@ function doWatch<T>(
         deep ||
         forceTrigger ||
         (multiplySource
-          ? immediate
-            ? true
-            : value.some(hasChangedArrayItem)
+          ? isArray(oldValue)
+            ? value.some(hasChangedArrayItem)
+            : true
           : hasChanged(oldValue, value))
       ) {
         callWithErrorHandling(callback, ErrorCodes.WATCH_CALLBACK, [
           value,
-          oldValue,
+          oldValue === INITIAL_WATCHER_VALUE ? undefined : oldValue,
           cleanup,
         ])
         oldValue = value
@@ -232,19 +254,22 @@ function doWatch<T>(
     }
   }
 
-  // getter 函数，会在 effect 中执行，所以会追踪其中访问的属性
+  // effect 原始函数，会在 effect 中执行，追踪其中访问的属性
   let getter: () => any
 
   if (isRef(source)) {
-    // source 为 shallowRef，则需要开启强制触发，因为无法监听到 shallowRef 的深度变化，所以一旦修改，就会触发
+    // source 为 ref 对象
+    // source 为 shallow，如果 shallow 的是一个对象，此时 oldValue 和 value 都是对象，无法检测是否发生变化，所以需要开启强制更新，无论有没有发生变化都会触发
     forceTrigger = isShallow(source)
-    // source 为 ref 则读取 value，当 value 变化时会引起 effect 调度
+    // 原始函数直接获取 .value，这样可以直接追踪 value
     getter = () => source.value
   } else if (isReactive(source)) {
-    // source 为 reactive 则直接返回响应对象，在接来下会重写 getter 进行深度追踪，递归遍历对象里的每一个属性
+    // source 为 reactive 响应对象
     // 使得每一个属性都会追踪到 effect
     forceTrigger = isShallow(source)
+    // 响应式对象会自动进行深度追踪，标识深度追踪的开关
     deep = true
+    // 原始函数直接返回响应式对象，此时不知道用户会访问哪一个属性，所以没办法追任何属性
     getter = () => source as T
   } else if (isArray(source)) {
     // source 为数组
@@ -270,10 +295,11 @@ function doWatch<T>(
       }) as any
   } else if (isFunction(source)) {
     if (callback === null) {
-      // watchEffect，将 job 作为 getter 在  effect 直接调用
-      getter = job as any
+      // watchEffect，原始函数直接调用 source，追踪其中访问的属性
+      getter = () =>
+        callWithErrorHandling(source, ErrorCodes.WATCH_CALLBACK, [cleanup])
     } else {
-      // watch，source 为函数，继续使用这个函数作为 getter
+      // watch，原始函数直接调用 source，追踪其中访问的属性，将返回值作为 value
       getter = () => callWithErrorHandling(source, ErrorCodes.WATCH_GETTER)
     }
   } else {
@@ -288,16 +314,12 @@ function doWatch<T>(
     getter = () => traverse(baseGetter())
   }
 
-  // 第一次获取旧值，如果需要立即执行回调则赋随机值对象，这样在接下来的比较中可以直接调用回调
-  // 如果不需要立即执行回调，则调用 getter 获取初始值，这个时候并不会追踪 effect
+  // 第一次获取旧值，watchEffect 不需要旧值，watch 会根据 immediate 来决定
+  // 如果需要立即执行，无论 source 是什么类型，都是 INITIAL_WATCHER_VALUE，在 job 中会判断
+  // 如果是 INITIAL_WATCHER_VALUE 则传递的 oldValue 就是 undefined
+  // 如果不需要立即执行，则调用 getter 获取，此时不会追踪任何属性
   let oldValue: T | undefined =
-    callback === null
-      ? undefined
-      : immediate
-      ? multiplySource
-        ? undefined
-        : ({} as T)
-      : getter()
+    callback === null ? undefined : immediate ? INITIAL_WATCHER_VALUE : getter()
 
   const hasChangedArrayItem = (item: any, i: number) =>
     hasChanged(item, (oldValue as any)[i])
@@ -317,8 +339,38 @@ function doWatch<T>(
     }
   }
 
-  // 创建 effect
-  const _effect = effect<T>(getter, { scheduler, onTrack, onTrigger })
+  // 创建 effect，不立即执行 getter
+  const _effect = effect<T>(getter, {
+    scheduler,
+    onTrack,
+    onTrigger,
+    lazy: true,
+  })
+
+  // 向当前实例中注入 watch 的 effect
+  const instance = getCurrentInstance()
+  if (instance) {
+    ;(instance.effects ||= []).push(_effect.effect)
+  }
+
+  if (callback) {
+    // watch api
+    if (immediate) {
+      job()
+    } else {
+      _effect.effect.run()
+    }
+  } else if (flush === 'post') {
+    // watchEffect api
+    // 渲染完成后执行，将 getter 放入 post 队列等待执行，这样 callback 会在异步队列中等待执行
+    queuePostFlushCb(() => {
+      _effect.effect.run()
+    })
+  } else {
+    // watchEffect api
+    // 立即执行 getter，从而同步执行 callback
+    _effect.effect.run()
+  }
 
   /**
    * 停止监听
@@ -326,10 +378,6 @@ function doWatch<T>(
   const stop: StopHandle = () => {
     lastCleanupFn?.()
     _effect.effect.stop()
-  }
-
-  if (immediate) {
-    job()
   }
 
   return stop

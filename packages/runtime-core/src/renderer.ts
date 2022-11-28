@@ -471,6 +471,12 @@ function baseRenderer<HostElement extends RendererElement = RendererElement>(
       unmount(subTree, doRemove)
     }
 
+    if (component!.effects) {
+      for (let i = 0; i < component!.effects.length; ++i) {
+        component!.effects[i].stop()
+      }
+    }
+
     // 子节点卸载完成，将 unmouted hook 放入任务队列等待执行
     // 由于此时组件对应的真实节点还没有移除，所以不能同步执行
     if (um) {

@@ -1,4 +1,4 @@
-import { proxyRefs } from '@vue/reactivity'
+import { proxyRefs, reactive, readonly } from '@vue/reactivity'
 import {
   EMPTY_OBJ,
   NOOP,
@@ -16,6 +16,7 @@ import { markAttrsAccessed } from './componentRenderUtils'
 import { ErrorCodes, callWithErrorHandling } from './errorHandling'
 import { warn } from './warning'
 
+import type { ReactiveEffect } from './../../reactivity/src/effect'
 import type { AppContext } from './apiCreateApp'
 import type { EmitOptions, ObjectEmitsOptions } from './componentEmits'
 import type { ComponentOptions } from './componentOptions'
@@ -127,6 +128,8 @@ export interface ComponentInternalInstance {
    */
   effect: ReactiveEffectRunner | null
 
+  effects: ReactiveEffect[] | null
+
   /**
    * 组件子节点树
    */
@@ -235,6 +238,7 @@ export function createComponentInstance(
     components: null,
     emitted: null,
     provides,
+    effects: null,
 
     [LifecycleHooks.BEFORE_CREATE]: null,
     [LifecycleHooks.CREATED]: null,
@@ -295,7 +299,7 @@ export function setupStatefulComponent(instance: ComponentInternalInstance) {
     const setupResult = callWithErrorHandling(
       setup,
       ErrorCodes.SETUP_FUNCTION,
-      [instance.props, createSetupContext(instance)]
+      [readonly(instance.props), createSetupContext(instance)]
     )
     // 处理 setup 返回结果
     handleSetupResult(instance, setupResult)

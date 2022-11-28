@@ -1,3 +1,4 @@
+import { reactive } from '@vue/reactivity'
 import {
   EMPTY_ARR,
   EMPTY_OBJ,
@@ -120,13 +121,22 @@ export function initProps(
   // 全量设置 props 和 attrs
   setFullProps(instance, instance.vNode.props, props, attrs)
 
+  // 确保声明的 props 都存在 key
+  for (const prop in instance.propOptions[0]) {
+    if (!hasOwn(props, prop)) {
+      props[prop] = undefined
+    }
+  }
+
   // 验证 props 值的合法性
   validateProps(props, instance.propOptions[0])
 
   if (isStatefulComponent) {
-    // 状态组件将 props 挂载在实例上
-    instance.props = props
+    // 状态组件将 props 转为响应对象，并挂载在实例上
+    // 这样当组件更新修改 props 时，可以触发追踪的依赖，例如 watch(props.xxx)、子组件更新
+    instance.props = reactive(props)
   } else {
+    // TODO: 函数组件没有转响应式
     // 没有声明 props 的函数组件，props 和 attrs 均指向 attrs
     // 声明 props 的函数组件和状态组件一样
     instance.props = instance.propOptions[0] === EMPTY_OBJ ? attrs : props
@@ -211,8 +221,19 @@ export function setFullProps(
     const camelRawName = camelize(rawName)
     // 检测属性名是否在声明的 props 中
     if (hasOwn(propsOptions, camelRawName)) {
-      // 存在，将驼峰化的属性名和值存储
-      props[camelRawName] = rawProps[rawName]
+      // props 中还不存在驼峰名，代表是初始化，直接将值存入 props 中
+      // props 中存在驼峰名，代表是更新，如果属性的默认值是工厂函数，且新传入的值是 undefined
+      // 那么此时不需要更新 props 的值，依旧使用工厂函数返回的值，避免触发追踪依赖（如果有追踪该 props 的依赖）
+      if (
+        !hasOwn(props, camelRawName) ||
+        !(
+          hasOwn(propsOptions[camelRawName], 'default') &&
+          isFunction(propsOptions[camelRawName].default) &&
+          rawProps[rawName] === undefined
+        )
+      ) {
+        props[camelRawName] = rawProps[rawName]
+      }
     } else if (
       !isEmitListener(emitOptions, rawName) &&
       !isModelListener(rawName)
@@ -243,10 +264,10 @@ export function setFullProps(
 function resolvePropValue(
   camelPropName: string,
   rawValue: any,
-  propOptions: NormalizedProp
+  propOptions: NormalizedProp | undefined
 ) {
   // 需要进行布尔值的转换，带有 ShouldCast 说明声明的 type 带有 Boolean
-  if (propOptions[BooleanFlags.ShouldCast] != null) {
+  if (propOptions && propOptions[BooleanFlags.ShouldCast] != null) {
     // props: { fooBar: Boolean }
     if (typeof rawValue === 'undefined') {
       // 没有传值，默认为 false；<comp />
@@ -260,7 +281,7 @@ function resolvePropValue(
   }
 
   // 处理默认值
-  const hasDefault = hasOwn(propOptions, 'default')
+  const hasDefault = propOptions && hasOwn(propOptions, 'default')
   // 存在默认值且没有传递该值时才会使用默认值
   if (hasDefault && typeof rawValue === 'undefined') {
     if (isFunction(propOptions.default) && propOptions.type !== Function) {

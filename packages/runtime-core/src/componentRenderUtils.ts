@@ -1,8 +1,8 @@
-import { warn } from '@vue/runtime-core'
 import { EMPTY_OBJ, ShapeFlags, isOn } from '@vue/shared'
 
 import { ErrorCodes, handleError } from './errorHandling'
 import { Comment, cloneVNode, createVNode, normalizeVNode } from './vnode'
+import { warn } from './warning'
 
 import type {
   ComponentInternalInstance,
