@@ -136,7 +136,11 @@ function flushJobs() {
 export function flushPreFlushCbs() {
   // 从当前主 job 开始遍历，检测每个 job 是否是 pre job，如果是就执行，执行之后将其置空
   // 等到当前 job 执行完成继续向后执行时，就不会重复执行 pre job 了
-  for (let i = flushIndex + 1; i < queue.length; ++i) {
+  for (
+    let i = flushIndex === 0 ? flushIndex : flushIndex + 1;
+    i < queue.length;
+    ++i
+  ) {
     const job = queue[i]
     if (job && job.pre) {
       job()

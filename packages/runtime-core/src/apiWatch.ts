@@ -1,4 +1,11 @@
-import { effect, isReactive, isRef, isShallow } from '@vue/reactivity'
+import {
+  effect,
+  isReactive,
+  isRef,
+  isShallow,
+  pauseTracking,
+  resetTracking,
+} from '@vue/reactivity'
 import {
   NOOP,
   hasChanged,
@@ -7,14 +14,17 @@ import {
   isMap,
   isObject,
   isSet,
+  isPlainObject,
+  isString,
 } from '@vue/shared'
 
-import { isPlainObject } from './../../shared/src/index'
 import { getCurrentInstance } from './component'
 import { ErrorCodes, callWithErrorHandling } from './errorHandling'
 import { queueJob, queuePostFlushCb } from './scheduler'
 import { warn } from './warning'
 
+import type { ComponentInternalInstance } from './component'
+import type { ComponentPublicInstance } from './componentPublicInstance'
 import type { SchedulerJob } from './scheduler'
 import type { DebuggerEvent, EffectScheduler, Ref } from '@vue/reactivity'
 
@@ -81,7 +91,7 @@ export interface WatchEffectOptions {
   onTrigger?: (event: DebuggerEvent) => void
 }
 
-export type WatchCallback<T> = (
+export type WatchCallback<T = any> = (
   newValue: T,
   oldValue: T | undefined,
   onCleanup: OnCleanup
@@ -318,8 +328,12 @@ function doWatch<T>(
   // 如果需要立即执行，无论 source 是什么类型，都是 INITIAL_WATCHER_VALUE，在 job 中会判断
   // 如果是 INITIAL_WATCHER_VALUE 则传递的 oldValue 就是 undefined
   // 如果不需要立即执行，则调用 getter 获取，此时不会追踪任何属性
+  // 如果 watch 在某个子组件内，那此时获取初始值可能会被父组件追踪，所以这里会暂停追踪依赖
+  // watch 观察的依赖应该只能被自身创建的 effect 收集，不能被其他 effect 收集
+  pauseTracking()
   let oldValue: T | undefined =
     callback === null ? undefined : immediate ? INITIAL_WATCHER_VALUE : getter()
+  resetTracking()
 
   const hasChangedArrayItem = (item: any, i: number) =>
     hasChanged(item, (oldValue as any)[i])
@@ -381,4 +395,49 @@ function doWatch<T>(
   }
 
   return stop
+}
+
+/**
+ * this.$watch
+ * @param instance
+ * @returns
+ */
+export function watchInstance(
+  instance: ComponentInternalInstance,
+  source:
+    | string
+    | ((publicInstance: ComponentPublicInstance, ...args: unknown[]) => any),
+  cb: WatchCallback,
+  optinos: WatchOptions
+) {
+  const resolveSource = isString(source)
+    ? createPathGetter(source, instance.proxy!)
+    : (...args: any) => source(instance.proxy!, ...args)
+
+  const stopHandle = watch(resolveSource, cb, optinos)
+
+  return stopHandle
+}
+
+/**
+ * 创建 watch 的链式访问函数
+ * @param source
+ * @param proxy
+ * @returns
+ */
+export function createPathGetter(
+  source: string,
+  proxy: ComponentPublicInstance
+) {
+  const paths = source.split('.')
+
+  return () => {
+    let result
+
+    for (let i = 0; i < paths.length; ++i) {
+      result = (result || proxy)[paths[i]]
+    }
+
+    return result
+  }
 }

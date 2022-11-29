@@ -10,7 +10,13 @@ import {
 } from './component'
 import { updateProps } from './componentProps'
 import { renderComponentRoot } from './componentRenderUtils'
-import { flushPostFlushCbs, queueJob, queuePostFlushCb } from './scheduler'
+import {
+  flushPostFlushCbs,
+  flushPreFlushCbs,
+  invalidateJob,
+  queueJob,
+  queuePostFlushCb,
+} from './scheduler'
 import {
   Comment,
   Fragment,
@@ -298,24 +304,37 @@ function baseRenderer<HostElement extends RendererElement = RendererElement>(
     // 将组件实例同步到新节点上，当下一次继续 render 时，现在的新节点将作为下一次的旧节点，确保能
     const instance = (n2.component = n1.component!)
 
-    // 渲染前执行一些其他逻辑
-    updateComponentPreRender(instance, n1, n2)
+    // 由父组件引起的更新，记录最新的 vNode
+    instance.next = n2
 
-    // 调用组件的更新函数
+    // // 调用 render 前执行一些其他逻辑
+    // updateComponentPreRender(instance, n2)
+
+    // 将队列中子组件的更新视为无效任务
+    // 父组件更新，肯定会调用 render 引起子组件的更新
+    // 如果在更新 props 的过程中产生了子组件更新的 job，那么就需要将更新组件的 job 视为无效，否则会更新两次
+    // 如果更新 props 引起了 watch(pre) 的 cb，cb 中又触发了组件的更新
+    // invalidateJob(instance.update!)
+
+    // 调用组件的更新函数更新子组件
     instance.effect!.effect.run()
   }
 
   /**
-   * 组件更新在 render 之前的操作
+   * 组件调用 render 之前更新的操作
    */
   const updateComponentPreRender = (
     instance: ComponentInternalInstance,
-    n1: VNode,
     n2: VNode
   ) => {
-    // 更新 props
-    const rawPrevProps = n1.props
+    // 更新组件本身的 props
+    // 如果子组件中 watch(pre) 了 props 中的值，那么在这个过程中会触发 watch 的 schedule 将 job 入队
+    // 所在在更新子组件之前需要清空 pre 队列
+    const rawPrevProps = instance.vNode.props
     updateProps(instance, rawPrevProps, n2)
+
+    // 清空 pre 队列
+    flushPreFlushCbs()
   }
 
   /**
@@ -354,9 +373,9 @@ function baseRenderer<HostElement extends RendererElement = RendererElement>(
         // 标识组件挂载完成
         instance.isMounted = true
 
-        // 执行 mounted hook
+        // 执行 mounted hook，放入 post 队列，如果有 pre 的操作必须在 pre 之后
         if (m) {
-          invokeArrayFns(m)
+          queuePostFlushCb(m)
         }
       } else {
         // 更新组件
@@ -372,6 +391,11 @@ function baseRenderer<HostElement extends RendererElement = RendererElement>(
           invokeArrayFns(bu)
         }
 
+        if (instance.next) {
+          // 如果是由父组件引起的更新，在调用 render 前执行一些其他逻辑
+          updateComponentPreRender(instance, instance.next)
+        }
+
         // 执行 render 获取新子节点树
         const newSubTree = (instance.subTree = renderComponentRoot(instance))
 
@@ -382,15 +406,21 @@ function baseRenderer<HostElement extends RendererElement = RendererElement>(
         if (u) {
           invokeArrayFns(u)
         }
+
+        // 由父组件引起的更新，需要记录最新的 vNode，并重置 next
+        if (instance.next) {
+          instance.vNode = instance.next
+          instance.next = null
+        }
       }
 
       // 组件挂载/更新完成，清空正在执行的组件
       setCurrentInstance(null)
     }
 
-    const update = () => {
+    const update = (instance.update = () => {
       instance.effect!.effect.run()
-    }
+    })
 
     // 创建更新的依赖，在更新过程中遇到响应式数据会收集组件更新的 effect
     // 同时设置调度任务，当触发这个 effect 时，会将组件更新函数放入队列，等待异步更新
@@ -505,6 +535,7 @@ function baseRenderer<HostElement extends RendererElement = RendererElement>(
     }
 
     // TODO:
+    flushPreFlushCbs()
     flushPostFlushCbs()
 
     container.__root = vNode

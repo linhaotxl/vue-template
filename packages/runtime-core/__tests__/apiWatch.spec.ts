@@ -13,7 +13,6 @@ import {
   render,
   nodeOps,
   serializeInner,
-  TestElement,
   h,
   createApp,
   watchPostEffect,
@@ -33,9 +32,11 @@ import {
   getCurrentInstance,
   ComponentInternalInstance,
   ComponentPublicInstance,
+  onUpdated,
 } from '../src/index'
 
 import type { DebuggerEvent } from '@vue/reactivity'
+import type { TestElement } from '@vue/runtime-test'
 
 // reference: https://vue-composition-api-rfc.netlify.com/api.html#watch
 
@@ -570,32 +571,33 @@ describe('api: watch', () => {
     await nextTick()
     expect(calls).toEqual(['render', 'watcher 1', 'watcher 2', 'render'])
   })
-  // // #5721
-  // it('flush: pre triggered in component setup should be buffered and called before mounted', () => {
-  //   const count = ref(0)
-  //   const calls: string[] = []
-  //   const App = {
-  //     render() {},
-  //     setup() {
-  //       watch(
-  //         count,
-  //         () => {
-  //           calls.push('watch ' + count.value)
-  //         },
-  //         { flush: 'pre' }
-  //       )
-  //       onMounted(() => {
-  //         calls.push('mounted')
-  //       })
-  //       // mutate multiple times
-  //       count.value++
-  //       count.value++
-  //       count.value++
-  //     }
-  //   }
-  //   render(h(App), nodeOps.createElement('div'))
-  //   expect(calls).toMatchObject(['watch 3', 'mounted'])
-  // })
+  // #5721
+  it('flush: pre triggered in component setup should be buffered and called before mounted', () => {
+    // debugger
+    const count = ref(0)
+    const calls: string[] = []
+    const App = {
+      render() {},
+      setup() {
+        watch(
+          count,
+          () => {
+            calls.push('watch ' + count.value)
+          },
+          { flush: 'pre' }
+        )
+        onMounted(() => {
+          calls.push('mounted')
+        })
+        // mutate multiple times
+        count.value++
+        count.value++
+        count.value++
+      },
+    }
+    render(h(App), nodeOps.createElement('div'))
+    expect(calls).toMatchObject(['watch 3', 'mounted'])
+  })
   // // #1852
   // it('flush: post watcher should fire after template refs updated', async () => {
   //   const toggle = ref(false)
@@ -613,7 +615,7 @@ describe('api: watch', () => {
   //       return () => {
   //         return toggle.value ? h('p', { ref: domRef }) : null
   //       }
-  //     }
+  //     },
   //   }
   //   render(h(App), nodeOps.createElement('div'))
   //   expect(dom).toBe(null)
@@ -930,55 +932,58 @@ describe('api: watch', () => {
   //   await nextTick()
   //   expect(instance!.scope.effects[0].active).toBe(false)
   // })
-  // test('this.$watch should pass `this.proxy` to watch source as the first argument ', () => {
-  //   let instance: any
-  //   const source = jest.fn()
-  //   const Comp = defineComponent({
-  //     render() {},
-  //     created(this: any) {
-  //       instance = this
-  //       this.$watch(source, function () {})
-  //     }
-  //   })
-  //   const root = nodeOps.createElement('div')
-  //   createApp(Comp).mount(root)
-  //   expect(instance).toBeDefined()
-  //   expect(source).toHaveBeenCalledWith(instance)
-  // })
-  // test('should not leak `this.proxy` to setup()', () => {
-  //   const source = jest.fn()
-  //   const Comp = defineComponent({
-  //     render() {},
-  //     setup() {
-  //       watch(source, () => {})
-  //     }
-  //   })
-  //   const root = nodeOps.createElement('div')
-  //   createApp(Comp).mount(root)
-  //   // should not have any arguments
-  //   expect(source.mock.calls[0]).toMatchObject([])
-  // })
-  // // #2728
+  test('this.$watch should pass `this.proxy` to watch source as the first argument ', () => {
+    let instance: any
+    const source = jest.fn()
+    const Comp = defineComponent({
+      render() {},
+      created(this: any) {
+        instance = this
+        this.$watch(source, function () {})
+      },
+    })
+    const root = nodeOps.createElement('div')
+    createApp(Comp).mount(root)
+    expect(instance).toBeDefined()
+    expect(source).toHaveBeenCalledWith(instance)
+  })
+  test('should not leak `this.proxy` to setup()', () => {
+    const source = jest.fn()
+    const Comp = defineComponent({
+      render() {},
+      setup() {
+        watch(source, () => {})
+      },
+    })
+    const root = nodeOps.createElement('div')
+    createApp(Comp).mount(root)
+    // should not have any arguments
+    expect(source.mock.calls[0]).toMatchObject([])
+  })
+  // // TODO: #2728
   // test('pre watcher callbacks should not track dependencies', async () => {
   //   const a = ref(0)
   //   const b = ref(0)
   //   const updated = jest.fn()
+  //   debugger
   //   const Child = defineComponent({
   //     props: ['a'],
   //     updated,
   //     watch: {
   //       a() {
+  //         debugger
   //         b.value
-  //       }
+  //       },
   //     },
   //     render() {
   //       return h('div', this.a)
-  //     }
+  //     },
   //   })
+
   //   const Parent = defineComponent({
   //     render() {
   //       return h(Child, { a: a.value })
-  //     }
+  //     },
   //   })
   //   const root = nodeOps.createElement('div')
   //   createApp(Parent).mount(root)
@@ -990,32 +995,32 @@ describe('api: watch', () => {
   //   // should not track b as dependency of Child
   //   expect(updated).toHaveBeenCalledTimes(1)
   // })
-  // test('watching keypath', async () => {
-  //   const spy = jest.fn()
-  //   const Comp = defineComponent({
-  //     render() {},
-  //     data() {
-  //       return {
-  //         a: {
-  //           b: 1
-  //         }
-  //       }
-  //     },
-  //     watch: {
-  //       'a.b': spy
-  //     },
-  //     created(this: any) {
-  //       this.$watch('a.b', spy)
-  //     },
-  //     mounted(this: any) {
-  //       this.a.b++
-  //     }
-  //   })
-  //   const root = nodeOps.createElement('div')
-  //   createApp(Comp).mount(root)
-  //   await nextTick()
-  //   expect(spy).toHaveBeenCalledTimes(2)
-  // })
+  test('watching keypath', async () => {
+    const spy = jest.fn()
+    const Comp = defineComponent({
+      render() {},
+      data() {
+        return {
+          a: {
+            b: 1,
+          },
+        }
+      },
+      watch: {
+        'a.b': spy,
+      },
+      created(this: any) {
+        this.$watch('a.b', spy)
+      },
+      mounted(this: any) {
+        this.a.b++
+      },
+    })
+    const root = nodeOps.createElement('div')
+    createApp(Comp).mount(root)
+    await nextTick()
+    expect(spy).toHaveBeenCalledTimes(2)
+  })
   it('watching sources: ref<any[]>', async () => {
     const foo = ref([1])
     const spy = jest.fn()

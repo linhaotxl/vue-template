@@ -99,6 +99,12 @@ export interface ComponentInternalInstance {
   emitOptions: ObjectEmitsOptions | null
 
   /**
+   * 组件更新时的新 vNode，只有当父组件更新引起子组件更新是才会存在
+   * 组件内部状态变化引起的更新是没有的
+   */
+  next: VNode | null
+
+  /**
    * 是否挂载
    */
   isMounted: boolean
@@ -128,6 +134,14 @@ export interface ComponentInternalInstance {
    */
   effect: ReactiveEffectRunner | null
 
+  /**
+   * 组件的更新函数，是 effect 的调度任务
+   */
+  update: (() => void) | null
+
+  /**
+   * 组件产生的 effect 集合，例如 watch，在卸载时需要将他们失效
+   */
   effects: ReactiveEffect[] | null
 
   /**
@@ -231,12 +245,14 @@ export function createComponentInstance(
     ctx: {} as ComponentPublicCtx,
     proxy: null,
     emit: null!,
+    next: null,
     effect: null,
     subTree: null,
     setupState: EMPTY_OBJ,
     data: EMPTY_OBJ,
     components: null,
     emitted: null,
+    update: null,
     provides,
     effects: null,
 
@@ -324,6 +340,7 @@ function handleSetupResult(
   } else if (isPlainObject(setupResult)) {
     // 对 setup 状态进行代理，主要处理 ref 解绑 value
     // 即访问 setupState 中的值是 ref 时，会自动获取 .value
+    // 之所以不用 reactive 作代理是因为 setupState 都是由响应式对象组成的，修改时直接修改响应式对象自身即可触发追踪的依赖
     instance.setupState = proxyRefs(setupResult)
   }
 

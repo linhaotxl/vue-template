@@ -1,15 +1,26 @@
 import { hasOwn, isString } from '@vue/shared'
 
+import { watchInstance } from './apiWatch'
 import { markAttrsAccessed } from './componentRenderUtils'
 import { warn } from './warning'
 
+import type { StopHandle, WatchCallback, WatchOptions } from './apiWatch'
 import type { ComponentInternalInstance } from './component'
 
 export type ComponentPublicInstance = {
   $props: Record<string, any>
   $attrs: Record<string, any>
-  $emit: ComponentInternalInstance['emit']
   $el: any
+  $emit: ComponentInternalInstance['emit']
+  $watch: (
+    source:
+      | string
+      | ((publicInstance: ComponentPublicInstance, ...args: unknown[]) => any),
+    cb: WatchCallback,
+    options: WatchOptions
+  ) => StopHandle
+
+  [name: string]: any
 }
 
 export type ComponentPublicCtx = {
@@ -28,6 +39,7 @@ const publicPropertiesMap: Record<
   },
   $emit: instance => instance.emit,
   $el: instance => instance.vNode.el,
+  $watch: instance => watchInstance.bind(null, instance),
 }
 
 /**

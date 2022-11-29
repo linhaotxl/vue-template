@@ -1,4 +1,5 @@
-import { isFunction } from '@vue/shared'
+import { reactive } from '@vue/reactivity'
+import { hasOwn, isFunction } from '@vue/shared'
 
 import {
   onBeforeMount,
@@ -6,11 +7,13 @@ import {
   onMounted,
   onUpdated,
 } from './apiLifecycle'
+import { createPathGetter, watch } from './apiWatch'
 import { LifecycleHooks } from './component'
 import { callWithErrorHandling } from './errorHandling'
 import { warn } from './warning'
 
 import type { createHook } from './apiLifecycle'
+import type { WatchCallback, WatchOptions } from './apiWatch'
 import type { Component, ComponentInternalInstance } from './component'
 import type { EmitOptions } from './componentEmits'
 import type { ComponentPropsOptions } from './componentProps'
@@ -23,6 +26,15 @@ export type ComponentOptions<
   RawBindings = {}
 > = ComponentOptionsBase<Props, RawBindings>
 
+export interface ObjectWatchOptionItem {
+  handler: WatchCallback
+  immediate?: boolean
+  deep?: boolean
+  flush?: 'pre' | 'post' | 'sync'
+}
+
+export type WatchOptionItem = ObjectWatchOptionItem | WatchCallback
+
 export interface ComponentOptionsBase<Props, RawBindings>
   extends LegacyOptions {
   name?: string
@@ -34,6 +46,8 @@ export interface ComponentOptionsBase<Props, RawBindings>
   setup?: () => RenderFunction | RawBindings
 
   data?: () => Record<string, any>
+
+  watch?: Record<string, WatchOptionItem>
 
   emits?: EmitOptions
 
@@ -62,6 +76,8 @@ export function applyOptionsApi(instance: ComponentInternalInstance) {
   const Component = instance.vNode.type as ComponentOptions
   const {
     data,
+    watch: watchOptions,
+
     beforeCreated,
     created,
     beforeMount,
@@ -82,9 +98,9 @@ export function applyOptionsApi(instance: ComponentInternalInstance) {
   // 处理 data
   if (data) {
     if (isFunction(data)) {
-      // 调用 data 获取 state，并挂载在实例上
+      // 调用 data 获取 state，并挂载在实例上，并且要做响应化
       const dataState = data()
-      instance.data = dataState
+      instance.data = reactive(dataState)
     } else {
       warn('')
     }
@@ -101,6 +117,27 @@ export function applyOptionsApi(instance: ComponentInternalInstance) {
   // 调用 created hook
   if (created) {
     callWithErrorHandling(created.bind(instance.proxy), LifecycleHooks.CREATED)
+  }
+
+  // 处理 watch 选项
+  if (watchOptions) {
+    const proxy = instance.proxy!
+    for (const key in watchOptions) {
+      const getter = createPathGetter(key, proxy)
+      const opt = watchOptions[key]
+      let handler: WatchCallback
+      let options: WatchOptions
+
+      if (isFunction(opt)) {
+        handler = opt
+      } else {
+        ;({ handler, ...options } = opt)
+      }
+
+      if (key in proxy || key.split('.')[0] in proxy) {
+        watch(getter, handler, options!)
+      }
+    }
   }
 
   /**
