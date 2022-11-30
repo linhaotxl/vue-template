@@ -13,6 +13,7 @@ import { warn } from './warning'
 
 import type { AppContext } from './apiCreateApp'
 import type { Component, ComponentInternalInstance } from './component'
+import type { DirectiveBinding } from './directives'
 import type { RendererElement } from './renderer'
 
 export const Comment = Symbol('Comment')
@@ -90,6 +91,8 @@ export interface VNode<HostElement extends RendererElement = RendererElement> {
    * 之后会挂载在每一个组件实例上
    */
   appContext: AppContext | null
+
+  dirs: DirectiveBinding[] | null
 }
 
 /**
@@ -168,6 +171,7 @@ export function createVNode(
     component: null,
     el: null,
     appContext: null,
+    dirs: null,
   }
 
   // patchFlag 存在且不是 HYDRATE_EVENTS 视为动态节点

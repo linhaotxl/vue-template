@@ -28,7 +28,7 @@ export function renderComponentRoot(
   let fallthrough
 
   const {
-    vNode: { shapeFlag },
+    vNode: { shapeFlag, dirs },
     attrs,
     type: { inheritAttrs },
   } = instance
@@ -115,6 +115,14 @@ export function renderComponentRoot(
         }
       }
     }
+  }
+
+  // 将组件上的指令继承在子节点上
+  if (dirs) {
+    if (!result.dirs) {
+      result.dirs = []
+    }
+    result.dirs.push(...dirs)
   }
 
   return result

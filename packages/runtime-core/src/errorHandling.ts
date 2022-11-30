@@ -16,6 +16,7 @@ export enum ErrorCodes {
   APP_WARN_HANDLER,
   COMPONENT_EVENT_HANDLER,
   NATIVE_EVENT_HANDLER,
+  DIRECTIVE_HOOK,
 }
 
 export type ErrorTypes = ErrorCodes | LifecycleHooks
@@ -31,7 +32,8 @@ export const ErrorTypeStrings: Record<ErrorTypes, string> = {
   [ErrorCodes.RENDER_FUNCTION]: 'render function',
   [ErrorCodes.APP_WARN_HANDLER]: 'app warnHandler',
   [ErrorCodes.COMPONENT_EVENT_HANDLER]: 'component event handler',
-  [ErrorCodes.NATIVE_EVENT_HANDLER]: 'netive event handler',
+  [ErrorCodes.NATIVE_EVENT_HANDLER]: 'native event handler',
+  [ErrorCodes.DIRECTIVE_HOOK]: 'directive hook',
 
   [LifecycleHooks.BEFORE_CREATE]: 'beforeCreate hook',
   [LifecycleHooks.CREATED]: 'created hook',

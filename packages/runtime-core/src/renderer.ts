@@ -10,6 +10,7 @@ import {
 } from './component'
 import { updateProps } from './componentProps'
 import { renderComponentRoot } from './componentRenderUtils'
+import { invokeDirectives } from './directives'
 import {
   flushPostFlushCbs,
   flushPreFlushCbs,
@@ -125,7 +126,7 @@ function baseRenderer<HostElement extends RendererElement = RendererElement>(
   const patch: PatchFn<HostElement> = (n1, n2, container, parent) => {
     // 如果新旧节点不是同一类型的节点时，需要卸载旧节点，并挂在 n2
     if (n1 && !isSameVNodeType(n1, n2)) {
-      unmount(n1, true)
+      unmount(n1, true, parent)
       n1 = null
     }
 
@@ -137,7 +138,7 @@ function baseRenderer<HostElement extends RendererElement = RendererElement>(
       processFragment(n1, n2, container)
     } else {
       if (n2.shapeFlag & ShapeFlags.ELEMENT) {
-        processElement(n1, n2, container)
+        processElement(n1, n2, container, parent)
       } else if (
         n2.shapeFlag & ShapeFlags.STATEFUL_COMPONENT ||
         n2.shapeFlag & ShapeFlags.FUNCTIONAL_COMPONENT
@@ -156,12 +157,13 @@ function baseRenderer<HostElement extends RendererElement = RendererElement>(
   const processElement = (
     n1: VNode | null,
     n2: VNode,
-    container: HostElement
+    container: HostElement,
+    parent?: ComponentInternalInstance
   ) => {
     if (!n1) {
-      mountElement(n2, container)
+      mountElement(n2, container, parent)
     } else {
-      updateElement(n1, n2, container)
+      updateElement(n1, n2, container, parent)
     }
   }
 
@@ -237,7 +239,11 @@ function baseRenderer<HostElement extends RendererElement = RendererElement>(
    * @param vNode
    * @param container
    */
-  const mountElement = (vNode: VNode, container: HostElement) => {
+  const mountElement = (
+    vNode: VNode,
+    container: HostElement,
+    parent?: ComponentInternalInstance
+  ) => {
     const { type, props, children } = vNode
     // 创建真实元素节点，并挂在在 vNode 的 el 上
     const el = (vNode.el = hostCreateElement(type as string))
@@ -249,27 +255,61 @@ function baseRenderer<HostElement extends RendererElement = RendererElement>(
       }
     }
 
+    // 执行 before mount dir
+    invokeDirectives(null, vNode, 'beforeMount', parent)
+
     // 处理子节点
-    if (children) {
+    if (children != null) {
       mountChildren(children, el)
     }
 
     // 插入容器节点
     hostInsert(el, container)
+
+    // 异步执行 mounted dir
+    if (vNode.dirs) {
+      queuePostFlushCb(() => {
+        invokeDirectives(null, vNode, 'mounted', parent)
+      })
+    }
   }
 
-  const updateElement = (n1: VNode, n2: VNode, container: HostElement) => {
+  /**
+   * 更新元素节点
+   * @param n1
+   * @param n2
+   * @param container
+   * @param parent
+   */
+  const updateElement = (
+    n1: VNode,
+    n2: VNode,
+    container: HostElement,
+    parent?: ComponentInternalInstance
+  ) => {
     container
     const el = (n2.el = n1.el)
     const oldProps = n1.props
     const newProps = n2.props
+
+    // 执行 before update dir
+    if (n2.dirs) {
+      invokeDirectives(n1, n2, 'beforeUpdate', parent)
+    }
 
     for (const key in newProps) {
       hostPatchProps(el as HostElement, key, oldProps?.[key], newProps[key])
     }
 
     // TODO:
-    hostSetElementText(n2.el as any, n2.children as string)
+    hostSetElementText(n2.el as any, String(n2.children))
+
+    // 异步执行 updated dir hook
+    if (n2.dirs) {
+      queuePostFlushCb(() => {
+        invokeDirectives(n1, n2, 'updated', parent)
+      })
+    }
   }
 
   /**
@@ -348,6 +388,8 @@ function baseRenderer<HostElement extends RendererElement = RendererElement>(
   ) => {
     // 实际的更新函数
     const updateComponent = () => {
+      setCurrentInstance(instance)
+
       if (!instance.isMounted) {
         // 挂载组件
 
@@ -392,25 +434,23 @@ function baseRenderer<HostElement extends RendererElement = RendererElement>(
         }
 
         if (instance.next) {
-          // 如果是由父组件引起的更新，在调用 render 前执行一些其他逻辑
+          // 如果是由父组件引起的更新，在调用 render 前需要更新 props 等
           updateComponentPreRender(instance, instance.next)
+
+          // 更新完成后，将最新的 vNode 挂载在实例上，接下来渲染要用到最新 vNode 中的内容
+          instance.vNode = instance.next
+          instance.next = null
         }
 
         // 执行 render 获取新子节点树
         const newSubTree = (instance.subTree = renderComponentRoot(instance))
 
         // 新旧子节点进行对比
-        patch(preSubtree, newSubTree, container)
+        patch(preSubtree, newSubTree, container, instance)
 
         // 执行 updated hook
         if (u) {
           invokeArrayFns(u)
-        }
-
-        // 由父组件引起的更新，需要记录最新的 vNode，并重置 next
-        if (instance.next) {
-          instance.vNode = instance.next
-          instance.next = null
         }
       }
 
@@ -439,16 +479,34 @@ function baseRenderer<HostElement extends RendererElement = RendererElement>(
    * @param vNode
    * @param doRemove
    */
-  const unmount = (vNode: VNode, doRemove = false) => {
+  const unmount = (
+    vNode: VNode,
+    doRemove = false,
+    parent?: ComponentInternalInstance | null
+  ) => {
     // 卸载 Fragment
     if (vNode.type === Fragment) {
       unmountFragment(vNode, doRemove)
       return
     }
 
-    // 卸载组件
     if (vNode.shapeFlag & ShapeFlags.COMPONENT) {
+      // 卸载组件
       unmountComponent(vNode, false)
+    } else {
+      // 卸载非组件
+
+      // 执行 before unmount dir
+      if (vNode.dirs) {
+        invokeDirectives(null, vNode, 'beforeUnmount', parent)
+      }
+
+      // 异步执行 unmounted dir
+      if (vNode.dirs) {
+        queuePostFlushCb(() => {
+          invokeDirectives(null, vNode, 'unmounted', parent)
+        })
+      }
     }
 
     // 删除真实节点
@@ -498,7 +556,7 @@ function baseRenderer<HostElement extends RendererElement = RendererElement>(
 
     // 卸载子节点树，子节点树并不会删除真实的节点
     if (subTree) {
-      unmount(subTree, doRemove)
+      unmount(subTree, doRemove, component)
     }
 
     if (component!.effects) {
@@ -521,9 +579,13 @@ function baseRenderer<HostElement extends RendererElement = RendererElement>(
    * @param children
    * @param doRemove
    */
-  const unmountChildren = (children: VNode[], doRemove: boolean) => {
+  const unmountChildren = (
+    children: VNode[],
+    doRemove: boolean,
+    parent?: ComponentInternalInstance
+  ) => {
     for (let i = 0; i < children.length; ++i) {
-      unmount(children[i], doRemove)
+      unmount(children[i], doRemove, parent)
     }
   }
 

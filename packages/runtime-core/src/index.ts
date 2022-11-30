@@ -12,6 +12,7 @@ export * from './helpers/resolveAssets'
 export * from './helpers/toHandlers'
 export * from './apiInject'
 export * from './warning'
+export * from './directives'
 
 export * from '@vue/reactivity'
 
