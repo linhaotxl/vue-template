@@ -128,6 +128,11 @@ export function renderComponentRoot(
   return result
 }
 
+/**
+ * 没有声明 props 的函数组件，只会透传 class、style 以及事件函数
+ * @param attrs
+ * @returns
+ */
 function getFunctionalFallthrough(attrs: Record<string, any>) {
   let res: Record<string, any> | undefined
 

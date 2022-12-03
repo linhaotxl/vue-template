@@ -9,9 +9,11 @@ import {
   isFunction,
   isModelListener,
   isPlainObject,
+  def,
 } from '@vue/shared'
 
 import { isEmitListener } from './componentEmits'
+import { InternalObjectKey } from './vnode'
 import { warn } from './warning'
 
 import type { Component, ComponentInternalInstance } from './component'
@@ -117,6 +119,10 @@ export function initProps(
   const props: Record<string, unknown> = {}
   // attrs 集合
   const attrs: Record<string, unknown> = {}
+
+  // 标记 attrs 为内部对象，这样如果将整个 attrs 作为 props 时，是需要拷贝一份的
+  // h(xxx, attrs)，如果新旧两次渲染 attrs 中的值发生变化，那么 oldProps 和 newProps 是一模一样的
+  def(attrs, InternalObjectKey, true)
 
   // 全量设置 props 和 attrs
   setFullProps(instance, instance.vNode.props, props, attrs)
@@ -238,7 +244,7 @@ export function setFullProps(
       !isEmitListener(emitOptions, rawName) &&
       !isModelListener(rawName)
     ) {
-      // 不存在，将原始属性名和值存储，排除事件监听器
+      // 不再声明的 props 中，也不是声明的 emit，也不是 v-model 的事件，会放入 attrs 中
       attrs[rawName] = rawProps[rawName]
     }
   }

@@ -1,4 +1,4 @@
-import { proxyRefs, reactive, readonly } from '@vue/reactivity'
+import { proxyRefs, readonly } from '@vue/reactivity'
 import {
   EMPTY_OBJ,
   NOOP,
@@ -315,6 +315,7 @@ export function setupStatefulComponent(instance: ComponentInternalInstance) {
     const setupResult = callWithErrorHandling(
       setup,
       ErrorCodes.SETUP_FUNCTION,
+      // 对 props 进行 readonly 包装，防止在 setup 中被修改
       [readonly(instance.props), createSetupContext(instance)]
     )
     // 处理 setup 返回结果
@@ -340,7 +341,8 @@ function handleSetupResult(
   } else if (isPlainObject(setupResult)) {
     // 对 setup 状态进行代理，主要处理 ref 解绑 value
     // 即访问 setupState 中的值是 ref 时，会自动获取 .value
-    // 之所以不用 reactive 作代理是因为 setupState 都是由响应式对象组成的，修改时直接修改响应式对象自身即可触发追踪的依赖
+    // 之所以不用 reactive 作代理是因为 setupState 都是由响应式对象组成的，可以直接修改响应式对象触发追踪的依赖
+    // 而不需要通过 setupState.xxx = xxx 的方式进行修改，dataState 需要通过这种方式
     instance.setupState = proxyRefs(setupResult)
   }
 

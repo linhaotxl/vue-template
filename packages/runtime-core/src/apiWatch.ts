@@ -234,7 +234,8 @@ function doWatch<T>(
     if (callback === null) {
       // watchEffect
       // 直接调用 source
-      ;(source as WatchEffectSource)(cleanup)
+      _effect.effect.run()
+      // ;(source as WatchEffectSource)(cleanup)
     } else {
       // watch
       // 调用 effect 的原始函数获取最新值

@@ -1,6 +1,7 @@
 import { effect } from '@vue/reactivity'
 import { ShapeFlags, invokeArrayFns, isArray } from '@vue/shared'
 
+import { hasOwn } from './../../shared/src/index'
 import { createAppAPI } from './apiCreateApp'
 import {
   LifecycleHooks,
@@ -14,7 +15,6 @@ import { invokeDirectives } from './directives'
 import {
   flushPostFlushCbs,
   flushPreFlushCbs,
-  invalidateJob,
   queueJob,
   queuePostFlushCb,
 } from './scheduler'
@@ -45,10 +45,6 @@ export type PatchFn<HostElement = RendererElement> = (
   container: HostElement,
   parent?: ComponentInternalInstance
 ) => void
-
-// export interface RendererNode {
-//   [key: string]: any
-// }
 
 export type RendererElement = {
   [x: string]: any
@@ -297,12 +293,23 @@ function baseRenderer<HostElement extends RendererElement = RendererElement>(
       invokeDirectives(n1, n2, 'beforeUpdate', parent)
     }
 
+    // 设置新的 props
     for (const key in newProps) {
       hostPatchProps(el as HostElement, key, oldProps?.[key], newProps[key])
     }
 
+    // 移除不存在的 props
+    for (const key in oldProps) {
+      if (!newProps || !hasOwn(newProps, key)) {
+        hostPatchProps(el as HostElement, key, oldProps[key], null)
+      }
+    }
+
     // TODO:
-    hostSetElementText(n2.el as any, String(n2.children))
+    hostSetElementText(
+      n2.el as any,
+      n2.children != null ? String(n2.children) : ''
+    )
 
     // 异步执行 updated dir hook
     if (n2.dirs) {

@@ -6,6 +6,8 @@ import {
   isOn,
   isPlainObject,
   isString,
+  extend,
+  hasOwn,
 } from '@vue/shared'
 
 import { isClassComponent } from './component'
@@ -141,6 +143,11 @@ export function createVNode(
   }
 
   if (props) {
+    // 如果带有 InternalObjectKey 的 props 就是 attrs，防止修改冲突，需拷贝一份
+    if (hasOwn(props, InternalObjectKey)) {
+      props = extend({}, props)
+    }
+
     // 格式化 class
     if (props.class) {
       props.class = normalizeClass(props.class)
@@ -462,3 +469,6 @@ export function setBlockTracking(value: number) {
 export function isSameVNodeType(n1: VNode, n2: VNode) {
   return n1.type === n2.type
 }
+
+// 标记内部对象
+export const InternalObjectKey = '__vInternal'
