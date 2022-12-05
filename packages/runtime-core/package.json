@@ -8,7 +8,6 @@
   "dependencies": {
     "@vue/reactivity": "workspace:*",
     "@vue/shared": "workspace:*",
-    "@vue/runtime-test": "workspace:*",
-    "@vue/runtime-dom": "workspace:*"
+    "@vue/runtime-test": "workspace:*"
   }
 }
