@@ -13,6 +13,7 @@ import { applyOptionsApi } from './componentOptions'
 import { initProps, normalizePropsOptions } from './componentProps'
 import { PublicInstanceProxyHandlers } from './componentPublicInstance'
 import { markAttrsAccessed } from './componentRenderUtils'
+import { initSlots } from './componentSlots'
 import { ErrorCodes, callWithErrorHandling } from './errorHandling'
 import { warn } from './warning'
 
@@ -184,6 +185,8 @@ export interface ComponentInternalInstance {
    */
   emitted: Record<string, boolean> | null
 
+  slots: Record<string, any> | null
+
   /**
    * Lifecycle hooks
    */
@@ -255,6 +258,7 @@ export function createComponentInstance(
     update: null,
     provides,
     effects: null,
+    slots: null,
 
     [LifecycleHooks.BEFORE_CREATE]: null,
     [LifecycleHooks.CREATED]: null,
@@ -292,6 +296,7 @@ export function setupComponent(instance: ComponentInternalInstance) {
 
   // 初始化 props
   initProps(instance, isStatefulComponent)
+  initSlots(instance)
 
   if (isStatefulComponent) {
     // 安装状态组件
