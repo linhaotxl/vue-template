@@ -49,10 +49,10 @@ export default defineConfig({
       imports: ['vue', 'vue/macros', 'vue-router', '@vueuse/core'],
 
       dirs: [
-        './src/components',
-        './src/directives',
-        './src/layouts',
-        './src/pages',
+        './src/components/**',
+        './src/directives/**',
+        './src/layouts/**',
+        './src/pages/**',
       ],
 
       dts: './src/typings/auto-imports.d.ts',

@@ -3,4 +3,5 @@ node_modules
 .idea
 dist
 /public
-src/typings
+src/typings/auto-imports.d.ts
+src/typings/components.d.ts
