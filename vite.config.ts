@@ -1,18 +1,18 @@
-import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
-import setupExtend from 'vite-plugin-vue-setup-extend'
-import pages from 'vite-plugin-pages'
-import layouts from 'vite-plugin-vue-layouts'
-import { routerConfig } from './config/routes'
+// import { routerConfig } from './config/routes'
 import unocss from 'unocss/vite'
-import Components from 'unplugin-vue-components/vite'
+import AutoImport from 'unplugin-auto-import/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
+import Components from 'unplugin-vue-components/vite'
+import { defineConfig } from 'vite'
+import pages from 'vite-plugin-pages'
 import {
   createStyleImportPlugin,
   ElementPlusResolve as StyleElementPlusResolve,
 } from 'vite-plugin-style-import'
-import AutoImport from 'unplugin-auto-import/vite'
+import layouts from 'vite-plugin-vue-layouts'
+import setupExtend from 'vite-plugin-vue-setup-extend'
 
 export default defineConfig({
   plugins: [
@@ -28,12 +28,12 @@ export default defineConfig({
       dirs: './src/pages',
       extensions: ['vue', 'tsx', 'jsx'],
       routeNameSeparator: '_',
-      extendRoute(route) {
-        return { ...route, ...routerConfig[route.path] }
-      },
-      importMode: path => {
-        return routerConfig[path]?.importMode ?? 'async'
-      },
+      // extendRoute(route) {
+      //   return { ...route, ...routerConfig[route.path] }
+      // },
+      // importMode: path => {
+      //   return routerConfig[path]?.importMode ?? 'async'
+      // },
     }),
 
     layouts({
@@ -55,13 +55,13 @@ export default defineConfig({
         './src/pages',
       ],
 
-      dts: './src/auto-imports.d.ts',
+      dts: './src/typings/auto-imports.d.ts',
 
       vueTemplate: true,
 
       eslintrc: {
         enabled: true,
-        filepath: './src/.eslintrc-auto-import.json',
+        filepath: '.eslintrc-auto-import.json',
       },
     }),
 
@@ -69,7 +69,7 @@ export default defineConfig({
       dirs: ['./src/components'],
       resolvers: [ElementPlusResolver()],
       extensions: ['vue', 'tsx'],
-      dts: './src/components.d.ts',
+      dts: './src/typings/components.d.ts',
       importPathTransform: path =>
         path.endsWith('.tsx') ? path.slice(0, -4) : path,
     }),

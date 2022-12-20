@@ -13,7 +13,6 @@
 </template>
 
 <script lang="ts" setup name="DashboardLayout">
-const count = ref(0)
 const handleClickButton = () => {
   ElMessage({
     message: '111',

@@ -3,7 +3,5 @@
 </template>
 
 <script lang="ts" setup name="LoginPage">
-defineProps<{}>()
-
 ElMessage.success({ message: 'aaa' })
 </script>
