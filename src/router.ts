@@ -1,11 +1,15 @@
-import { setupLayouts } from 'virtual:generated-layouts'
+// import { setupLayouts } from 'virtual:generated-layouts'
 import { createRouter, createWebHistory } from 'vue-router'
 
-import generatedRoutes from '~pages'
+// import generatedRoutes from '~pages'
 
-const routes = setupLayouts(generatedRoutes)
+import type { RouteRecordRaw } from 'vue-router'
 
-console.log(routes)
+// const routes = setupLayouts(generatedRoutes)
+
+const routes: RouteRecordRaw[] = [
+  { path: '/', component: () => import('./pages/Dashboard.vue') },
+]
 
 export const router = createRouter({
   routes,

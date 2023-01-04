@@ -6,12 +6,12 @@ import AutoImport from 'unplugin-auto-import/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 import Components from 'unplugin-vue-components/vite'
 import { defineConfig } from 'vite'
-import pages from 'vite-plugin-pages'
+// import pages from 'vite-plugin-pages'
 import {
   createStyleImportPlugin,
   ElementPlusResolve as StyleElementPlusResolve,
 } from 'vite-plugin-style-import'
-import layouts from 'vite-plugin-vue-layouts'
+// import layouts from 'vite-plugin-vue-layouts'
 import setupExtend from 'vite-plugin-vue-setup-extend'
 
 export default defineConfig({
@@ -24,22 +24,16 @@ export default defineConfig({
 
     setupExtend(),
 
-    pages({
-      dirs: './src/pages',
-      extensions: ['vue', 'tsx', 'jsx'],
-      routeNameSeparator: '_',
-      // extendRoute(route) {
-      //   return { ...route, ...routerConfig[route.path] }
-      // },
-      // importMode: path => {
-      //   return routerConfig[path]?.importMode ?? 'async'
-      // },
-    }),
+    // pages({
+    //   dirs: './src/pages',
+    //   extensions: ['vue', 'tsx', 'jsx'],
+    //   routeNameSeparator: '_',
+    // }),
 
-    layouts({
-      extensions: ['vue', 'tsx', 'jsx'],
-      defaultLayout: 'BasicLayout',
-    }),
+    // layouts({
+    //   extensions: ['vue', 'tsx', 'jsx'],
+    //   defaultLayout: 'BasicLayout',
+    // }),
 
     AutoImport({
       include: [/\.vue$/, /\.[tj]sx?$/],
