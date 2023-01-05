@@ -9,13 +9,9 @@ declare module '@vue/runtime-core' {
   export interface GlobalComponents {
     ElButton: typeof import('element-plus/es')['ElButton']
     ElDatePicker: typeof import('element-plus/es')['ElDatePicker']
-    ElLink: typeof import('element-plus/es')['ElLink']
-    ElRow: typeof import('element-plus/es')['ElRow']
     HelloWorld: typeof import('./../components/HelloWorld.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
-    TestComp: typeof import('../components/TestCompVueTsx.vue')['default']
     TestCompTsx: typeof import('./../components/TestCompTsx')['default']
-    TextCompTsx: typeof import('../components/TestCompTsx')['default']
   }
 }

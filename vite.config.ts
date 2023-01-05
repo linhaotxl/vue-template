@@ -27,6 +27,8 @@ export default defineConfig({
     },
   },
 
+  cacheDir: resolve('.vite'),
+
   css: {
     preprocessorOptions: {
       scss: {
@@ -100,4 +102,26 @@ export default defineConfig({
       resolves: [StyleElementPlusResolve()],
     }),
   ],
+
+  server: {
+    proxy: {},
+  },
+
+  build: {
+    assetsInlineLimit: 4096,
+
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            return 'vendor'
+          }
+        },
+      },
+    },
+  },
+
+  optimizeDeps: {
+    include: [],
+  },
 })

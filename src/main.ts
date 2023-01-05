@@ -7,6 +7,7 @@ import './styles/index.scss'
 /** 引入uno.css，不引入不生效 */
 import 'uno.css'
 
+import { debounce } from 'lodash-es'
 import { createApp } from 'vue'
 
 import { router } from './router'
@@ -18,3 +19,7 @@ const app = createApp(App)
 app.use(router)
 
 app.mount('#app')
+
+debounce(() => {
+  console.log(1)
+}, 1000)
