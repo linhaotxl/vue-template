@@ -4,7 +4,7 @@ export const TextCompTsx = defineComponent({
   name: 'TextCompTsx',
 
   render() {
-    return <div>TextCompTsx</div>
+    return <div class="dark:text-white">JSX Component</div>
   },
 })
 

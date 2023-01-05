@@ -8,7 +8,19 @@ import type { RouteRecordRaw } from 'vue-router'
 // const routes = setupLayouts(generatedRoutes)
 
 const routes: RouteRecordRaw[] = [
-  { path: '/', component: () => import('./pages/Dashboard.vue') },
+  {
+    path: '/',
+    name: 'BasicLayout',
+    component: () => import('./layouts/BasicLayout.vue'),
+    redirect: '/dashboard',
+    children: [
+      {
+        path: '/dashboard',
+        name: 'Dashboard',
+        component: () => import('./pages/Dashboard.vue'),
+      },
+    ],
+  },
 ]
 
 export const router = createRouter({

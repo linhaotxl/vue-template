@@ -2,15 +2,16 @@
 import '@unocss/reset/tailwind.css'
 
 /** 项目内的样式，最好放在重置样式后，uno.css前  */
-import './style.css'
+import './styles/index.scss'
 
 /** 引入uno.css，不引入不生效 */
 import 'uno.css'
 
 import { createApp } from 'vue'
 
-import App from './App.vue'
 import { router } from './router'
+
+import App from '~/App.vue'
 
 const app = createApp(App)
 

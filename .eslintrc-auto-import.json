@@ -92,7 +92,7 @@
     "syncRef": true,
     "syncRefs": true,
     "templateRef": true,
-    "textCompTsx": true,
+    "testCompTsx": true,
     "throttledRef": true,
     "throttledWatch": true,
     "toRaw": true,

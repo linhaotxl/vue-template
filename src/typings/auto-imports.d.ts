@@ -10,7 +10,7 @@ declare global {
   const $toRef: typeof import('vue/macros')['$toRef']
   const EffectScope: typeof import('vue')['EffectScope']
   const ElMessage: typeof import('element-plus/es')['ElMessage']
-  const TextCompTsx: typeof import('../components/TextCompTsx.tsx')['TextCompTsx']
+  const TextCompTsx: typeof import('../components/TestCompTsx')['TextCompTsx']
   const asyncComputed: typeof import('@vueuse/core')['asyncComputed']
   const autoResetRef: typeof import('@vueuse/core')['autoResetRef']
   const computed: typeof import('vue')['computed']
@@ -47,7 +47,7 @@ declare global {
   const isRef: typeof import('vue')['isRef']
   const makeDestructurable: typeof import('@vueuse/core')['makeDestructurable']
   const markRaw: typeof import('vue')['markRaw']
-  const monitor: typeof import('../pages/Dashboard/Monitor.tsx')['default']
+  const monitor: typeof import('../pages/Dashboard/Monitor')['default']
   const nextTick: typeof import('vue')['nextTick']
   const onActivated: typeof import('vue')['onActivated']
   const onBeforeMount: typeof import('vue')['onBeforeMount']
@@ -93,7 +93,7 @@ declare global {
   const syncRef: typeof import('@vueuse/core')['syncRef']
   const syncRefs: typeof import('@vueuse/core')['syncRefs']
   const templateRef: typeof import('@vueuse/core')['templateRef']
-  const textCompTsx: typeof import('../components/TextCompTsx.tsx')['default']
+  const testCompTsx: typeof import('../components/TestCompTsx')['default']
   const throttledRef: typeof import('@vueuse/core')['throttledRef']
   const throttledWatch: typeof import('@vueuse/core')['throttledWatch']
   const toRaw: typeof import('vue')['toRaw']
@@ -261,7 +261,7 @@ declare global {
   const useWindowFocus: typeof import('@vueuse/core')['useWindowFocus']
   const useWindowScroll: typeof import('@vueuse/core')['useWindowScroll']
   const useWindowSize: typeof import('@vueuse/core')['useWindowSize']
-  const userLayout: typeof import('../layouts/UserLayout.tsx')['default']
+  const userLayout: typeof import('../layouts/UserLayout')['default']
   const vHello: typeof import('../directives/vHello')['vHello']
   const watch: typeof import('vue')['watch']
   const watchArray: typeof import('@vueuse/core')['watchArray']
@@ -291,7 +291,7 @@ declare module 'vue' {
     readonly $toRef: UnwrapRef<typeof import('vue/macros')['$toRef']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
     readonly ElMessage: UnwrapRef<typeof import('element-plus/es')['ElMessage']>
-    readonly TextCompTsx: UnwrapRef<typeof import('../components/TextCompTsx.tsx')['TextCompTsx']>
+    readonly TextCompTsx: UnwrapRef<typeof import('../components/TestCompTsx')['TextCompTsx']>
     readonly asyncComputed: UnwrapRef<typeof import('@vueuse/core')['asyncComputed']>
     readonly autoResetRef: UnwrapRef<typeof import('@vueuse/core')['autoResetRef']>
     readonly computed: UnwrapRef<typeof import('vue')['computed']>
@@ -328,7 +328,7 @@ declare module 'vue' {
     readonly isRef: UnwrapRef<typeof import('vue')['isRef']>
     readonly makeDestructurable: UnwrapRef<typeof import('@vueuse/core')['makeDestructurable']>
     readonly markRaw: UnwrapRef<typeof import('vue')['markRaw']>
-    readonly monitor: UnwrapRef<typeof import('../pages/Dashboard/Monitor.tsx')['default']>
+    readonly monitor: UnwrapRef<typeof import('../pages/Dashboard/Monitor')['default']>
     readonly nextTick: UnwrapRef<typeof import('vue')['nextTick']>
     readonly onActivated: UnwrapRef<typeof import('vue')['onActivated']>
     readonly onBeforeMount: UnwrapRef<typeof import('vue')['onBeforeMount']>
@@ -374,7 +374,7 @@ declare module 'vue' {
     readonly syncRef: UnwrapRef<typeof import('@vueuse/core')['syncRef']>
     readonly syncRefs: UnwrapRef<typeof import('@vueuse/core')['syncRefs']>
     readonly templateRef: UnwrapRef<typeof import('@vueuse/core')['templateRef']>
-    readonly textCompTsx: UnwrapRef<typeof import('../components/TextCompTsx.tsx')['default']>
+    readonly testCompTsx: UnwrapRef<typeof import('../components/TestCompTsx')['default']>
     readonly throttledRef: UnwrapRef<typeof import('@vueuse/core')['throttledRef']>
     readonly throttledWatch: UnwrapRef<typeof import('@vueuse/core')['throttledWatch']>
     readonly toRaw: UnwrapRef<typeof import('vue')['toRaw']>
@@ -542,7 +542,7 @@ declare module 'vue' {
     readonly useWindowFocus: UnwrapRef<typeof import('@vueuse/core')['useWindowFocus']>
     readonly useWindowScroll: UnwrapRef<typeof import('@vueuse/core')['useWindowScroll']>
     readonly useWindowSize: UnwrapRef<typeof import('@vueuse/core')['useWindowSize']>
-    readonly userLayout: UnwrapRef<typeof import('../layouts/UserLayout.tsx')['default']>
+    readonly userLayout: UnwrapRef<typeof import('../layouts/UserLayout')['default']>
     readonly vHello: UnwrapRef<typeof import('../directives/vHello')['vHello']>
     readonly watch: UnwrapRef<typeof import('vue')['watch']>
     readonly watchArray: UnwrapRef<typeof import('@vueuse/core')['watchArray']>

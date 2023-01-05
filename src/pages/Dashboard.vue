@@ -1,13 +1,11 @@
 <template>
-  <h2>Dashboard Layout</h2>
-
   <hello-world :msg="'2'" />
 
-  <TextCompTsx />
+  <TestCompTsx />
 
-  <el-button type="primary" @click="handleClickButton">Click</el-button>
+  <el-button type="default" @click="handleClickButton">Show Message</el-button>
 
-  <el-link href="https://element.eleme.io" target="_blank">default</el-link>
+  <el-date-picker />
 
   <router-view />
 </template>

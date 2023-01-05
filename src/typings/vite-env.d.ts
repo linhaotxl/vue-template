@@ -10,7 +10,7 @@ declare module '*.vue' {
 }
 
 /**
- * 扩展 env
+ * 扩展自定义 env
  */
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface ImportMetaEnv {
