@@ -1,7 +1,13 @@
 {
-  "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "types": ["node", "jest"]
+    "types": ["node"],
+    "lib": ["ESNext"],
+    "target": "esnext",
+    "useDefineForClassFields": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "strict": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
   },
-  "include": ["./scripts/setupJestEnv.ts"]
 }
