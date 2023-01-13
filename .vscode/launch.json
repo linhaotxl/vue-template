@@ -5,24 +5,20 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Jest",
-      "type": "node",
+      "name": "debugger launch",
       "request": "launch",
-      "program": "${workspaceFolder}/node_modules/jest/bin/jest.js",
-      "stopOnEntry": false,
-      "args": ["${fileBasename}", "--runInBand", "--detectOpenHandles"],
-      "cwd": "${workspaceFolder}",
-      "preLaunchTask": null,
-      "runtimeExecutable": null,
-      "runtimeArgs": ["--nolazy"],
-      "env": {
-        "NODE_ENV": "development"
-      },
-      "console": "integratedTerminal",
+      "type": "node",
+      "program": "${workspaceFolder}/packages/example/scripts/webpack.js",
+      "stopOnEntry": true,
       "sourceMaps": true,
-      "windows": {
-        "program": "${workspaceFolder}/node_modules/jest/bin/jest",
-      }
+      "cwd": "${workspaceFolder}/packages/example"
+    },
+    // 以下需要先启动 node --inspect-brk 再开启 debugger 即可
+    {
+      "name": "debugger attach",
+      "type": "node",
+      "request": "attach",
+      "port": 9229
     }
   ]
 }

@@ -7,6 +7,8 @@ import nodeResolve from '@rollup/plugin-node-resolve'
 import { defineConfig } from 'rollup'
 import typescript from 'rollup-plugin-typescript2'
 
+// import pkg from './package.json'
+
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const base = __dirname
@@ -20,12 +22,22 @@ export default defineConfig({
       format: 'commonjs',
       dir: resolve('dist'),
       entryFileNames: '[name].cjs.js',
+      sourcemap: 'inline',
     },
     {
       format: 'esm',
       dir: resolve('dist'),
       entryFileNames: '[name].esm.js',
+      sourcemap: 'inline',
     },
+  ],
+
+  external: [
+    '@babel/generator',
+    '@babel/parser',
+    '@babel/traverse',
+    '@babel/types',
+    'tapable',
   ],
 
   plugins: [

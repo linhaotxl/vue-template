@@ -1,3 +1,2 @@
-import { name } from 'my-webpack'
-
-console.log('name: ', name)
+// import './src'
+require('./src')

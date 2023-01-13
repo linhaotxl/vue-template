@@ -8,7 +8,7 @@
     "test": "jest",
     "eslint": "pnpm -r --filter=./packages/* run eslint",
     "lint:js": "eslint --fix --ext .js,.jsx,.ts,.tsx",
-    "watch:test": "pnpm --filter=webpack-example run dev",
+    "watch:test": "pnpm --filter=webpack-example run webpack",
     "watch:webpack": "pnpm --filter=my-webpack run watch -w"
   },
   "devDependencies": {
