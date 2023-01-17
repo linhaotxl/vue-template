@@ -5,9 +5,10 @@ import commonjs from '@rollup/plugin-commonjs'
 import json from '@rollup/plugin-json'
 import nodeResolve from '@rollup/plugin-node-resolve'
 import { defineConfig } from 'rollup'
+import copy from 'rollup-plugin-copy'
 import typescript from 'rollup-plugin-typescript2'
 
-// import pkg from './package.json'
+// import pkg from './package'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -38,9 +39,20 @@ export default defineConfig({
     '@babel/traverse',
     '@babel/types',
     'tapable',
+    'ejs',
+    'debug',
   ],
 
   plugins: [
+    copy({
+      targets: [
+        {
+          src: './src/template',
+          dest: './dist',
+        },
+      ],
+    }),
+
     nodeResolve({}),
 
     typescript({

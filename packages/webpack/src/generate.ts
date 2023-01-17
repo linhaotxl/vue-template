@@ -1,41 +1,13 @@
-import type { Chunk } from './typings'
+import path from 'path'
+import { fileURLToPath } from 'url'
 
-/**
- * 创建代码块的代码
- * @param chunk
- * @returns
- */
-export function generateChunkCode(chunk: Chunk) {
-  const code = `
-var cache = {}
+import ejs from 'ejs'
 
-// require 函数实现
-function require(moduleId) {
-  if (cache[moduleId]) {
-    return cache[moduleId].exports
-  }
+import { readFile } from './utils'
 
-  var module = (cache[moduleId] = { exports: {} })
-  modules[moduleId](module, module.exports, require)
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
-  return module.exports
-}
+const mainTemplate = readFile(path.resolve(__dirname, 'template/main.ejs'))
 
-// 依赖模块集合
-var modules = {
-  ${chunk.dependenceModules.map(
-    module => `\n'${module.id}': (module, exports) => {
-    ${module.sourceCode}
-  }`
-  )}
-}
-
-// 入口代码
-;(() => {
-  ${chunk.entryModule.sourceCode}
-})()
-
-  `.trim()
-
-  return code
-}
+export const generateMainCode = ejs.compile(mainTemplate)

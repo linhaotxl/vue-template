@@ -91,6 +91,8 @@ export class FileModule {
           return
         }
 
+        callee.name = '__webpack_require__'
+
         // 依赖名
         const depName = (node.arguments[0] as StringLiteral).value
         // 依赖文件的绝对路径
