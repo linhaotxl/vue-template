@@ -1,4 +1,5 @@
 import type { Compiler } from '../compiler'
+import type { FileModule } from '../Module'
 
 export type EntryObject = Record<string, string>
 
@@ -19,6 +20,12 @@ export interface WebpackOutput {
 }
 
 export interface WebpackUserConfig {
+  /**
+   * @default process.cwd()
+   *
+   * 入口路径的上下文
+   */
+  context?: string
   extensions?: string[]
   entry: string | EntryObject
   plugins?: WebpackPlugin[]
@@ -27,6 +34,7 @@ export interface WebpackUserConfig {
 }
 
 export interface WebpackResovleConfig extends WebpackUserConfig {
+  context: string
   entry: EntryObject
   plugins: WebpackPlugin[]
   extensions: string[]
@@ -35,33 +43,6 @@ export interface WebpackResovleConfig extends WebpackUserConfig {
 
 export interface WebpackPlugin {
   apply(compiler: Compiler): void
-}
-
-export interface Module {
-  /**
-   * 模块相对于根目录的路径
-   */
-  id: string
-
-  /**
-   * 模块绝对路径
-   */
-  file: string
-
-  /**
-   * 模块对应的源码
-   */
-  sourceCode: string
-
-  /**
-   * 依赖的模块
-   */
-  dependencies: string[]
-
-  /**
-   * 此模块属于哪个代码块
-   */
-  chunks: string[]
 }
 
 export interface Chunk {
@@ -73,10 +54,10 @@ export interface Chunk {
   /**
    * 代码块入口模块
    */
-  entryModule: Module
+  entryModule: FileModule
 
   /**
    * 代码块内的所有依赖模块
    */
-  dependenceModules: Module[]
+  dependenceModules: FileModule[]
 }

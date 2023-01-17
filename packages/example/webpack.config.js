@@ -4,19 +4,66 @@ const path = require('path')
 // const __filename = fileURLToPath(import.meta.url)
 // const __dirname = path.dirname(__filename)
 
-class WebpackRunPlugin {
-  apply(compiler) {
-    compiler.hooks.run.tap('WebpackRunPlugin', () => {
-      console.log('开始编译')
+// before run: 2s
+class WebpackBeforeRun1Plugin {
+  apply(complier) {
+    complier.hooks.beforeRun.tapAsync(
+      'WebpackBeforeRun1Plugin',
+      (compiler, callback) => {
+        // console.log('[info]: WebpackBeforeRun1Plugin 开始执行')
+        setTimeout(() => {
+          // console.log('[info]: WebpackBeforeRun1Plugin 2s 后执行完成')
+          callback()
+        }, 2000)
+      }
+    )
+  }
+}
+
+// before run 1s
+class WebpackBeforeRun2Plugin {
+  apply(complier) {
+    complier.hooks.beforeRun.tapPromise(
+      'WebpackBeforeRun2Plugin',
+      () =>
+        new Promise(resolve => {
+          // console.log('[info]: WebpackBeforeRun2Plugin 开始执行')
+          setTimeout(() => {
+            // console.log('[info]: WebpackBeforeRun2Plugin 1s 后执行完成')
+            resolve()
+          }, 1000)
+        })
+    )
+  }
+}
+
+// run 2s
+class WebpackRun1Plugin {
+  apply(complier) {
+    complier.hooks.run.tapAsync('WebpackRun1Plugin', (compiler, callback) => {
+      // console.log('[info]: WebpackRun1Plugin 开始执行')
+      setTimeout(() => {
+        // console.log('[info]: WebpackRun1Plugin 2s 后执行完成')
+        callback()
+      }, 2000)
     })
   }
 }
 
-class WebpackDonePlugin {
-  apply(compiler) {
-    compiler.hooks.done.tap('WebpackDonePlugin', () => {
-      console.log('完成编译')
-    })
+// run 1s
+class WebpackRun2Plugin {
+  apply(complier) {
+    complier.hooks.run.tapPromise(
+      'WebpackRunPlugin',
+      () =>
+        new Promise(resolve => {
+          // console.log('[info]: WebpackRun2Plugin 开始执行')
+          setTimeout(() => {
+            // console.log('[info]: WebpackRun2Plugin 1s 后执行完成')
+            resolve()
+          }, 1000)
+        })
+    )
   }
 }
 
@@ -28,7 +75,12 @@ module.exports = {
     filename: '[name].js',
   },
 
-  plugins: [new WebpackRunPlugin(), new WebpackDonePlugin()],
+  plugins: [
+    // new WebpackBeforeRun1Plugin(),
+    // new WebpackBeforeRun2Plugin(),
+    // new WebpackRun1Plugin(),
+    // new WebpackRun2Plugin(),
+  ],
 
   module: {
     rules: [

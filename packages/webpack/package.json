@@ -16,10 +16,12 @@
     "@babel/parser": "^7.20.7",
     "@babel/traverse": "^7.20.12",
     "@babel/types": "^7.20.7",
+    "debug": "^4.3.4",
     "tapable": "^2.2.1"
   },
   "devDependencies": {
     "@types/babel__generator": "^7.6.4",
-    "@types/babel__traverse": "^7.18.3"
+    "@types/babel__traverse": "^7.18.3",
+    "@types/debug": "^4.1.7"
   }
 }

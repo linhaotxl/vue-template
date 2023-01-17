@@ -1,3 +1,4 @@
+import { innerPlugins } from './plugins'
 import { isString } from './utils'
 
 import type {
@@ -7,8 +8,15 @@ import type {
 } from './typings/webpack'
 
 export function resolveConfig(config: WebpackUserConfig): WebpackResovleConfig {
-  const { extensions = ['.js'], entry, plugins = [], module = {} } = config
+  const {
+    extensions = ['.js'],
+    entry,
+    plugins,
+    module = {},
+    context = process.cwd(),
+  } = config
 
+  const resolvePlugins = plugins ? [...innerPlugins, ...plugins] : innerPlugins
   const resolveEntry = isString(entry) ? { main: entry } : entry
 
   const resolveModule: Required<WebpackConfigModule> = {
@@ -21,9 +29,10 @@ export function resolveConfig(config: WebpackUserConfig): WebpackResovleConfig {
 
   return {
     ...config,
+    context,
     extensions,
     entry: resolveEntry,
-    plugins,
+    plugins: resolvePlugins,
     module: resolveModule,
   }
 }
