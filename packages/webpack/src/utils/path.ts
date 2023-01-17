@@ -9,3 +9,5 @@ export const relative4Root = (p: string, dir = root) =>
   normalizePath(path.relative(dir, p))
 
 export const toAbsolutePath = (p: string, dir = root) => path.resolve(dir, p)
+
+export const dirname = (p: string) => path.dirname(p)

@@ -1,12 +1,16 @@
-import path from 'path'
-
 import generate from '@babel/generator'
 import { parse } from '@babel/parser'
 import traverse from '@babel/traverse'
 import types from '@babel/types'
 
 import { tryResolve } from './resolver'
-import { normalizePath, readFile, relative4Root, toAbsolutePath } from './utils'
+import {
+  dirname,
+  normalizePath,
+  readFile,
+  relative4Root,
+  toAbsolutePath,
+} from './utils'
 
 import type { Compilation } from './compilation'
 import type { WebpackLoader } from './typings'
@@ -52,7 +56,7 @@ export class FileModule {
   constructor(rawId: string, dir: string, chunkName: string) {
     this.file = normalizePath(toAbsolutePath(rawId, dir))
     this.id = `./${relative4Root(this.file)}`
-    this.dir = path.dirname(this.file)
+    this.dir = dirname(this.file)
     this.sourceCode = readFile(this.file)
     this.chunk = chunkName
   }
@@ -81,7 +85,8 @@ export class FileModule {
     traverse.default(ast, {
       CallExpression: ({ node }: any) => {
         // 只会处理 require 函数调用
-        const functionName = (node.callee as Identifier).name
+        const callee = node.callee as Identifier
+        const functionName = callee.name
         if (functionName !== 'require') {
           return
         }
