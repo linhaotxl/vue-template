@@ -63,7 +63,10 @@ export class Compilation {
   createAssets() {
     // 生成每个代码块的最终代码，记录在资源中
     this.chunks.forEach(chunk => {
-      const chunkCode = generateMainCode({ chunk })
+      const chunkCode = generateMainCode({
+        chunk,
+        modules: [chunk.entryModule, ...chunk.dependenceModules],
+      })
       this.assets[chunk.name] = chunkCode
     })
   }

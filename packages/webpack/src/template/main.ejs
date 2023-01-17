@@ -18,11 +18,14 @@
 
 
   var __webpack_modules__ = ({
-    <% for (const m of chunk.dependenceModules) { %>
+
+    <% for (const m of modules) { %>
       "<%= m.id %>": (module, exports, __webpack_require__) => {
         <%- m.sourceCode %>
       },
     <% } %>
   })
+
+  var __webpack_exports__ = __webpack_require__("<%- chunk.entryModule.id %>")
 
 })()
