@@ -1,3 +1,4 @@
+import type { Package } from './pkg'
 import type { Compiler } from '../compiler'
 import type { FileModule } from '../Module'
 
@@ -26,10 +27,32 @@ export interface WebpackUserConfig {
    * 入口路径的上下文
    */
   context?: string
+
+  /**
+   * 文件扩展名
+   *
+   * @default ['.js']
+   */
   extensions?: string[]
+
+  /**
+   * 入口
+   */
   entry: string | EntryObject
+
+  /**
+   * 插件
+   */
   plugins?: WebpackPlugin[]
+
+  /**
+   * 模块配置
+   */
   module?: WebpackConfigModule
+
+  /**
+   * 输出配置
+   */
   output: WebpackOutput
 }
 
@@ -39,25 +62,9 @@ export interface WebpackResovleConfig extends WebpackUserConfig {
   plugins: WebpackPlugin[]
   extensions: string[]
   module: Required<WebpackConfigModule>
+  pkg: Package
 }
 
 export interface WebpackPlugin {
   apply(compiler: Compiler): void
-}
-
-export interface Chunk {
-  /**
-   * 代码块名称
-   */
-  name: string
-
-  /**
-   * 代码块入口模块
-   */
-  entryModule: FileModule
-
-  /**
-   * 代码块内的所有依赖模块
-   */
-  dependenceModules: FileModule[]
 }

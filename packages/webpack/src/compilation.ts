@@ -1,5 +1,4 @@
 import { Chunk } from './Chunk'
-import { generateMainCode } from './generate'
 import { FileModule } from './Module'
 
 import type { WebpackResovleConfig } from './typings'
@@ -20,7 +19,12 @@ export class Compilation {
    * @param entryFile 入口文件名
    * @param context 入口文件上下文
    */
-  createEntry(chunkName: string, entryFile: string, context: string) {
+  createChunk(
+    chunkName: string,
+    entryFile: string,
+    context: string,
+    entryed: boolean
+  ) {
     // 创建入口模块
     const entryModule = this.createModule(entryFile, context, chunkName)
     // 创建入口 Chunk
@@ -29,7 +33,9 @@ export class Compilation {
       entryModule,
       this.modules.filter(
         module => module.chunk === chunkName && module.file !== entryModule.file
-      )
+      ),
+      entryed,
+      this.config
     )
 
     this.chunks.push(chunk)
@@ -38,6 +44,7 @@ export class Compilation {
   /**
    * 创建模块
    * @param {string} moduleFile 模块绝对路径
+   * @param {string} dir 模块所在目录
    * @param {string} chunkName 代码块名
    */
   createModule(moduleFile: string, dir: string, chunkName: string) {
@@ -62,12 +69,13 @@ export class Compilation {
    */
   createAssets() {
     // 生成每个代码块的最终代码，记录在资源中
-    this.chunks.forEach(chunk => {
-      const chunkCode = generateMainCode({
-        chunk,
-        modules: [chunk.entryModule, ...chunk.dependenceModules],
+    try {
+      this.chunks.forEach(chunk => {
+        const code = chunk.generate()
+        code && (this.assets[chunk.chunkId] = code)
       })
-      this.assets[chunk.name] = chunkCode
-    })
+    } catch (e) {
+      console.log(e)
+    }
   }
 }

@@ -6,6 +6,7 @@ import types from '@babel/types'
 import { tryResolve } from './resolver'
 import {
   dirname,
+  extractWebpackChunkName,
   normalizePath,
   readFile,
   relative4Root,
@@ -14,7 +15,9 @@ import {
 
 import type { Compilation } from './compilation'
 import type { WebpackLoader } from './typings'
-import type { Identifier, StringLiteral } from '@babel/types'
+import type { Identifier, StringLiteral, Import } from '@babel/types'
+
+let chunkCount = 0
 
 export class FileModule {
   /**
@@ -40,12 +43,17 @@ export class FileModule {
   /**
    * 模块依赖的文件
    */
-  dependencies: string[] = []
+  dependencies: { url: string; chunkId: string; async: boolean }[] = []
 
   /**
    * 模块所属的代码块
    */
   chunk: string
+
+  /**
+   * 是否是异步模块
+   */
+  async = false
 
   /**
    * 创建模块
@@ -59,6 +67,7 @@ export class FileModule {
     this.dir = dirname(this.file)
     this.sourceCode = readFile(this.file)
     this.chunk = chunkName
+    // this.async = async
   }
 
   /**
@@ -83,38 +92,77 @@ export class FileModule {
 
     // @ts-ignore
     traverse.default(ast, {
-      CallExpression: ({ node }: any) => {
-        // 只会处理 require 函数调用
-        const callee = node.callee as Identifier
-        const functionName = callee.name
-        if (functionName !== 'require') {
-          return
+      CallExpression: (nodePath: any) => {
+        const { node } = nodePath
+
+        // 是否是 require 函数调用
+        let isRequireFuncCall = false
+        // 是否是 import 动态导入
+        let isDynamicImport = false
+        // 动态导入的 chunkName
+        let chunkName = ''
+
+        if (types.isIdentifier(node.callee) && node.callee.name === 'require') {
+          // 处理 require 函数
+          isRequireFuncCall = true
+          // node.callee.name = '__webpack_require__'
+        } else if (types.isImport(node.callee)) {
+          // 处理 import 动态导入
+          isDynamicImport = true
+
+          // 在魔法注释中获取 chunkName，默认为数字
+          const [rawId] = node.arguments
+          if (types.isStringLiteral(rawId)) {
+            chunkName =
+              (rawId.leadingComments
+                ? extractWebpackChunkName(rawId.leadingComments[0].value)
+                : '') || `${chunkCount++}`
+          }
         }
 
-        callee.name = '__webpack_require__'
-
-        // 依赖名
-        const depName = (node.arguments[0] as StringLiteral).value
-        // 依赖文件的绝对路径
-        const depAbsolutePath = tryResolve(
-          normalizePath(toAbsolutePath(depName, this.dir)),
-          compilation.config.extensions
-        )
-
-        if (depAbsolutePath) {
-          // 这里需要将 require 导入的路径重写为相对根目录的路径，也就是模块的 id 属性
-          const depRelative4Root = `./${relative4Root(depAbsolutePath)}`
-          node.arguments = [types.stringLiteral(depRelative4Root)]
-          this.dependencies.push(
-            `./${relative4Root(depAbsolutePath, this.dir)}`
+        if (isRequireFuncCall || isDynamicImport) {
+          // 导入的模块名
+          const depName = (node.arguments[0] as StringLiteral).value
+          // 模块文件的绝对路径
+          const depAbsolutePath = tryResolve(
+            normalizePath(toAbsolutePath(depName, this.dir)),
+            compilation.config.extensions
           )
+
+          if (depAbsolutePath) {
+            // 模块文件相对于根目录的路径
+            const depRelative4Root = `./${relative4Root(depAbsolutePath)}`
+            // 存入当前模块的依赖中
+            this.dependencies.push({
+              url: `./${relative4Root(depAbsolutePath, this.dir)}`,
+              chunkId: isRequireFuncCall ? this.chunk : chunkName,
+              async: isRequireFuncCall ? false : true,
+            })
+
+            if (isRequireFuncCall) {
+              // 将 require 导入的路径重写为相对根目录的路径，也就是模块的 id 属性
+              ;(node.callee as Identifier).name = '__webpack_require__'
+              node.arguments = [types.stringLiteral(depRelative4Root)]
+            } else {
+              // 将 import() 重写
+              nodePath.replaceWithSourceString(
+                `__webpack_require__.e("${chunkName}").then(() => {
+                  return __webpack_require__("${depRelative4Root}")
+                })`
+              )
+            }
+          }
         }
       },
     })
 
     // 编译每一个依赖文件
-    this.dependencies.forEach(modulePath => {
-      compilation.createModule(modulePath, this.dir, this.chunk)
+    this.dependencies.forEach(({ url, chunkId, async }) => {
+      if (async) {
+        compilation.createChunk(chunkId, url, this.dir, false)
+      } else {
+        compilation.createModule(url, this.dir, chunkId)
+      }
     })
 
     // 生成改模块的代码，并记录

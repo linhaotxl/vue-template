@@ -20,10 +20,11 @@ export class EntryPlugin implements WebpackPlugin {
             for (const chunkName in entry) {
               // TODO: 添加新的入口
 
-              compilation.createEntry(
+              compilation.createChunk(
                 chunkName,
                 entry[chunkName],
-                normalizePath(path.resolve(context))
+                normalizePath(path.resolve(context)),
+                true
               )
             }
 

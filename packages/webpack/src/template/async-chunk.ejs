@@ -1,0 +1,10 @@
+(function () {
+  window['webpackChunk<%- packageName %>'].push([
+    "<%- chunk.chunkId %>",
+    {
+      <%- include('modules.ejs', { modules: [chunk.entryModule] }) %>
+      <%- include('modules.ejs', { modules: chunk.dependenceModules }) %>
+    }
+  ])
+
+})()

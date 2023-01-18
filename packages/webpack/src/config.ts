@@ -1,5 +1,5 @@
 import { innerPlugins } from './plugins'
-import { isString } from './utils'
+import { isString, readFile, toAbsolutePath } from './utils'
 
 import type {
   WebpackConfigModule,
@@ -34,5 +34,6 @@ export function resolveConfig(config: WebpackUserConfig): WebpackResovleConfig {
     entry: resolveEntry,
     plugins: resolvePlugins,
     module: resolveModule,
+    pkg: JSON.parse(readFile(toAbsolutePath('./package.json'))),
   }
 }
