@@ -10,7 +10,7 @@ module.exports = {
 
   overrides: [
     {
-      files: ['vite.config.ts', 'unocss.config.ts'],
+      files: ['./packages/playground/vite.config.ts', './packages/playground/unocss.config.ts'],
       env: {
         node: true,
         browser: false,
@@ -28,7 +28,10 @@ module.exports = {
     },
 
     {
-      files: 'src/**/*.{js,jsx,ts,tsx,vue}',
+      files: [
+        './packages/playground/src/**/*.{js,jsx,ts,tsx,vue}',
+        './packages/core/**/*.{js,jsx,ts,tsx,vue}',
+      ],
       env: {
         node: false,
         browser: true,
@@ -39,7 +42,7 @@ module.exports = {
         'plugin:vue/vue3-recommended',
         'plugin:@typescript-eslint/recommended',
         'plugin:prettier/recommended',
-        './.eslintrc-auto-import.json',
+        './packages/playground/.eslintrc-auto-import.json',
       ],
       plugins: ['vue', '@typescript-eslint', 'import'],
       parser: 'vue-eslint-parser',
@@ -51,6 +54,7 @@ module.exports = {
       rules: {
         'no-undef': 'error',
         'vue/multi-word-component-names': 'off',
+        '@typescript-eslint/no-non-null-assertion': 'off',
       },
     },
   ],

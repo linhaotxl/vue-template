@@ -1,0 +1,16 @@
+{
+  "name": "element-plus-pro-components",
+  "version": "0.0.1",
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "watch": "tsc -b --force -w tsconfig.esm.json",
+    "lint:js": "eslint --fix --ext .js,.jsx,.ts,.tsx,.vue src/",
+    "lint:style": "stylelint --fix \"src/**/*.{css,less,scss,sass,vue}\""
+  },
+  "devDependencies": {
+    "@vueuse/core": "^9.3.1",
+    "element-plus": "^2.2.22",
+    "vue": "^3.2.37"
+  }
+}
