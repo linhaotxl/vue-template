@@ -1,15 +1,9 @@
 import { SyncHook, AsyncSeriesHook, AsyncParallelHook } from 'tapable'
 
 import { Compilation } from './compilation'
-import { createDebugger } from './logger'
 import { mkdir, normalizePath, toAbsolutePath, writeFile } from './utils'
 
 import type { EntryObject, WebpackResovleConfig } from './typings'
-
-const run = createDebugger('my-webpack:run')
-const compile = createDebugger('my-webpack:compile')
-const beforeRunDebug = createDebugger('my-webpack:beforeRun')
-const runDebug = createDebugger('my-webpack:run')
 
 export class Compiler {
   hooks = {
@@ -33,12 +27,9 @@ export class Compiler {
   constructor(private config: WebpackResovleConfig) {}
 
   run() {
-    // run('开始执行 compiler.run 方法')
     // 先执行 beforeRun 钩子，等所有的 beforeRun 执行完后再执行 run 钩子
     this.hooks.beforeRun.callAsync(this, () => {
-      // beforeRunDebug('所有 beforeRun hook 执行完成')
       this.hooks.run.callAsync(this, () => {
-        // runDebug('所有 run hook 执行完成')
         // 开始编译
         this.compile()
       })

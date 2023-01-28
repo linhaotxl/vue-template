@@ -3,6 +3,7 @@ import { parse } from '@babel/parser'
 import traverse from '@babel/traverse'
 import types from '@babel/types'
 
+import { TemptaleType } from './generate'
 import { tryResolve } from './resolver'
 import {
   dirname,
@@ -15,8 +16,9 @@ import {
 
 import type { Compilation } from './compilation'
 import type { WebpackLoader } from './typings'
-import type { Identifier, StringLiteral, Import } from '@babel/types'
+import type { Identifier, StringLiteral } from '@babel/types'
 
+// 未命名异步 chunk 名称，每次累加
 let chunkCount = 0
 
 export class FileModule {
@@ -48,26 +50,32 @@ export class FileModule {
   /**
    * 模块所属的代码块
    */
-  chunk: string
+  chunkId: string
 
   /**
-   * 是否是异步模块
+   * 模块所属的入口 chunk
    */
-  async = false
+  entryChunkId: string
 
   /**
    * 创建模块
-   * @param moduleId 原始导入模块的名称
-   * @param chunkName 代码块名
-   * @param dir 父目录绝对路径
+   * @param rawId 原始导入模块的名称
+   * @param dir 模块所属目录绝对路径
+   * @param chunkId 模块所属 chunk
+   * @param entryChunkId 模块所属入口 chunk
    */
-  constructor(rawId: string, dir: string, chunkName: string) {
+  constructor(
+    rawId: string,
+    dir: string,
+    chunkId: string,
+    entryChunkId: string
+  ) {
     this.file = normalizePath(toAbsolutePath(rawId, dir))
     this.id = `./${relative4Root(this.file)}`
     this.dir = dirname(this.file)
     this.sourceCode = readFile(this.file)
-    this.chunk = chunkName
-    // this.async = async
+    this.chunkId = chunkId
+    this.entryChunkId = entryChunkId
   }
 
   /**
@@ -103,11 +111,10 @@ export class FileModule {
         let chunkName = ''
 
         if (types.isIdentifier(node.callee) && node.callee.name === 'require') {
-          // 处理 require 函数
+          // 标记是 require 函数
           isRequireFuncCall = true
-          // node.callee.name = '__webpack_require__'
         } else if (types.isImport(node.callee)) {
-          // 处理 import 动态导入
+          // 标记是 import 动态导入
           isDynamicImport = true
 
           // 在魔法注释中获取 chunkName，默认为数字
@@ -123,7 +130,7 @@ export class FileModule {
         if (isRequireFuncCall || isDynamicImport) {
           // 导入的模块名
           const depName = (node.arguments[0] as StringLiteral).value
-          // 模块文件的绝对路径
+          // 导入的模块文件绝对路径
           const depAbsolutePath = tryResolve(
             normalizePath(toAbsolutePath(depName, this.dir)),
             compilation.config.extensions
@@ -135,7 +142,7 @@ export class FileModule {
             // 存入当前模块的依赖中
             this.dependencies.push({
               url: `./${relative4Root(depAbsolutePath, this.dir)}`,
-              chunkId: isRequireFuncCall ? this.chunk : chunkName,
+              chunkId: isRequireFuncCall ? this.chunkId : chunkName,
               async: isRequireFuncCall ? false : true,
             })
 
@@ -144,6 +151,12 @@ export class FileModule {
               ;(node.callee as Identifier).name = '__webpack_require__'
               node.arguments = [types.stringLiteral(depRelative4Root)]
             } else {
+              // 标记入口 chunk 用到了异步 chunk 的代码
+              compilation.markTemplateType(
+                this.entryChunkId,
+                TemptaleType.AsyncChunk
+              )
+
               // 将 import() 重写
               nodePath.replaceWithSourceString(
                 `__webpack_require__.e("${chunkName}").then(() => {
@@ -159,9 +172,15 @@ export class FileModule {
     // 编译每一个依赖文件
     this.dependencies.forEach(({ url, chunkId, async }) => {
       if (async) {
-        compilation.createChunk(chunkId, url, this.dir, false)
+        compilation.createChunk(
+          chunkId,
+          url,
+          this.dir,
+          false,
+          this.entryChunkId
+        )
       } else {
-        compilation.createModule(url, this.dir, chunkId)
+        compilation.createModule(url, this.dir, chunkId, this.entryChunkId)
       }
     })
 

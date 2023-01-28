@@ -18,8 +18,6 @@ export class EntryPlugin implements WebpackPlugin {
           new Promise(resolve => {
             // 遍历所有入口，为每一个入口创建 module
             for (const chunkName in entry) {
-              // TODO: 添加新的入口
-
               compilation.createChunk(
                 chunkName,
                 entry[chunkName],

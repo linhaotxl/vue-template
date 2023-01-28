@@ -43,7 +43,7 @@
   ;(function () {
     var scriptUrl = ''
     var document = __webpack_require__.g.document
-    // dom 环境
+    // dom 环境，获取执行当前 js 脚本的的绝对路径
     if (document) {
       scriptUrl = document.currentScript.src
     }
@@ -75,14 +75,18 @@
   }
 
   /**
-   *
+   * 开始加载动态模块
    */
   __webpack_require__.j = function (chunkId, promises) {
+    // 每个动态模块创建对应的 Promise 对象，并记录 resolve 和 reject 方法
     const promise = new Promise((resolve, reject) => {
       installedChunks[chunkId] = [resolve, reject]
     })
+
+    // 将 Promise 对象存储
     promises.push(promise)
 
+    // 创建 script 标签并插入文档中
     var url = __webpack_require__.p + chunkId + '.js'
     var script = document.createElement('script')
     script.src = url
@@ -90,19 +94,20 @@
   }
 
   ;(function () {
+    /**
+     * 通过 jsonp 引入动态模块时执行的函数
+     * @param {string} chunkId chunk 名称
+     * @param {object} otherModules 动态模块自身以及依赖的模块
+     */
     function webpackJsonpCallback ([chunkId, otherModules]) {
-      var resolves = []
-
-      resolves.push(installedChunks[chunkId][0])
-      installedChunks[chunkId] = 0
-
+      // 将其他模块存储在主模块中
       for (var id in otherModules) {
         __webpack_modules__[id] = otherModules[id]
       }
 
-      while (resolves.length) {
-        resolves.shift()()
-      }
+      // 执行每个 chunk 在 j 中产生的 resolve 方法，并标记加载成功
+      installedChunks[chunkId][0]()
+      installedChunks[chunkId] = 0
     }
 
     __webpack_require__.g['webpackChunk<%- packageName %>'] = {
@@ -111,11 +116,13 @@
   })()
   <% } %>
 
+  // 所有模块集合
   var __webpack_modules__ = ({
     <%- include('modules.ejs', { modules: [chunk.entryModule] }) %>
     <%- include('modules.ejs', { modules: chunk.dependenceModules }) %>
   })
 
-  var __webpack_exports__ = __webpack_require__("<%- chunk.entryModule.id %>")
+  // 从入口开始调用
+  __webpack_require__("<%- chunk.entryModule.id %>")
 
 })()

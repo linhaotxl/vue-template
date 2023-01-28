@@ -1,26 +1,25 @@
-import { Generator } from './generate'
-
 import type { FileModule } from './Module'
-import type { WebpackResovleConfig } from './typings'
 
 export class Chunk {
-  private generator
-
   constructor(
+    /**
+     * chunk 对应的 name，入口则是 entry 中的 key，异步 chunk 则是魔法注释中的 name
+     */
     public chunkId: string,
-    public entryModule: FileModule,
-    public dependenceModules: FileModule[],
-    public entryed: boolean,
-    private config: WebpackResovleConfig
-  ) {
-    this.generator = new Generator(this.config)
-  }
 
-  generate() {
-    if (this.entryed) {
-      return this.generator.generateMain(this)
-    } else {
-      return this.generator.generateAsyncChunk(this)
-    }
-  }
+    /**
+     * chunk 的入口模块
+     */
+    public entryModule: FileModule,
+
+    /**
+     * chunk 下所有的依赖模块，排除入口模块
+     */
+    public dependenceModules: FileModule[],
+
+    /**
+     * 是否是入口 chunk，而非异步 chunk
+     */
+    public entryed: boolean
+  ) {}
 }
