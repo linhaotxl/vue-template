@@ -5,17 +5,20 @@ import types from '@babel/types'
 
 import { TemptaleType } from './generate'
 import { tryResolve } from './resolver'
+import { runLoaders } from './runLoader'
+
+import type { Compilation } from './compilation'
+
 import {
   dirname,
   extractWebpackChunkName,
+  isString,
   normalizePath,
-  readFile,
   relative4Root,
   toAbsolutePath,
 } from './utils'
 
-import type { Compilation } from './compilation'
-import type { WebpackLoader } from './typings'
+import type { RunLoaderCallbackResult, WebpackConfigLoader } from './typings'
 import type { Identifier, StringLiteral } from '@babel/types'
 
 // 未命名异步 chunk 名称，每次累加
@@ -40,7 +43,7 @@ export class FileModule {
   /**
    * 模块源代码
    */
-  sourceCode: string
+  sourceCode = ''
 
   /**
    * 模块依赖的文件
@@ -73,7 +76,6 @@ export class FileModule {
     this.file = normalizePath(toAbsolutePath(rawId, dir))
     this.id = `./${relative4Root(this.file)}`
     this.dir = dirname(this.file)
-    this.sourceCode = readFile(this.file)
     this.chunkId = chunkId
     this.entryChunkId = entryChunkId
   }
@@ -83,20 +85,77 @@ export class FileModule {
    * @param compilation
    */
   build(compilation: Compilation) {
-    // 交由处理 loader 处理为 js
-    const loaders: WebpackLoader[] = []
-    for (const loader of compilation.config.module.rules) {
-      if (loader.test.test(this.file)) {
-        loaders.push(...loader.use)
+    // 交由各种 loader 处理为 js
+    this.processLoaders(compilation, (e, result) => {
+      if (!e && result.code) {
+        // 解析 ast 以及依赖，获取最终 code
+        this.sourceCode = this.processAst(compilation, result.code)
+      }
+    })
+  }
+
+  /**
+   * 通过各种 loaders 处理为 js 代码
+   * @param compilation
+   * @param callback
+   */
+  private processLoaders(
+    compilation: Compilation,
+    callback: (e: Error | null, result: RunLoaderCallbackResult) => void
+  ) {
+    // 按照 enforce 合并 loaders
+    const preLoaders: WebpackConfigLoader = []
+    const normalLoaders: WebpackConfigLoader = []
+    const postLoaders: WebpackConfigLoader = []
+
+    const map: Record<
+      'pre' | 'normal' | 'post' | 'undefined',
+      WebpackConfigLoader
+    > = {
+      normal: normalLoaders,
+      pre: preLoaders,
+      post: postLoaders,
+      undefined: normalLoaders,
+    }
+
+    for (const rule of compilation.config.module.rules) {
+      if (!rule.test.test(this.file)) {
+        continue
+      }
+
+      if (isString(rule.use)) {
+        normalLoaders.push(rule.use)
+      } else {
+        for (const loader of rule.use) {
+          if (isString(loader)) {
+            normalLoaders.push(loader)
+          } else {
+            const enforceType = String(loader.enforce) as keyof typeof map
+            map[enforceType].push(loader)
+          }
+        }
       }
     }
-    this.sourceCode = loaders.reduceRight(
-      (prev, loader) => loader(prev),
-      this.sourceCode
-    )
 
+    // 运行 laoders
+    runLoaders(
+      {
+        resourcePath: this.file,
+        loaders: [...preLoaders, ...normalLoaders, ...postLoaders],
+      },
+      callback
+    )
+  }
+
+  /**
+   * 解析 ast，处理依赖，获取最终代码
+   * @param compilation
+   * @param sourceCode
+   * @returns
+   */
+  private processAst(compilation: Compilation, sourceCode: string) {
     // babel 处理依赖模块
-    const ast = parse(this.sourceCode, { sourceType: 'module' })
+    const ast = parse(sourceCode, { sourceType: 'module' })
 
     // @ts-ignore
     traverse.default(ast, {
@@ -187,6 +246,7 @@ export class FileModule {
     // 生成改模块的代码，并记录
     // @ts-ignore
     const { code } = generate.default(ast)
-    this.sourceCode = code
+
+    return code as string
   }
 }

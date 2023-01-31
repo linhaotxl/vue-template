@@ -1,21 +1,111 @@
 import type { Package } from './pkg'
 import type { Compiler } from '../compiler'
-import type { FileModule } from '../Module'
 
 export type EntryObject = Record<string, string>
 
-export type WebpackLoader = (code: string) => string
+/**
+ * Loader
+ */
+export interface WebpackPitchLoader {
+  (this: WebpackLoaderContext): void
+}
 
-export interface WebpackRules {
+export interface WebpackNormalLoader {
+  (this: WebpackLoaderContext, code: string): string
+}
+
+export interface WebpackLoader extends WebpackNormalLoader {
+  pitch?: WebpackPitchLoader
+}
+
+export interface RunLoaderCallbackResult {
+  code?: string
+}
+
+export interface WebpackLoaderObject {
+  // raw: WebpackConfigSingleLoader
+
+  /**
+   * loader 的路径
+   */
+  path: string
+
+  /**
+   * normal 阶段的 loader
+   */
+  normal?: WebpackLoader
+
+  /**
+   * pitch 阶段的 loader
+   */
+  pitch?: () => void
+
+  /**
+   * normal 阶段的参数
+   */
+  options?: unknown
+}
+
+export interface WebpackLoaderContext {
+  /**
+   * loader 执行的索引
+   */
+  loaderIndex: number
+
+  /**
+   * 所有 loader 的对象列表
+   */
+  loaders: WebpackLoaderObject[]
+
+  /**
+   *
+   */
+  resourcePath: string
+
+  callback: (e: Error, content: string | Buffer) => void
+
+  async: () => WebpackLoaderContext['callback']
+}
+
+export interface WebpackConfigLoaderOptions {
+  /**
+   * loader 名称
+   */
+  loader: string
+
+  /**
+   * normal 阶段的参数
+   */
+  options?: unknown
+
+  /**
+   * loader 执行时机
+   *
+   * @default 'normal'
+   */
+  enforce?: 'pre' | 'normal' | 'post' | undefined
+}
+
+export type WebpackConfigSingleLoader = string | WebpackConfigLoaderOptions
+export type WebpackConfigLoader = WebpackConfigSingleLoader[]
+
+export interface WebpackConfigRule {
+  /**
+   * 校验文件类型
+   */
   test: RegExp
-  use: WebpackLoader[]
+
+  /**
+   * loader 列表
+   */
+  use: string | WebpackConfigLoader
 }
 
 export interface WebpackConfigModule {
-  rules?: WebpackRules[]
+  rules?: WebpackConfigRule[]
 }
 
-export interface WebpackOutput {
+export interface WebpackConfigOutput {
   path: string
   filename: string
 }
@@ -53,7 +143,7 @@ export interface WebpackUserConfig {
   /**
    * 输出配置
    */
-  output: WebpackOutput
+  output: WebpackConfigOutput
 }
 
 export interface WebpackResovleConfig extends WebpackUserConfig {
