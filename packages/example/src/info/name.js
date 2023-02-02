@@ -1,5 +1,13 @@
-const { firstName } = require('./fullName/firstName')
-const { lastName } = require('./fullName/lastName')
+// const { firstName } = require('./fullName/firstName')
+// const { lastName } = require('./fullName/lastName')
 module.exports = {
-  name: firstName + ' ' + lastName,
+  async name() {
+    const { firstName } = await import(
+      /* webpackChunkName: 'firstName' */ './fullName/firstName'
+    )
+    const { lastName } = await import(
+      /* webpackChunkName: 'lastName' */ './fullName/lastName'
+    )
+    return firstName + lastName
+  },
 }

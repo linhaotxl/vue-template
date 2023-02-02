@@ -4,10 +4,13 @@
   "version": "0.0.0",
   "type": "commonjs",
   "scripts": {
-    "webpack": "node ./scripts/webpack.js"
+    "webpack": "node ./scripts/webpack.js",
+    "build": "webpack"
   },
   "dependencies": {
     "cross-env": "^7.0.3",
-    "my-webpack": "workspace:*"
+    "my-webpack": "workspace:*",
+    "webpack": "^5.75.0",
+    "webpack-cli": "^5.0.1"
   }
 }

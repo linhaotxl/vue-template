@@ -1,3 +1,5 @@
-const { info } = require('./info/info')
+const { print } = require('./info/info')
 
-console.log('入口文件: ', info)
+;(async () => {
+  console.log('入口文件: ', await print())
+})()

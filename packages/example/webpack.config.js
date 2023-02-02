@@ -68,7 +68,12 @@ class WebpackRun2Plugin {
 }
 
 module.exports = {
-  entry: './src/index.js',
+  mode: 'development',
+
+  entry: {
+    main1: './src/index.js',
+    main2: './src/index2.js',
+  },
 
   output: {
     path: path.resolve(__dirname, 'dist'),
@@ -87,8 +92,11 @@ module.exports = {
       {
         test: /\.js$/,
         use: [
-          code => `${code}\n"第一个 loader"`,
-          code => `${code}\n"第二个 loader"`,
+          path.resolve(__dirname, 'loader1.js'),
+          path.resolve(__dirname, 'loader2.js'),
+          // loader2,
+          // code => `${code}\n // "第一个 loader"`,
+          // code => `${code}\n // "第二个 loader"`,
         ],
       },
     ],
