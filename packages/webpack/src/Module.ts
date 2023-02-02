@@ -18,7 +18,12 @@ import {
   toAbsolutePath,
 } from './utils'
 
-import type { RunLoaderCallbackResult, WebpackConfigLoader } from './typings'
+import type {
+  BuildModuleCallback,
+  Callback,
+  RunLoaderCallbackResult,
+  WebpackConfigLoader,
+} from './typings'
 import type { Identifier, StringLiteral } from '@babel/types'
 
 // 未命名异步 chunk 名称，每次累加
@@ -84,12 +89,23 @@ export class FileModule {
    * 编译模块
    * @param compilation
    */
-  build(compilation: Compilation) {
+  build(compilation: Compilation, callback: Callback) {
     // 交由各种 loader 处理为 js
     this.processLoaders(compilation, (e, result) => {
-      if (!e && result.code) {
-        // 解析 ast 以及依赖，获取最终 code
-        this.sourceCode = this.processAst(compilation, result.code)
+      if (!e) {
+        if (result.code) {
+          // 解析 ast 以及依赖，获取最终 code
+          this.processAst(compilation, result.code, (e, code) => {
+            if (e) {
+              callback(e)
+            } else if (code) {
+              this.sourceCode = code
+              callback(null)
+            }
+          })
+        }
+      } else {
+        callback(e)
       }
     })
   }
@@ -153,7 +169,11 @@ export class FileModule {
    * @param sourceCode
    * @returns
    */
-  private processAst(compilation: Compilation, sourceCode: string) {
+  private processAst(
+    compilation: Compilation,
+    sourceCode: string,
+    callback: BuildModuleCallback
+  ) {
     // babel 处理依赖模块
     const ast = parse(sourceCode, { sourceType: 'module' })
 
@@ -228,25 +248,49 @@ export class FileModule {
       },
     })
 
-    // 编译每一个依赖文件
-    this.dependencies.forEach(({ url, chunkId, async }) => {
-      if (async) {
-        compilation.createChunk(
-          chunkId,
-          url,
-          this.dir,
-          false,
-          this.entryChunkId
-        )
-      } else {
-        compilation.createModule(url, this.dir, chunkId, this.entryChunkId)
+    // 开始根据 ast 生成最终代码
+    const onGenerate = () => {
+      // 生成修改后的模块代码，并通知外部
+      // @ts-ignore
+      const { code } = generate.default(ast)
+      callback(null, code)
+    }
+
+    // 已经编译完的依赖模块个数（包括异步loader处理）
+    let resolveDepCount = 0
+    const onComplete = () => {
+      // 如果当前模块的所有依赖都构建完成，那么也开始生成代码
+      ++resolveDepCount
+      if (resolveDepCount === this.dependencies.length) {
+        onGenerate()
       }
-    })
+    }
 
-    // 生成改模块的代码，并记录
-    // @ts-ignore
-    const { code } = generate.default(ast)
-
-    return code as string
+    // 接下来编译每一个依赖文件
+    if (this.dependencies.length) {
+      this.dependencies.forEach(({ url, chunkId, async }) => {
+        if (async) {
+          compilation.createChunk(
+            chunkId,
+            url,
+            this.dir,
+            false,
+            this.entryChunkId,
+            onComplete
+          )
+        } else {
+          compilation.createModule(
+            url,
+            this.dir,
+            chunkId,
+            this.entryChunkId,
+            onComplete
+          )
+        }
+      })
+    } else {
+      // 没有依赖直接生成代码
+      onGenerate()
+    }
   }
 }

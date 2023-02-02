@@ -1,5 +1,7 @@
 import type { Package } from './pkg'
+import type { Chunk } from '../Chunk'
 import type { Compiler } from '../compiler'
+import type { FileModule } from '../Module'
 
 export type EntryObject = Record<string, string>
 
@@ -158,3 +160,14 @@ export interface WebpackResovleConfig extends WebpackUserConfig {
 export interface WebpackPlugin {
   apply(compiler: Compiler): void
 }
+
+export type BuildModuleCallback = (e: Error | null, code?: string) => void
+
+export type CreateModuleCallback = (
+  e: Error | null,
+  module?: FileModule
+) => void
+
+export type CreateChunkCallback = (e: Error | null, chunk?: Chunk) => void
+
+export type Callback = (e: Error | null) => void

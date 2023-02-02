@@ -20,6 +20,8 @@ export class Compiler {
     compile: new AsyncSeriesHook(['params']),
     // 构建
     make: new AsyncParallelHook<[Compilation]>(['compilation']),
+    // 创建资源
+    assets: new AsyncParallelHook<[Compilation]>(['compilation']),
 
     done: new SyncHook(), // 编译结束后的 hook
   }

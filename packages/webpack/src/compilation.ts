@@ -1,9 +1,16 @@
+import { AsyncParallelHook } from 'tapable'
+
 import { Chunk } from './Chunk'
 import { Generator } from './generate'
 import { FileModule } from './Module'
 
 import type { TemptaleType } from './generate'
-import type { WebpackResovleConfig } from './typings'
+import type {
+  Callback,
+  CreateChunkCallback,
+  CreateModuleCallback,
+  WebpackResovleConfig,
+} from './typings'
 
 export class Compilation {
   // 本次编译产生的所有模块
@@ -14,6 +21,10 @@ export class Compilation {
   public assets: Record<string, string> = {}
   // 记录每个 chunk 对应的生成器，chunkId -> Generator
   public generators: Record<string, Generator> = {}
+  // hooks
+  // public hooks = {
+  //   loaders: new AsyncParallelHook(),
+  // }
 
   constructor(public config: WebpackResovleConfig) {}
 
@@ -30,31 +41,79 @@ export class Compilation {
     entryFile: string,
     context: string,
     entryed: boolean,
-    entryChunkId: string = chunkId
+    entryChunkId: string,
+    callback?: CreateChunkCallback
   ) {
     // 每创建一个 chunk，就会创建对应的生成器
     this.generators[chunkId] = new Generator(this.config)
 
-    // 创建入口模块
-    const entryModule = this.createModule(
+    // 创建入口模块，并构建所有的依赖模块
+    this.createModule(
       entryFile,
       context,
       chunkId,
-      entryChunkId
-    )
+      entryChunkId,
+      (e, entryModule) => {
+        if (e) {
+          callback?.(e)
+          return
+        }
 
-    // 创建 Chunk
-    const chunk = new Chunk(
-      chunkId,
-      entryModule,
-      this.modules.filter(
-        module => module.chunkId === chunkId && module.file !== entryModule.file
-      ),
-      entryed
-    )
+        // 构建完成创建 Chunk，这里需要确定所有的 module 都创建完成（必须要创建，loader可以不执行完）
+        const chunk = new Chunk(
+          chunkId,
+          entryModule!,
+          this.modules.filter(
+            module =>
+              module.chunkId === chunkId && module.file !== entryModule!.file
+          ),
+          entryed
+        )
 
-    this.chunks.push(chunk)
+        this.chunks.push(chunk)
+
+        callback?.(null, chunk)
+      }
+    )
   }
+
+  /**
+   * 创建模块
+   * @param moduleFile
+   * @param dir
+   * @param chunkName
+   * @param entryChunkId
+   */
+  createModule(
+    moduleFile: string,
+    dir: string,
+    chunkName: string,
+    entryChunkId: string,
+    callback?: CreateModuleCallback
+  ) {
+    const module = new FileModule(moduleFile, dir, chunkName, entryChunkId)
+    this.modules.push(module)
+
+    module.build(this, e => {
+      e ? callback?.(e) : callback?.(null, module)
+    })
+  }
+
+  // createEntryModule(
+  //   moduleFile: string,
+  //   dir: string,
+  //   chunkName: string,
+  //   entryChunkId: string,
+  //   callback: CreateModuleCallback
+  // ) {
+  //   this.createModule(moduleFile, dir, chunkName, entryChunkId)
+  //   const module = new FileModule(moduleFile, dir, chunkName, entryChunkId)
+  //   this.modules.push(module)
+
+  //   module.build(this, e => {
+  //     e ? callback(e) : callback(null, module)
+  //   })
+  // }
 
   /**
    * 创建模块
@@ -63,27 +122,28 @@ export class Compilation {
    * @param {string} chunkName 模块所属的 chunk
    * @param {string} entryChunkId 模块所属的入口 chunk
    */
-  createModule(
-    moduleFile: string,
-    dir: string,
-    chunkName: string,
-    entryChunkId: string
-  ) {
-    const module = new FileModule(moduleFile, dir, chunkName, entryChunkId)
-    this.modules.push(module)
+  // createModule(
+  //   moduleFile: string,
+  //   dir: string,
+  //   chunkName: string,
+  //   entryChunkId: string,
+  //   callback: Callback
+  // ) {
+  //   const module = new FileModule(moduleFile, dir, chunkName, entryChunkId)
+  //   this.modules.push(module)
 
-    this.buildModule(module)
+  //   module.build(this, callback)
 
-    return module
-  }
+  //   return module
+  // }
 
   /**
    * 打包模块
    * @param module 需要打包的模块
    */
-  buildModule(module: FileModule) {
-    module.build(this)
-  }
+  // buildModule(module: FileModule) {
+  //   module.build(this)
+  // }
 
   /**
    * 标记指定 chunk 下会用到的模板类型 type
