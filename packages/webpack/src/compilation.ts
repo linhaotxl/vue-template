@@ -5,7 +5,7 @@ import { AsyncParallelHook } from 'tapable'
 import { Chunk } from './Chunk'
 import { Generator } from './generate'
 import { FileModule } from './Module'
-import { normalizePath } from './utils'
+import { normalizePath, toAbsolutePath } from './utils'
 
 import type { TemptaleType } from './generate'
 import type { EntryObject, WebpackResovleConfig } from './typings'
@@ -13,7 +13,7 @@ import type { InnerCallback } from 'tapable'
 
 export class Compilation {
   // 本次编译产生的所有模块
-  public modules: FileModule[] = []
+  public fileToModules: Record<string, FileModule> = {}
   // 本次编译产生的所有代码块
   private chunks: Chunk[] = []
   // 本次编译所产生的资源文件，文件名 -> 资源代码
@@ -91,10 +91,7 @@ export class Compilation {
         const chunk = new Chunk(
           chunkId,
           entryModule!,
-          this.modules.filter(
-            module =>
-              module.chunkId === chunkId && module.file !== entryModule!.file
-          ),
+          this._filterChunkDependenciesModule(chunkId, entryModule!),
           entryed
         )
 
@@ -119,9 +116,16 @@ export class Compilation {
     entryChunkId: string,
     callback: InnerCallback<Error, FileModule>
   ) {
+    const absolutePath = normalizePath(toAbsolutePath(moduleFile, dir))
+    if (this.fileToModules[absolutePath]) {
+      callback(null, this.fileToModules[absolutePath])
+      return
+    }
+
     // 创建模块对象
     const module = new FileModule(moduleFile, dir, chunkName, entryChunkId)
-    this.modules.push(module)
+    this.fileToModules[module.file] = module
+    // this.modules.push(module)
 
     // 开始构建模块，构建完成通知外部
     module.build(this, e => {
@@ -151,5 +155,19 @@ export class Compilation {
     })
 
     return this.assets
+  }
+
+  private _filterChunkDependenciesModule(
+    chunkId: string,
+    entryModule: FileModule
+  ) {
+    const dependencyModules: FileModule[] = []
+    for (const file in this.fileToModules) {
+      const module = this.fileToModules[file]
+      if (module.chunkId === chunkId && module.file !== entryModule.file) {
+        dependencyModules.push(module)
+      }
+    }
+    return dependencyModules
   }
 }
