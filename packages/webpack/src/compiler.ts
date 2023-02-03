@@ -1,7 +1,6 @@
 import { SyncHook, AsyncSeriesHook, AsyncParallelHook } from 'tapable'
 
 import { Compilation } from './compilation'
-import { mkdir, normalizePath, toAbsolutePath, writeFile } from './utils'
 
 import type { EntryObject, WebpackResovleConfig } from './typings'
 
@@ -13,7 +12,6 @@ export class Compiler {
     beforeRun: new AsyncSeriesHook<[Compiler]>(['compiler']),
     // 运行
     run: new AsyncSeriesHook<[Compiler]>(['compiler']),
-    // run: new AsyncSeriesHook(),
     // 开始编译前
     beforeCompile: new AsyncSeriesHook(['params']),
     // 运行
@@ -22,8 +20,8 @@ export class Compiler {
     make: new AsyncParallelHook<[Compilation]>(['compilation']),
     // 创建资源
     assets: new AsyncParallelHook<[Compilation]>(['compilation']),
-
-    done: new SyncHook(), // 编译结束后的 hook
+    // 编译结束后
+    done: new SyncHook(),
   }
 
   constructor(private config: WebpackResovleConfig) {}
@@ -39,28 +37,21 @@ export class Compiler {
   }
 
   private compile() {
-    // 先执行 beforeCompile 钩子，等所有的 beforeCompile 执行完后再执行 compile 钩子
+    // 先执行 beforeCompile 钩子
     const params = {}
     this.hooks.beforeCompile.callAsync(params, () => {
+      // 再执行 compile 钩子
       this.hooks.compile.callAsync(params, () => {
-        // 初始化编译器，调用 make 钩子开始编译
+        // 初始化编译器，开始执行 make 钩子进行编译
         const compilation = new Compilation(this.config)
         this.hooks.make.callAsync(compilation, () => {
-          this.writeFile(compilation)
+          // 执行 assets 钩子，创建资源文件
+          this.hooks.assets.callAsync(compilation, () => {
+            // 最后执行 done 钩子
+            this.hooks.done.call(undefined)
+          })
         })
       })
     })
-  }
-
-  private writeFile(compilation: Compilation) {
-    // 所有编译结束，将代码块写入文件
-    const { path: outputPath, filename: outputFilename } = this.config.output
-    mkdir(normalizePath(toAbsolutePath(outputPath)))
-    for (const asset in compilation.assets) {
-      const assetFile = normalizePath(
-        toAbsolutePath(outputFilename.replace('[name]', asset), outputPath)
-      )
-      writeFile(assetFile, compilation.assets[asset])
-    }
   }
 }

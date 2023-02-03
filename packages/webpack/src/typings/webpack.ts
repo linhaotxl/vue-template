@@ -168,6 +168,4 @@ export type CreateModuleCallback = (
   module?: FileModule
 ) => void
 
-export type CreateChunkCallback = (e: Error | null, chunk?: Chunk) => void
-
 export type Callback = (e: Error | null) => void

@@ -1,16 +1,15 @@
+import path from 'path'
+
 import { AsyncParallelHook } from 'tapable'
 
 import { Chunk } from './Chunk'
 import { Generator } from './generate'
 import { FileModule } from './Module'
+import { normalizePath } from './utils'
 
 import type { TemptaleType } from './generate'
-import type {
-  Callback,
-  CreateChunkCallback,
-  CreateModuleCallback,
-  WebpackResovleConfig,
-} from './typings'
+import type { EntryObject, WebpackResovleConfig } from './typings'
+import type { InnerCallback } from 'tapable'
 
 export class Compilation {
   // 本次编译产生的所有模块
@@ -22,11 +21,40 @@ export class Compilation {
   // 记录每个 chunk 对应的生成器，chunkId -> Generator
   public generators: Record<string, Generator> = {}
   // hooks
-  // public hooks = {
-  //   loaders: new AsyncParallelHook(),
-  // }
+  public hooks = {
+    entry: new AsyncParallelHook<undefined>(['_']),
+  }
 
   constructor(public config: WebpackResovleConfig) {}
+
+  /**
+   * 创建所有入口
+   * @param context 入口上下文
+   * @param entryObject 入口对象
+   * @param callback 创建完成的回调
+   */
+  createEntry(
+    context: string,
+    entryObject: EntryObject,
+    callback: InnerCallback<Error, void>
+  ) {
+    // 遍历所有入口，为每一个入口注册事件
+    for (const chunkId in entryObject) {
+      this.hooks.entry.tapAsync(`CreateEntry-${chunkId}`, (_, callback) => {
+        this.createChunk(
+          chunkId,
+          entryObject[chunkId],
+          normalizePath(path.resolve(context)),
+          true,
+          chunkId,
+          callback
+        )
+      })
+    }
+
+    // 开始执行所有的创建入口事件
+    this.hooks.entry.callAsync(undefined, callback)
+  }
 
   /**
    * 创建 Chunk
@@ -42,7 +70,7 @@ export class Compilation {
     context: string,
     entryed: boolean,
     entryChunkId: string,
-    callback?: CreateChunkCallback
+    callback: InnerCallback<Error, void>
   ) {
     // 每创建一个 chunk，就会创建对应的生成器
     this.generators[chunkId] = new Generator(this.config)
@@ -55,7 +83,7 @@ export class Compilation {
       entryChunkId,
       (e, entryModule) => {
         if (e) {
-          callback?.(e)
+          callback(e)
           return
         }
 
@@ -72,7 +100,7 @@ export class Compilation {
 
         this.chunks.push(chunk)
 
-        callback?.(null, chunk)
+        callback(null)
       }
     )
   }
@@ -89,61 +117,17 @@ export class Compilation {
     dir: string,
     chunkName: string,
     entryChunkId: string,
-    callback?: CreateModuleCallback
+    callback: InnerCallback<Error, FileModule>
   ) {
+    // 创建模块对象
     const module = new FileModule(moduleFile, dir, chunkName, entryChunkId)
     this.modules.push(module)
 
+    // 开始构建模块，构建完成通知外部
     module.build(this, e => {
-      e ? callback?.(e) : callback?.(null, module)
+      e ? callback(e) : callback(null, module)
     })
   }
-
-  // createEntryModule(
-  //   moduleFile: string,
-  //   dir: string,
-  //   chunkName: string,
-  //   entryChunkId: string,
-  //   callback: CreateModuleCallback
-  // ) {
-  //   this.createModule(moduleFile, dir, chunkName, entryChunkId)
-  //   const module = new FileModule(moduleFile, dir, chunkName, entryChunkId)
-  //   this.modules.push(module)
-
-  //   module.build(this, e => {
-  //     e ? callback(e) : callback(null, module)
-  //   })
-  // }
-
-  /**
-   * 创建模块
-   * @param {string} moduleFile 模块相对于根目录的路径
-   * @param {string} dir 模块所在目录
-   * @param {string} chunkName 模块所属的 chunk
-   * @param {string} entryChunkId 模块所属的入口 chunk
-   */
-  // createModule(
-  //   moduleFile: string,
-  //   dir: string,
-  //   chunkName: string,
-  //   entryChunkId: string,
-  //   callback: Callback
-  // ) {
-  //   const module = new FileModule(moduleFile, dir, chunkName, entryChunkId)
-  //   this.modules.push(module)
-
-  //   module.build(this, callback)
-
-  //   return module
-  // }
-
-  /**
-   * 打包模块
-   * @param module 需要打包的模块
-   */
-  // buildModule(module: FileModule) {
-  //   module.build(this)
-  // }
 
   /**
    * 标记指定 chunk 下会用到的模板类型 type
@@ -165,5 +149,7 @@ export class Compilation {
       this.assets[chunk.chunkId] =
         this.generators[chunk.chunkId].generate(chunk)
     })
+
+    return this.assets
   }
 }

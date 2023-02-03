@@ -2,12 +2,21 @@ import generate from '@babel/generator'
 import { parse } from '@babel/parser'
 import traverse from '@babel/traverse'
 import types from '@babel/types'
+import { AsyncParallelHook } from 'tapable'
 
 import { TemptaleType } from './generate'
 import { tryResolve } from './resolver'
-import { runLoaders } from './runLoader'
 
 import type { Compilation } from './compilation'
+
+import { runLoaders } from './runLoader'
+
+import type {
+  BuildModuleCallback,
+  Callback,
+  RunLoaderCallbackResult,
+  WebpackConfigLoader,
+} from './typings'
 
 import {
   dirname,
@@ -18,13 +27,8 @@ import {
   toAbsolutePath,
 } from './utils'
 
-import type {
-  BuildModuleCallback,
-  Callback,
-  RunLoaderCallbackResult,
-  WebpackConfigLoader,
-} from './typings'
 import type { Identifier, StringLiteral } from '@babel/types'
+import type { InnerCallback } from 'tapable'
 
 // 未命名异步 chunk 名称，每次累加
 let chunkCount = 0
@@ -64,6 +68,10 @@ export class FileModule {
    * 模块所属的入口 chunk
    */
   entryChunkId: string
+
+  hooks = {
+    deps: new AsyncParallelHook<undefined>(['_']),
+  }
 
   /**
    * 创建模块
@@ -256,41 +264,36 @@ export class FileModule {
       callback(null, code)
     }
 
-    // 已经编译完的依赖模块个数（包括异步loader处理）
-    let resolveDepCount = 0
-    const onComplete = () => {
-      // 如果当前模块的所有依赖都构建完成，那么也开始生成代码
-      ++resolveDepCount
-      if (resolveDepCount === this.dependencies.length) {
-        onGenerate()
-      }
+    // 没有依赖，直接生成代码，并通知外部
+    if (!this.dependencies.length) {
+      return onGenerate()
     }
 
-    // 接下来编译每一个依赖文件
-    if (this.dependencies.length) {
-      this.dependencies.forEach(({ url, chunkId, async }) => {
-        if (async) {
+    // 存在依赖，为每个依赖注册事件
+    for (const dep of this.dependencies) {
+      this.hooks.deps.tapAsync(`${this.id}-${dep.url}`, (_, callback) => {
+        if (dep.async) {
           compilation.createChunk(
-            chunkId,
-            url,
+            dep.chunkId,
+            dep.url,
             this.dir,
             false,
             this.entryChunkId,
-            onComplete
+            callback
           )
         } else {
           compilation.createModule(
-            url,
+            dep.url,
             this.dir,
-            chunkId,
+            dep.chunkId,
             this.entryChunkId,
-            onComplete
+            callback as any as InnerCallback<Error, FileModule>
           )
         }
       })
-    } else {
-      // 没有依赖直接生成代码
-      onGenerate()
     }
+
+    // 执行创建依赖的事件，所有依赖创建结束后开始生成代码
+    this.hooks.deps.callAsync(undefined, onGenerate)
   }
 }

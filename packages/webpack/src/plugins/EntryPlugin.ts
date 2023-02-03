@@ -1,9 +1,5 @@
-import path from 'path'
-
-import { normalizePath } from '../utils'
-
 import type { Compiler } from '../compiler'
-import type { CreateChunkCallback, WebpackPlugin } from '../typings'
+import type { WebpackPlugin } from '../typings'
 
 /**
  * 处理入口 Plugin
@@ -12,37 +8,11 @@ export class EntryPlugin implements WebpackPlugin {
   apply(compiler: Compiler) {
     // make 阶段执行
     compiler.hooks.entry.tap('EntryPlugin', (context, entry) => {
-      compiler.hooks.make.tapPromise(
+      compiler.hooks.make.tapAsync(
         'EntryMakePlugin',
-        compilation =>
-          new Promise(resolve => {
-            let resolveChunk = 0
-            const entryNames = Object.keys(entry)
-
-            const onComplete: CreateChunkCallback = e => {
-              if (!e) {
-                resolveChunk++
-              }
-
-              if (resolveChunk === entryNames.length) {
-                // 所有入口创建完成后，开始创建资源
-                compilation.createAssets()
-                resolve()
-              }
-            }
-
-            // 遍历所有入口，为每一个入口创建 module
-            for (const chunkName of entryNames) {
-              compilation.createChunk(
-                chunkName,
-                entry[chunkName],
-                normalizePath(path.resolve(context)),
-                true,
-                chunkName,
-                onComplete
-              )
-            }
-          })
+        (compilation, callback) => {
+          compilation.createEntry(context, entry, callback)
+        }
       )
     })
   }
