@@ -1,2 +1,0 @@
-// import './src'
-require('./src')

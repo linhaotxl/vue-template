@@ -1,0 +1,13 @@
+{
+  "name": "vite",
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "rimraf dist && pnpm run build-bundle -w",
+    "build-bundle": "rollup --config rollup.config.ts --configPlugin typescript"
+  },
+  "devDependencies": {
+
+  },
+  "dependencies": {}
+}

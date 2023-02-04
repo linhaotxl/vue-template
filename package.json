@@ -1,16 +1,13 @@
 {
-  "name": "webpack-monorepo",
+  "name": "vite-monorepo",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "dev": "pnpm -r --parallel --filter='./packages/*' run dev",
     "prepare": "husky install",
-    "test": "jest",
     "eslint": "pnpm -r --filter=./packages/* run eslint",
-    "lint:js": "eslint --fix --ext .js,.jsx,.ts,.tsx",
-    "watch:test": "pnpm --filter=webpack-example run webpack",
-    "build:test": "pnpm --filter=webpack-example run build",
-    "watch:webpack": "pnpm --filter=my-webpack run watch -w"
+    "lint:js": "eslint --fix --ext .js,.jsx,.ts,.tsx"
   },
   "devDependencies": {
     "@commitlint/cli": "^17.1.2",
@@ -30,10 +27,11 @@
     "husky": "^8.0.0",
     "lint-staged": "^13.0.3",
     "prettier": "^2.7.1",
+    "rimraf": "^4.1.2",
     "rollup": "^3.9.1",
     "rollup-plugin-dts": "^5.1.1",
-    "rollup-plugin-typescript2": "^0.34.1",
     "roolup": "^1.0.4",
+    "tslib": "^2.5.0",
     "typescript": "^4.6.4"
   }
 }
