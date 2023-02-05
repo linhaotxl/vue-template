@@ -149,7 +149,7 @@ function createNodeConfig(isProduction: boolean) {
     // ...sharedNodeOptions,
     input: {
       index: path.resolve(__dirname, 'src/node/index.ts'),
-      // cli: path.resolve(__dirname, 'src/node/cli.ts'),
+      cli: path.resolve(__dirname, 'src/node/cli.ts'),
       // constants: path.resolve(__dirname, 'src/node/constants.ts'),
     },
     output: {

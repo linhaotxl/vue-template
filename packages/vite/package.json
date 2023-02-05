@@ -1,13 +1,16 @@
 {
-  "name": "vite",
+  "name": "vite-my",
   "version": "0.0.1",
   "type": "module",
+  "bin": {
+    "vite-my": "./bin/vite.js"
+  },
   "scripts": {
     "dev": "rimraf dist && pnpm run build-bundle -w",
     "build-bundle": "rollup --config rollup.config.ts --configPlugin typescript"
   },
   "devDependencies": {
-
+    "esbuild": "^0.17.5"
   },
   "dependencies": {}
 }
