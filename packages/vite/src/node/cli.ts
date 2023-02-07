@@ -1,3 +1,3 @@
 import { resolveConfig } from './config'
 
-resolveConfig()
+resolveConfig({}, 'serve')
