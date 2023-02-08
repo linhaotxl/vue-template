@@ -93,6 +93,12 @@ export const dynamicImport = new Function(`file`, 'return import(file)')
 export const isFunction = (value: unknown): value is Function =>
   typeof value === 'function'
 
+export const isString = (value: unknown): value is string =>
+  typeof value === 'string'
+
+export const isBoolean = (value: unknown): value is boolean =>
+  typeof value === 'boolean'
+
 export const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null
 
@@ -113,7 +119,6 @@ export const isArray = Array.isArray
 export const asyncFlatten = async <T, R extends T = T>(
   arr: T[]
 ): Promise<R[]> => {
-  // const res: R[] = arr
   do {
     arr = (await Promise.all(arr)).flat(Infinity) as any
   } while (arr.some(isPromise))
@@ -126,3 +131,9 @@ export function mergeConfig(
 ): Record<string, any> {
   return { ...defaults, ...overrides }
 }
+
+export const queryRE = /\?.*$/
+export const hashRE = /#.*$/
+
+export const clearUrl = (url: string) =>
+  url.replace(queryRE, '').replace(hashRE, '')

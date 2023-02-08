@@ -10,7 +10,11 @@
     "build-bundle": "rollup --config rollup.config.ts --configPlugin typescript"
   },
   "devDependencies": {
+    "@types/connect": "^3.4.35",
     "esbuild": "^0.17.5"
   },
-  "dependencies": {}
+  "dependencies": {
+    "cac": "^6.7.14",
+    "connect": "^3.7.0"
+  }
 }

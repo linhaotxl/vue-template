@@ -1,6 +1,7 @@
 import { isFunction, isObject } from './utils'
 
 import type { ConfigEnv, UserConfig } from './config'
+import type { IndexHtmlTransform } from './plugins/html'
 import type { ObjectHook, Plugin as RollupPlugin } from 'rollup'
 
 export interface Plugin extends RollupPlugin {
@@ -27,6 +28,11 @@ export interface Plugin extends RollupPlugin {
       configEnv: ConfigEnv
     ) => UserConfig | null | undefined | Promise<UserConfig | null | undefined>
   >
+
+  /**
+   * 转换 index.html 文件 hook
+   */
+  transformIndexHtml?: IndexHtmlTransform
 }
 
 export function getSortedPluginsByHook(hookName: 'config', plugins: Plugin[]) {

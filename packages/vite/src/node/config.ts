@@ -8,6 +8,7 @@ import { build } from 'esbuild'
 
 import { DEFAULT_CONFIG_FILES } from './constants'
 import { getSortedPluginsByHook } from './plugin'
+import { resolvePlugins } from './plugins'
 import {
   asyncFlatten,
   dirname,
@@ -93,6 +94,8 @@ export interface InlineConfig extends UserConfig {
  */
 export type ResolvedConfig = Omit<UserConfig, 'root'> & {
   root: string
+
+  plugins: Plugin[]
 }
 
 /**
@@ -125,11 +128,11 @@ export async function resolveConfig(
   inlineConfig: InlineConfig,
   command: Command,
   defaultMode = 'development'
-) {
+): Promise<ResolvedConfig> {
   let config = inlineConfig
   let { configFile, mode = defaultMode } = inlineConfig
 
-  console.log('inline config: ', inlineConfig)
+  // console.log('inline config: ', inlineConfig)
 
   const resolvedRoot = normalizePath(
     config.root ? resolve(config.root) : process.cwd()
@@ -151,7 +154,7 @@ export async function resolveConfig(
       // 配置文件加载成功，覆盖配置对象 config，以及配置文件绝对路径 configFile
       config = loadResult.config
       configFile = loadResult.path
-      console.log('config file: ', config)
+      // console.log('config file: ', config)
     }
   }
 
@@ -172,14 +175,14 @@ export async function resolveConfig(
   const [prePlugins, normalPlugins, postPlugins] =
     sortUserPlugins(rawUserPlugins)
 
-  // 执行插件的 hook
+  // 执行自定义插件的 config hook
   config = await runConfigHooks(
     [...prePlugins, ...normalPlugins, ...postPlugins],
     config,
     configEnv
   )
 
-  console.log('after config hooks: ', config)
+  // console.log('after config hooks: ', config)
 
   // // 解析环境变量所在目录
   // const resolvedEnvDir = config.envDir
@@ -188,6 +191,7 @@ export async function resolveConfig(
 
   const resolved: ResolvedConfig = {
     root: resolvedRoot,
+    plugins: await resolvePlugins(prePlugins, normalPlugins, postPlugins),
   }
 
   function filterPlugin(plugin: FlatPluginOption): plugin is Plugin {
@@ -201,6 +205,11 @@ export async function resolveConfig(
       return plugin.apply(config, configEnv)
     }
     return plugin.apply === command
+  }
+
+  return {
+    ...config,
+    ...resolved,
   }
 }
 
