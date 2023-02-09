@@ -5,10 +5,13 @@ import {
   indexHtmlMiddleware,
 } from './middlewares/indexHtml'
 import { serveStaticMiddleware } from './middlewares/static'
+import { transformMiddleware } from './middlewares/transform'
+import { createPluginContainer } from './pluginContainer'
 
 import { resolveConfig } from '../config'
 import { resolveHttpServer } from '../http'
 
+import type { PluginContainer } from './pluginContainer'
 import type { InlineConfig, ResolvedConfig } from '../config'
 import type { Server as HttpServer } from 'http'
 
@@ -22,6 +25,11 @@ export interface ViteDevServer {
    * 启动的 http 服务器
    */
   httpServer: HttpServer
+
+  /**
+   * 插件容器
+   */
+  pluginContainer: PluginContainer
 
   /**
    * 转换 index.html 的方法
@@ -48,8 +56,11 @@ export async function createServer(inlineConfig: InlineConfig = {}) {
 
   // middlewares()
 
+  const pluginContainer = createPluginContainer(config)
+
   const server: ViteDevServer = {
     config,
+    pluginContainer,
     transformIndexHtml: null!,
     listen(port) {
       return new Promise(resolve => {
@@ -62,6 +73,8 @@ export async function createServer(inlineConfig: InlineConfig = {}) {
   }
 
   server.transformIndexHtml = createDevHtmlTransformFn(server)
+
+  middlewares.use(transformMiddleware(server))
 
   middlewares.use(serveStaticMiddleware(config.root))
 

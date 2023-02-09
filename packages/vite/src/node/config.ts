@@ -200,8 +200,20 @@ export async function resolveConfig(
   const resolved: ResolvedConfig = {
     base: resolveBaseUrl(config.base),
     root: resolvedRoot,
-    plugins: await resolvePlugins(prePlugins, normalPlugins, postPlugins),
+    plugins: [],
   }
+
+  const result: ResolvedConfig = {
+    ...config,
+    ...resolved,
+  }
+
+  result.plugins = await resolvePlugins(
+    result,
+    prePlugins,
+    normalPlugins,
+    postPlugins
+  )
 
   function filterPlugin(plugin: FlatPluginOption): plugin is Plugin {
     if (!plugin) {
@@ -216,10 +228,7 @@ export async function resolveConfig(
     return plugin.apply === command
   }
 
-  return {
-    ...config,
-    ...resolved,
-  }
+  return result
 }
 
 /**

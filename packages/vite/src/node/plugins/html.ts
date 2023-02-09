@@ -1,4 +1,4 @@
-import { isArray, isBoolean, isObject, isString } from '../utils'
+import { clearUrl, isArray, isBoolean, isObject, isString } from '../utils'
 
 import type { ResolvedConfig } from '../config'
 import type { Plugin } from '../plugin'
@@ -449,3 +449,36 @@ export function addToHTMLProxyCache(
  */
 const htmlProxyRE = /\?html-proxy&index=(\d+)\.(js)$/
 export const isHTMLProxy = (id: string) => htmlProxyRE.test(id)
+
+/**
+ * 处理行内 html 代理插件，主要针对 .html 文件中含有 <script type="module"></script> 内的代码
+ * @param config
+ * @returns
+ */
+export function htmlInlineProxyPlugin(config: ResolvedConfig): Plugin {
+  return {
+    name: 'vite:html-inline-proxy',
+
+    resolveId(id) {
+      if (isHTMLProxy(id)) {
+        return id
+      }
+    },
+
+    load(id) {
+      const proxyMatch = htmlProxyRE.exec(id)
+      if (proxyMatch) {
+        const index = +proxyMatch[1]
+        const proxyKey = normalizeHTMLProxyCacheKey(id, config)
+        const code = htmlProxyMap.get(config)!.get(proxyKey)![index]
+        if (code) {
+          return code
+        }
+      }
+    },
+  }
+}
+
+export function normalizeHTMLProxyCacheKey(id: string, config: ResolvedConfig) {
+  return clearUrl(id).replace(config.root, '')
+}

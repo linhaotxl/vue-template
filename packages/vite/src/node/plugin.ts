@@ -2,7 +2,14 @@ import { isFunction, isObject } from './utils'
 
 import type { ConfigEnv, UserConfig } from './config'
 import type { IndexHtmlTransform } from './plugins/html'
-import type { ObjectHook, Plugin as RollupPlugin } from 'rollup'
+import type {
+  LoadResult,
+  ObjectHook,
+  Plugin as RollupPlugin,
+  ResolveIdResult,
+  SourceDescription,
+  TransformResult,
+} from 'rollup'
 
 export interface Plugin extends RollupPlugin {
   /**
@@ -33,9 +40,49 @@ export interface Plugin extends RollupPlugin {
    * 转换 index.html 文件 hook
    */
   transformIndexHtml?: IndexHtmlTransform
+
+  /**
+   * 解析路径 hook
+   */
+  resolveId?: ObjectHook<
+    (
+      id: string,
+      importer?: string,
+      options?: {}
+    ) => ResolveIdResult | Promise<ResolveIdResult>
+  >
+
+  /**
+   * 加载解析好的文件内容
+   */
+  load?: ObjectHook<
+    (id: string, options?: {}) => Promise<LoadResult> | LoadResult
+  >
+
+  /**
+   * 转换加载好的的文件内容
+   */
+  transform?: ObjectHook<
+    (
+      code: string,
+      id: string,
+      options?: {}
+    ) => Promise<TransformResult> | TransformResult
+  >
 }
 
-export function getSortedPluginsByHook(hookName: 'config', plugins: Plugin[]) {
+type PluginHookName = keyof Plugin
+
+/**
+ * 获取排好序的插件 hook
+ * @param hookName hook 名称
+ * @param plugins 插件列表
+ * @returns
+ */
+export function getSortedPluginsByHook(
+  hookName: PluginHookName,
+  plugins: Plugin[]
+) {
   const prePlugins: Plugin[] = []
   const normalPlugins: Plugin[] = []
   const postPlugins: Plugin[] = []
@@ -57,4 +104,32 @@ export function getSortedPluginsByHook(hookName: 'config', plugins: Plugin[]) {
   }
 
   return [...prePlugins, ...normalPlugins, ...postPlugins]
+}
+
+/**
+ * 创建插件 hook 相关工具函数
+ * @param plugins 插件列表
+ * @returns
+ */
+export function createPluginHookUtils(plugins: Plugin[]) {
+  const sortedPluginCache = new Map<PluginHookName, Plugin[]>()
+
+  /**
+   * 按照执行时机获取插件指定 hook 列表
+   * @param hookName hook name
+   * @returns
+   */
+  function getSortedPlugins(hookName: PluginHookName) {
+    if (sortedPluginCache.has(hookName)) {
+      return sortedPluginCache.get(hookName)!
+    }
+
+    const sortedPluginHooks = getSortedPluginsByHook(hookName, plugins)
+    sortedPluginCache.set(hookName, sortedPluginHooks)
+    return sortedPluginHooks
+  }
+
+  return {
+    getSortedPlugins,
+  }
 }

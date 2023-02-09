@@ -6,6 +6,7 @@ import {
   addToHTMLProxyCache,
   applyHtmlTransforms,
   getScriptInfo,
+  normalizeHTMLProxyCacheKey,
   resolveHtmlTransforms,
   traverseHtml,
 } from '../../plugins/html'
@@ -128,7 +129,12 @@ const devHtmlHook: IndexHtmlTransformHook = async (
     const modulePath = `${htmlPath}?html-proxy&index=${inlineModuleIndex}.${ext}`
 
     // 将 script 代码放入缓存
-    addToHTMLProxyCache(server.config, htmlPath, inlineModuleIndex, { code })
+    addToHTMLProxyCache(
+      server.config,
+      normalizeHTMLProxyCacheKey(modulePath, server.config),
+      inlineModuleIndex,
+      { code }
+    )
 
     s.update(
       node.sourceCodeLocation!.startOffset,
