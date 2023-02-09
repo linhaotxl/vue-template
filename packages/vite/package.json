@@ -15,6 +15,9 @@
   },
   "dependencies": {
     "cac": "^6.7.14",
-    "connect": "^3.7.0"
+    "connect": "^3.7.0",
+    "magic-string": "^0.27.0",
+    "parse5": "^7.1.2",
+    "sirv": "^2.0.2"
   }
 }

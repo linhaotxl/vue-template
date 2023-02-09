@@ -44,6 +44,9 @@ export const resolve = (...p: string[]) => path.resolve(...p)
 
 export const dirname = (id: string) => path.dirname(id)
 
+export const join = (...args: Parameters<typeof path.join>) =>
+  path.posix.join(...args)
+
 export const normalizePath = (id: string) =>
   path.posix.normalize(isWindows ? slash(id) : id)
 

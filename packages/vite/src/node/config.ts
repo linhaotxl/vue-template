@@ -62,6 +62,14 @@ export interface UserConfig {
   root?: string
 
   /**
+   * 公共基础路径
+   * 适用于 JS 引入的资源，CSS 中 url 引入的资源以及 .html 中引用的资源
+   *
+   * @default '/'
+   */
+  base?: string
+
+  /**
    * 环境变量目录，相对路径是基于 root 的，没有传递就是 root
    */
   envDir?: string
@@ -92,9 +100,9 @@ export interface InlineConfig extends UserConfig {
 /**
  * 解析完成后的配置
  */
-export type ResolvedConfig = Omit<UserConfig, 'root'> & {
+export type ResolvedConfig = Omit<UserConfig, 'root' | 'base' | 'plugins'> & {
   root: string
-
+  base: string
   plugins: Plugin[]
 }
 
@@ -190,6 +198,7 @@ export async function resolveConfig(
   //   : resolvedRoot
 
   const resolved: ResolvedConfig = {
+    base: resolveBaseUrl(config.base),
     root: resolvedRoot,
     plugins: await resolvePlugins(prePlugins, normalPlugins, postPlugins),
   }
@@ -456,4 +465,8 @@ async function runConfigHooks(
   }
 
   return config
+}
+
+function resolveBaseUrl(base?: string) {
+  return base || '/'
 }

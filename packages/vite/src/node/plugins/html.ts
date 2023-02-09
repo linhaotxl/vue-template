@@ -1,7 +1,9 @@
 import { isArray, isBoolean, isObject, isString } from '../utils'
 
+import type { ResolvedConfig } from '../config'
 import type { Plugin } from '../plugin'
 import type { ViteDevServer } from '../server'
+import type { DefaultTreeAdapterMap, Token } from 'parse5'
 
 /**
  * Plugin 上转换 index.html hook 的类型
@@ -335,3 +337,115 @@ function injectToBody(
 function incrementIndent(indent: string) {
   return `${indent}${indent[0] === '\t' ? '\t' : '  '}`
 }
+
+/**
+ * 获取 script 标签相关信息
+ * @param node script 标签节点
+ * @returns
+ *  src: src 属性节点
+ *  sourceCodeLocation: src 属性定位节点
+ *  isModule: 是否是 <script type="module" />
+ *  isAsync: 是否是 <script async />
+ */
+export function getScriptInfo(node: DefaultTreeAdapterMap['element']) {
+  let src: Token.Attribute | undefined
+  let sourceCodeLocation: Token.Location | undefined
+  let isModule = false
+  let isAsync = false
+
+  for (const attr of node.attrs) {
+    if (attr.name === 'async') {
+      isAsync = true
+    } else if (attr.name === 'type' && attr.value === 'module') {
+      isModule = true
+    } else if (attr.name === 'src' && attr.value) {
+      src = attr
+      sourceCodeLocation = node.sourceCodeLocation?.attrs?.src
+    }
+  }
+
+  return { src, sourceCodeLocation, isModule, isAsync }
+}
+
+/**
+ * 解析 html 文件内容为 AST 并遍历每个节点
+ * @param html html 文件内容
+ * @param visitor 遍历器函数
+ */
+export async function traverseHtml(
+  html: string,
+  visitor: (node: DefaultTreeAdapterMap['node']) => void
+) {
+  const { parse } = await import('parse5')
+  const ast = parse(html, { sourceCodeLocationInfo: true })
+  traverseNodes(ast, visitor)
+}
+
+/**
+ * 遍历每个节点
+ * @param node 节点
+ * @param visitor 遍历器函数
+ */
+function traverseNodes(
+  node: DefaultTreeAdapterMap['node'],
+  visitor: (node: DefaultTreeAdapterMap['node']) => void
+) {
+  // 首先调用遍历器函数，再对每个子节点调用遍历器函数
+  // 只会处理元素节点，根节点的子节点
+  visitor(node)
+  if (node.nodeName === '#document' || nodeIsElement(node)) {
+    node.childNodes.forEach(node => traverseNodes(node, visitor))
+  }
+}
+
+/**
+ * 检测是否是元素节点
+ * @param node
+ * @returns
+ */
+function nodeIsElement(
+  node: DefaultTreeAdapterMap['node']
+): node is DefaultTreeAdapterMap['element'] {
+  return node.nodeName[0] !== '#'
+}
+
+type HTMLProxyResult = {
+  code: string
+}
+
+const htmlProxyMap = new WeakMap<
+  ResolvedConfig,
+  Map<string, HTMLProxyResult[]>
+>()
+
+/**
+ * 添加 HTML 代理缓存数据
+ * @param config 配置对象
+ * @param filePath 文件路径
+ * @param index 代理内容索引
+ * @param result 代理内容
+ */
+export function addToHTMLProxyCache(
+  config: ResolvedConfig,
+  filePath: string,
+  index: number,
+  result: HTMLProxyResult
+) {
+  let configMap = htmlProxyMap.get(config)
+  if (!configMap) {
+    htmlProxyMap.set(config, (configMap = new Map()))
+  }
+
+  let fileProxys = configMap.get(filePath)
+  if (!fileProxys) {
+    configMap.set(filePath, (fileProxys = []))
+  }
+
+  fileProxys[index] = result
+}
+
+/**
+ * 检测是否是 HTML 代理路径
+ */
+const htmlProxyRE = /\?html-proxy&index=(\d+)\.(js)$/
+export const isHTMLProxy = (id: string) => htmlProxyRE.test(id)

@@ -4,6 +4,7 @@ import {
   createDevHtmlTransformFn,
   indexHtmlMiddleware,
 } from './middlewares/indexHtml'
+import { serveStaticMiddleware } from './middlewares/static'
 
 import { resolveConfig } from '../config'
 import { resolveHttpServer } from '../http'
@@ -61,6 +62,8 @@ export async function createServer(inlineConfig: InlineConfig = {}) {
   }
 
   server.transformIndexHtml = createDevHtmlTransformFn(server)
+
+  middlewares.use(serveStaticMiddleware(config.root))
 
   middlewares.use(indexHtmlMiddleware(server))
 
