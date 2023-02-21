@@ -3,6 +3,10 @@ import { builtinModules } from 'node:module'
 import { platform } from 'node:os'
 import path from 'node:path'
 
+import { sync } from 'resolve'
+
+import { DEFAULT_EXTENSIONS } from './constants'
+
 import type { PathLike } from 'node:fs'
 
 // 所有内置模块
@@ -36,6 +40,8 @@ export const unlinkSync = (...args: Parameters<typeof fs.unlinkSync>) =>
 
 export const statSync = (...args: Parameters<typeof fs.statSync>) =>
   fs.statSync(...args)
+
+export const readFileSync = (file: string) => fs.readFileSync(file, 'utf-8')
 
 /**
  * path
@@ -144,3 +150,16 @@ export const hashRE = /#.*$/
 
 export const clearUrl = (url: string) =>
   url.replace(queryRE, '').replace(hashRE, '')
+
+/**
+ * 查找指定模块入口的绝对路径
+ * @param id 模块
+ * @param basedir 从指定目录开始查找
+ * @returns
+ */
+export const resolveFrom = (id: string, basedir: string) =>
+  sync(id, {
+    basedir,
+    preserveSymlinks: false,
+    extensions: DEFAULT_EXTENSIONS,
+  })

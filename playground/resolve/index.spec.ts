@@ -1,4 +1,5 @@
-import path from 'path'
+import { readFile, readFileSync } from 'fs'
+import path, { resolve } from 'path'
 
 import { describe, test, expect } from 'vitest'
 
@@ -22,6 +23,7 @@ describe('tryResolveFile', () => {
     const resolved = tryResolveFile(dict, '', {
       tryIndex: true,
       extensions: ['.js', '.ts'],
+      skipPackageJson: true,
     })
     expect(resolved).toBe(getRealPath(index))
   })
@@ -32,6 +34,7 @@ describe('tryResolveFile', () => {
     const resolved = tryResolveFile(dict, '', {
       tryIndex: true,
       extensions: ['.ts', '.js'],
+      skipPackageJson: true,
     })
     expect(resolved).toBe(getRealPath(index))
   })
@@ -50,6 +53,7 @@ describe('tryFsResolve', () => {
     const resolved = tryFsResolve(dict, {
       tryIndex: true,
       extensions: ['.js', '.ts'],
+      skipPackageJson: true,
     })
     expect(resolved).toBe(getRealPath(index))
   })
@@ -60,6 +64,7 @@ describe('tryFsResolve', () => {
     const resolved = tryFsResolve(dict, {
       tryIndex: true,
       extensions: ['.js', '.ts'],
+      skipPackageJson: true,
     })
     expect(resolved).toBe(getRealPath(index))
   })
@@ -71,8 +76,64 @@ describe('tryFsResolve', () => {
       tryPrefix: 'sr',
       extensions: ['.js'],
       tryIndex: true,
+      skipPackageJson: true,
     })
     expect(resolved).toBe(getRealPath(index))
+  })
+
+  test('resolve await-to-js entry point', () => {
+    const awaitToJsDir = path.resolve(process.cwd(), 'node_modules/await-to-js')
+    const res = tryFsResolve(awaitToJsDir, {
+      tryIndex: true,
+      skipPackageJson: false,
+    })
+
+    const content = readFileSync(res!, 'utf-8')
+    expect(content).toMatch('function to')
+  })
+
+  test('resolve browser field', () => {
+    const browserDict = path.resolve(process.cwd(), './browser-field')
+    const resolved = tryFsResolve(browserDict, {
+      tryIndex: true,
+      skipPackageJson: false,
+      targetWeb: true,
+    })
+    const content = readFileSync(resolved!, 'utf-8')
+    expect(content).toMatch('success')
+  })
+
+  test('resolve browser and module', () => {
+    const browserDict = path.resolve(process.cwd(), './browser-module-field1')
+    const resolved = tryFsResolve(browserDict, {
+      tryIndex: true,
+      skipPackageJson: false,
+      targetWeb: true,
+    })
+    const content = readFileSync(resolved!, 'utf-8')
+    expect(content).toMatch('success')
+  })
+
+  test('resolve browser and module', () => {
+    const browserDict = path.resolve(process.cwd(), './browser-module-field2')
+    const resolved = tryFsResolve(browserDict, {
+      tryIndex: true,
+      skipPackageJson: false,
+      targetWeb: true,
+    })
+    const content = readFileSync(resolved!, 'utf-8')
+    expect(content).toMatch('success')
+  })
+
+  test('resolve browser and module', () => {
+    const browserDict = path.resolve(process.cwd(), './browser-module-field3')
+    const resolved = tryFsResolve(browserDict, {
+      tryIndex: true,
+      skipPackageJson: false,
+      targetWeb: true,
+    })
+    const content = readFileSync(resolved!, 'utf-8')
+    expect(content).toMatch('success')
   })
 })
 

@@ -7,3 +7,6 @@ export const DEFAULT_CONFIG_FILES = [
   'vite.config.cts',
   'vite.config.mts',
 ]
+
+// 查找 npm 包入口时使用的文件扩展列表
+export const DEFAULT_EXTENSIONS = ['.mjs', '.js', '.mts', '.ts', '.jsx', '.tsx']

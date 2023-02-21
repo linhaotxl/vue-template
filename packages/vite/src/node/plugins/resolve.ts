@@ -1,4 +1,20 @@
-import { basename, dirname, join, normalizePath, statSync } from '../utils'
+import { hasESMSyntax } from 'mlly'
+import { exports } from 'resolve.exports'
+
+import { loadPackageData, resolvePackageData } from '../packages'
+import {
+  basename,
+  dirname,
+  isObject,
+  isString,
+  join,
+  normalizePath,
+  readFileSync,
+  resolve,
+  statSync,
+} from '../utils'
+
+import type { PackageData } from '../packages'
 
 /**
  * 解析路径参数
@@ -23,6 +39,31 @@ export interface InternalResolveOptions {
    * 如果文件/目录本身没有解析出结果，那么尝试在文件/目录名前加入前缀，对结果再次解析
    */
   tryPrefix?: string
+
+  /**
+   * 是否是生产环境
+   */
+  isProduction?: boolean
+
+  /**
+   * 解析入口时是否查找 cjs
+   */
+  isReauire?: boolean
+
+  /**
+   * 解析的路径是否在浏览器环境下可用
+   */
+  targetWeb?: boolean
+
+  /**
+   * 解析 exports 入口时额外的条件
+   */
+  conditions?: string[]
+
+  /**
+   * 解析入口时会按照配置的顺序检查是否存在指定字段，如果存在则将其作为入口
+   */
+  mainFields?: string[]
 }
 
 /**
@@ -44,7 +85,20 @@ export function tryResolveFile(
     if (stat.isDirectory()) {
       // 解析的是目录
       if (options.tryIndex) {
-        // 尝试解析目录的下的 index 文件，具体是哪一个则由 extensions 配置的顺序决定
+        // 尝试解析 index，但是优先解析入口
+        if (!options.skipPackageJson) {
+          const pkg = resolvePackageData(fileOrDictionary, fileOrDictionary)
+          if (pkg) {
+            const entryPoint = resolvePackageEntry(
+              fileOrDictionary,
+              pkg,
+              options
+            )
+            return entryPoint
+          }
+        }
+
+        // 不解析入口，则尝试解析目录的下的 index 文件，具体是哪一个则由 extensions 配置的顺序决定
         // 如果能解析出 index 则需要加上后缀 postfix
         const index = tryFsResolve(join(fileOrDictionary, 'index'), options)
         if (index) return index + postfix
@@ -143,4 +197,139 @@ export function splitFileAndPostfix(id: string) {
   }
 
   return { file, postfix }
+}
+
+/**
+ * 解析 npm 包的 exports 入口
+ * @param pkgData package.json 内容
+ * @param key 需要解析 exports 的哪个入口
+ * @param options 解析参数
+ */
+export function resolveExports(
+  pkgData: PackageData['data'],
+  key: string,
+  options: InternalResolveOptions
+) {
+  const conditions = new Set<string>([...(options.conditions || [])])
+
+  options.isProduction
+    ? conditions.add('production')
+    : conditions.add('development')
+
+  options.targetWeb ? conditions.add('browser') : conditions.add('node')
+
+  options.isReauire ? conditions.add('require') : conditions.add('import')
+
+  const result = exports(pkgData, key, {
+    conditions: [...conditions],
+  })
+
+  return result ? result[0] : undefined
+}
+
+/**
+ * 解析 npm 的入口文件
+ * @param id npm 包名
+ * @param pkg npm 包对应的 package.json 内容
+ * @param options 解析参数
+ * @returns 入口文件路径
+ */
+export function resolvePackageEntry(
+  id: string,
+  pkg: PackageData,
+  options: InternalResolveOptions
+) {
+  const { data, dir } = pkg
+  const { exports, browser } = data
+  let entryPoint: string | undefined
+
+  // 1. 优先解析 exports 字段指向的入口
+  if (exports) {
+    entryPoint = resolveExports(data, '.', options)
+  }
+
+  // const browserIsObject = isObject(data.browser)
+
+  // 2. web 环境下需要解析 browser 字段
+  if (options.targetWeb && browser && !entryPoint) {
+    // 获取 browser 字段的入口
+    const browserEntry = isObject(browser) ? browser['.'] : browser
+
+    if (browserEntry) {
+      // 如果 browser 入口和 module 同时存在，并且指向不同文件，这是需要判断到底使用哪一个
+      // 如果 browser 入口的文件使用 ESM 语法，那么将其视为入口，否则将 module 视为入口
+      if (data.module && data.module !== browserEntry) {
+        const browserEntryResolved = tryFsResolve(
+          join(dir, browserEntry),
+          options
+        )
+        if (browserEntryResolved) {
+          const browserEntryCode = readFileSync(browserEntryResolved)
+          const browserEntryHasESM = hasESMSyntax(browserEntryCode)
+          if (browserEntryHasESM) {
+            entryPoint = browserEntry
+          } else {
+            //
+          }
+        }
+      } else {
+        // entryPoint = browserEntry
+      }
+    }
+  }
+
+  // 3. 解析 mainFields 中的字段
+  if (!entryPoint && options.mainFields) {
+    for (const field of options.mainFields) {
+      if (isString(data[field])) {
+        entryPoint = data[field]
+        break
+      }
+    }
+  }
+
+  // 使用 main 字段兜底
+  entryPoint ||= data.main
+
+  // 可能的入口文件列表，如果经历上面几个步骤还是没有解析出入口，则使用默认值
+  const entryPointes = entryPoint ? [entryPoint] : ['index.js']
+
+  // 遍历可能存在的入口，依次解析每一个，如果能解析到则直接返回，代表最终的入口
+  for (let entry of entryPointes) {
+    // 如果 browser 是对象，那么会检查 entry 是否能匹配上浏览器环境下重写的路径
+    if (options.targetWeb && isObject(browser)) {
+      const browserMap = mapWithBrowserField(
+        entry,
+        data.browser as Record<string, string | false>
+      )
+      if (browserMap) entry = browserMap
+    }
+
+    const entryPath = join(pkg.dir, entry)
+    const entryResolved = tryFsResolve(entryPath, options)
+    if (entryResolved) return entryResolved
+  }
+
+  // 解析不到入口则抛错
+  throw new Error(`Failed to resolve entry for package "${id}".`)
+}
+
+/**
+ * 匹配是否有对应的 browser 字段
+ * @param relativePath
+ * @param browser
+ * @returns
+ */
+function mapWithBrowserField(
+  relativePath: string,
+  browser: Record<string, string | false>
+) {
+  const normalizeRelative = normalizePath(relativePath)
+
+  for (const key in browser) {
+    const normalizeKey = normalizePath(key)
+    if (normalizeKey === normalizeRelative) {
+      return browser[key]
+    }
+  }
 }
