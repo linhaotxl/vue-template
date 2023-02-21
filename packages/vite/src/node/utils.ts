@@ -34,6 +34,9 @@ export const writeFileSync = (...args: Parameters<typeof fs.writeFileSync>) =>
 export const unlinkSync = (...args: Parameters<typeof fs.unlinkSync>) =>
   fs.unlinkSync(...args)
 
+export const statSync = (...args: Parameters<typeof fs.statSync>) =>
+  fs.statSync(...args)
+
 /**
  * path
  */
@@ -43,6 +46,7 @@ export const isAbsolute = (id: string) => path.isAbsolute(id)
 export const resolve = (...p: string[]) => path.resolve(...p)
 
 export const dirname = (id: string) => path.dirname(id)
+export const basename = (id: string) => path.basename(id)
 
 export const join = (...args: Parameters<typeof path.join>) =>
   path.posix.join(...args)

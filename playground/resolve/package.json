@@ -1,0 +1,6 @@
+{
+  "name": "test-resolve",
+  "scripts": {
+    "test": "vitest"
+  }
+}
