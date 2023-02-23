@@ -1,0 +1,6 @@
+{
+  "name": "test-import-analysis",
+  "scripts": {
+    "test": "vitest"
+  }
+}
