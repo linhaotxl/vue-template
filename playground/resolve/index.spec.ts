@@ -4,6 +4,7 @@ import path, { resolve } from 'path'
 import { describe, test, expect } from 'vitest'
 
 import {
+  extractPossiableIds,
   getRealPath,
   splitFileAndPostfix,
   tryFsResolve,
@@ -135,6 +136,28 @@ describe('tryFsResolve', () => {
     const content = readFileSync(resolved!, 'utf-8')
     expect(content).toMatch('success')
   })
+
+  test('resolve custom condition', () => {
+    const dict = path.resolve(process.cwd(), './custom-condition')
+    const resolved = tryFsResolve(dict, {
+      tryIndex: true,
+      skipPackageJson: false,
+      conditions: ['require', 'import', 'custom'],
+    })
+    const content = readFileSync(resolved!, 'utf-8')
+    expect(content).toMatch('success')
+  })
+
+  test('resolve custom main fields', () => {
+    const dict = path.resolve(process.cwd(), './custom-main-field')
+    const resolved = tryFsResolve(dict, {
+      tryIndex: true,
+      skipPackageJson: false,
+      mainFields: ['custom'],
+    })
+    const content = readFileSync(resolved!, 'utf-8')
+    expect(content).toMatch('success')
+  })
 })
 
 describe('splitFileAndPostfix', () => {
@@ -171,5 +194,32 @@ describe('splitFileAndPostfix', () => {
 
     expect(file).toBe(id)
     expect(postfix).toBe('?a=1#aaa')
+  })
+})
+
+describe('extractPossiableIds', () => {
+  test('extract normal id', () => {
+    const possiables = extractPossiableIds('foo')
+    expect(possiables).toMatchObject(['foo'])
+  })
+
+  test('extract normal ids', () => {
+    const possiables = extractPossiableIds('foo/bar/baz')
+    expect(possiables).toMatchObject(['foo', 'foo/bar', 'foo/bar/baz'])
+  })
+
+  test('extract @ ids', () => {
+    const possiables = extractPossiableIds('@foo/bar/baz')
+    expect(possiables).toMatchObject(['@foo/bar', '@foo/bar/baz'])
+  })
+
+  test('extract ext ids', () => {
+    const possiables = extractPossiableIds('foo/bar/baz.js')
+    expect(possiables).toMatchObject(['foo', 'foo/bar'])
+  })
+
+  test('extract @ and ext ids', () => {
+    const possiables = extractPossiableIds('@foo/bar/baz.js')
+    expect(possiables).toMatchObject(['@foo/bar'])
   })
 })

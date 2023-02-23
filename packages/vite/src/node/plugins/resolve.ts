@@ -1,7 +1,9 @@
+import { extname } from 'node:path'
+
 import { hasESMSyntax } from 'mlly'
 import { exports } from 'resolve.exports'
 
-import { loadPackageData, resolvePackageData } from '../packages'
+import { resolvePackageData } from '../packages'
 import {
   basename,
   dirname,
@@ -10,7 +12,6 @@ import {
   join,
   normalizePath,
   readFileSync,
-  resolve,
   statSync,
 } from '../utils'
 
@@ -200,7 +201,7 @@ export function splitFileAndPostfix(id: string) {
 }
 
 /**
- * 解析 npm 包的 exports 入口
+ * TODO: 解析 npm 包的 exports 入口
  * @param pkgData package.json 内容
  * @param key 需要解析 exports 的哪个入口
  * @param options 解析参数
@@ -228,7 +229,7 @@ export function resolveExports(
 }
 
 /**
- * 解析 npm 的入口文件
+ * TODO: 解析 npm 的入口文件
  * @param id npm 包名
  * @param pkg npm 包对应的 package.json 内容
  * @param options 解析参数
@@ -332,4 +333,36 @@ function mapWithBrowserField(
       return browser[key]
     }
   }
+}
+
+/**
+ * 提取可能存在的 id
+ * @param id
+ * @returns
+ */
+export function extractPossiableIds(id: string) {
+  let prevSlash = -1
+  const possiableIds: string[] = []
+
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    let slashIndex = id.indexOf('/', prevSlash + 1)
+    if (slashIndex < 0) {
+      slashIndex = id.length
+    }
+
+    const part = id.slice(prevSlash + 1, slashIndex)
+    if (!part) break
+
+    prevSlash = slashIndex
+
+    if (possiableIds.length ? extname(part) : part.startsWith('@')) {
+      continue
+    }
+
+    const possiableId = id.slice(0, slashIndex)
+    possiableIds.push(possiableId)
+  }
+
+  return possiableIds
 }
