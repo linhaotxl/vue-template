@@ -4,8 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "pnpm run --parallel dev --filter='./packages/*'",
-    "test": "pnpm run --parallel test --filter='./playground/*'",
+    "dev": "pnpm run --parallel dev --filter=./packages/*",
+    "test": "pnpm --parallel test --filter=./playground/*",
     "prepare": "husky install",
     "eslint": "pnpm -r --filter=./packages/* run eslint",
     "lint:js": "eslint --fix --ext .js,.jsx,.ts,.tsx"
