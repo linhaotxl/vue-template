@@ -2,6 +2,7 @@ import fs from 'node:fs'
 import { builtinModules } from 'node:module'
 import { platform } from 'node:os'
 import path from 'node:path'
+import { URL } from 'node:url'
 
 import { sync } from 'resolve'
 
@@ -120,6 +121,20 @@ export const isPromise = <T>(value: unknown): value is Promise<T> =>
 
 export const isArray = Array.isArray
 
+const importQueryRE = /[?&]import(?:&|$)/
+export const isImportRequest = (url: string) => importQueryRE.test(url)
+
+const knownJsSrcRE = /\.(?:[jt]sx?|m[jt]s)$/
+export const isJSRequest = (url: string) => {
+  url = clearUrl(url)
+
+  if (knownJsSrcRE.test(url)) {
+    return true
+  }
+
+  return false
+}
+
 /**
  * others
  */
@@ -163,3 +178,39 @@ export const resolveFrom = (id: string, basedir: string) =>
     preserveSymlinks: false,
     extensions: DEFAULT_EXTENSIONS,
   })
+
+/**
+ * 拼接两个 url
+ * @param a
+ * @param b
+ */
+export const joinUrlSegments = (a?: string, b?: string) => {
+  if (!a || !b) {
+    return a || b || ''
+  }
+
+  if (a.endsWith('/')) {
+    a = a.substring(0, a.length - 1)
+  }
+
+  if (!b.startsWith('/')) {
+    b = '/' + b
+  }
+
+  return a + b
+}
+
+/**
+ * 注入搜索条件
+ * @param url
+ * @param query
+ * @returns
+ */
+export const injectQuery = (url: string, query: string) => {
+  const resolvedUrl = new URL(url, 'relative:///')
+  const { search, hash, pathname } = resolvedUrl
+  const resolvedQuery = search ? `${search}&${query}` : query ? `?${query}` : ''
+  return `${pathname}${resolvedQuery}${hash}`
+}
+
+export const removeImportQuery = (url: string) => url.replace(importQueryRE, '')

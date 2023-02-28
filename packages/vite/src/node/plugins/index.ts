@@ -1,4 +1,6 @@
 import { htmlInlineProxyPlugin } from './html'
+import { importAnalysisPlugin } from './importAnalysis'
+import { resolvePlugin } from './resolve'
 
 import type { ResolvedConfig } from '../config'
 import type { Plugin } from '../plugin'
@@ -12,6 +14,11 @@ export async function resolvePlugins(
   return [
     ...prePlugins,
     htmlInlineProxyPlugin(config),
+
+    // resolvePlugin(),
+
+    importAnalysisPlugin(config),
+
     ...normalPlugins,
     ...postPlugins,
   ]

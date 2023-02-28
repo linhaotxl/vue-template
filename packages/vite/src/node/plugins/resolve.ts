@@ -16,6 +16,7 @@ import {
 } from '../utils'
 
 import type { PackageData } from '../packages'
+import type { Plugin } from '../plugin'
 
 /**
  * 解析路径参数
@@ -365,4 +366,12 @@ export function extractPossiableIds(id: string) {
   }
 
   return possiableIds
+}
+
+export function resolvePlugin(): Plugin {
+  return {
+    name: 'vite:resolve',
+
+    resolveId(id, importer, options) {},
+  }
 }

@@ -1,6 +1,12 @@
 import { makeLegalIdentifier } from '@rollup/pluginutils'
 import { parse as parseJS } from 'acorn'
+import { init, parse as parseImport } from 'es-module-lexer'
+import MagicString from 'magic-string'
 
+import { injectQuery, isJSRequest, joinUrlSegments } from '../utils'
+
+import type { ResolvedConfig } from '../config'
+import type { Plugin } from '../plugin'
 import type { Node } from 'estree'
 
 type ImportNameSpecifier = {
@@ -122,4 +128,72 @@ export function transformCjsImport(
 
     return lines.join('; ')
   }
+}
+
+export function importAnalysisPlugin(config: ResolvedConfig): Plugin {
+  const { base } = config
+
+  return {
+    name: 'vite:importAyalysis',
+
+    async transform(code, id, options) {
+      await init
+
+      let s: MagicString | undefined
+      const str = () => s || (s = new MagicString(code))
+
+      // TODO: parse 出错
+      const [imports, exports] = parseImport(code)
+      // console.log('imports: ', imports)
+
+      for (const i of imports) {
+        const { s: start, e: end, ss: expStart, se: expEnd, n: specifier } = i
+
+        const rawUrl = code.slice(start, end)
+
+        const [url] = normalizeUrl(rawUrl)
+
+        // console.log('before: ', url, code.slice(start, end))
+        // str().overwrite(start, end, 'aaas', { contentOnly: true })
+        str().update(start, end, url)
+        // console.log('after: ', str().toString())
+      }
+
+      return {
+        code: s ? s.toString() : code,
+      }
+
+      // this.resolveId
+
+      function normalizeUrl(url: string): [string] {
+        // console.log('before: ', url)
+        url = joinUrlSegments(base, url)
+        // console.log('after: ', url)
+
+        url = markExpilicitImport(url)
+
+        return [url]
+      }
+    },
+  }
+}
+
+/**
+ * 检测是否是 JS 请求
+ * @param url
+ * @returns
+ */
+export function isExpilictImportRequest(url: string) {
+  return isJSRequest(url)
+}
+
+/**
+ * 标志这是一个请求，才可以被 transform middleware 处理
+ * @param url
+ */
+function markExpilicitImport(url: string) {
+  // if (isExpilictImportRequest(url)) {
+  return injectQuery(url, 'import')
+  // }
+  // return url
 }

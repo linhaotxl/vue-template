@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest'
 
 import { transformCjsImport } from '../../packages/vite/src/node/plugins/importAnalysis'
+import { injectQuery } from '../../packages/vite/src/node/utils'
 
 describe('transformCjsImport', () => {
   const url = './node_modules/.vite/deps/react.js'
@@ -122,5 +123,27 @@ describe('transformCjsImport', () => {
         'const __vite__cjsExportDefault_0 = __vite__cjsImport0_react["Component"]; ' +
         'export default __vite__cjsExportDefault_0'
     )
+  })
+})
+
+describe('injectQuery', () => {
+  test('without query', () => {
+    const url = injectQuery('/home', '')
+    expect(url).toBe('/home')
+  })
+
+  test('with query', () => {
+    const url = injectQuery('/home', 'a=1')
+    expect(url).toBe('/home?a=1')
+  })
+
+  test('with query', () => {
+    const url = injectQuery('/home?b=2', 'a=1')
+    expect(url).toBe('/home?b=2&a=1')
+  })
+
+  test('with query', () => {
+    const url = injectQuery('/home?a=1#name', 'b=2')
+    expect(url).toBe('/home?a=1&b=2#name')
   })
 })

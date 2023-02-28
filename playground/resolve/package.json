@@ -1,9 +1,12 @@
 {
   "name": "test-resolve",
+  "type": "module",
   "scripts": {
-    "test": "vitest"
+    "test": "vitest",
+    "dev": "vite-my"
   },
   "dependencies": {
-    "await-to-js": "^3.0.0"
+    "await-to-js": "^3.0.0",
+    "vite-my": "workspace:*"
   }
 }
