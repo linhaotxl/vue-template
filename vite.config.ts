@@ -7,14 +7,10 @@ import AutoImport from 'unplugin-auto-import/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 import Components from 'unplugin-vue-components/vite'
 import { defineConfig } from 'vite'
-// import OptimizationPersist from 'vite-plugin-optimize-persist'
-// import PkgConfig from 'vite-plugin-package-config'
 import {
   createStyleImportPlugin,
   ElementPlusResolve as StyleElementPlusResolve,
 } from 'vite-plugin-style-import'
-// import pages from 'vite-plugin-pages'
-// import layouts from 'vite-plugin-vue-layouts'
 import setupExtend from 'vite-plugin-vue-setup-extend'
 
 const root = __dirname
@@ -45,17 +41,6 @@ export default defineConfig({
     unocss(),
 
     setupExtend(),
-
-    // pages({
-    //   dirs: './src/pages',
-    //   extensions: ['vue', 'tsx', 'jsx'],
-    //   routeNameSeparator: '_',
-    // }),
-
-    // layouts({
-    //   extensions: ['vue', 'tsx', 'jsx'],
-    //   defaultLayout: 'BasicLayout',
-    // }),
 
     AutoImport({
       include: [/\.vue$/, /\.[tj]sx?$/],
