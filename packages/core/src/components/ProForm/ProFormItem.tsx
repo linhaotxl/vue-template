@@ -94,12 +94,13 @@ export const ProFormItem = defineComponent({
         return
       }
 
-      // 通知 ProForm，ProFormItem 卸载了，需要消除 col 的信息
+      // 通知 ProForm，ProFormItem 卸载了，需要清除 col 的信息
       proFormBus.emit('colSize', {
         prop: props.prop as string,
         col: null,
       })
 
+      // 通知 ProForm，ProFormItem 卸载了，需要清除 formState 中的值
       proFormBus.emit('preserve', props.prop)
     })
 

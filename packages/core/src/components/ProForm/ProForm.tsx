@@ -68,9 +68,10 @@ export const ProForm = defineComponent({
 
   props,
 
-  emits: ['submit'],
+  emits: ['submit', 'reset'],
 
-  setup(props, { attrs, slots }) {
+  setup(props, { attrs, slots, emit }) {
+    // TODO: deep clone
     const formState = reactive<Record<string, unknown>>(
       JSON.parse(JSON.stringify(props.initialValues))
     )
@@ -92,11 +93,12 @@ export const ProForm = defineComponent({
 
     /**
      * ProFormItem 的 col 变化时的回调
-     * @param _
      * @param payload
      */
     const onProFormItemColSize = (payload: ProFormItemColSizePayload) => {
       if (payload) {
+        // col 发生了变化，需要重新计算 tools col 的位置
+        // 可能是修改，也可能是卸载
         if (payload.col) {
           formItemCols[payload.prop] = payload.col
         } else {
@@ -105,12 +107,22 @@ export const ProForm = defineComponent({
       }
     }
 
+    /**
+     * ProFormItem 卸载时需要清除 formState 中的值
+     * @param payload
+     */
     const onProFormItemPreserve = (payload: ProFormItemPreservePayload) => {
       if (!props.preserve) {
         delete formState[payload]
       }
     }
 
+    /**
+     * ProFormItem 卸载或者 col 变化的回调
+     * @param type
+     * @param payload
+     * @returns
+     */
     const handleProFormItemEvent = (
       type: ProFormBusEventType,
       payload?: ProFormBusEventPayload
@@ -123,48 +135,54 @@ export const ProForm = defineComponent({
       }
     }
 
-    // 监听 ProFormItem col 的变化
+    // 监听 ProFormItem 卸载或者 col 变化的回调
     proFormBus.on(handleProFormItemEvent)
+
+    /**
+     * 累加每一个 ProFormItem 的 col，最终计算在 toolColProps
+     * @param colProps
+     * @param toolColProps
+     */
+    function accumulProFormItemCol(
+      colProps: NormalizeColProps,
+      toolColProps: NormalizeColProps
+    ) {
+      if (hasOwn(toolColProps, 'span')) {
+        // 如果 tool 偏移的格子已经不够在放下 ProFormItem，那么会将 tool 放在新的一行最右边
+        if (
+          hasOwn(toolColProps, 'offset') &&
+          24 - (toolColProps.offset! % 24) < colProps.span!
+        ) {
+          toolColProps.offset ||= 0
+          toolColProps.offset! += 24 - toolColProps.offset!
+        }
+
+        toolColProps.offset ||= 0
+
+        // toolColProps 的偏移是每个 ProFormItem 的 span + offset
+        toolColProps.offset! += (colProps.span || 0) + (colProps.offset || 0)
+      }
+    }
+
+    /**
+     * 确保 tool 始终在一行的最右侧
+     * @param toolColProps
+     */
+    function ensureToolRowRight(toolColProps: NormalizeColProps) {
+      if (hasOwn(toolColProps, 'offset')) {
+        if ((toolColProps.offset! % 24) + toolColProps.span! > 24) {
+          toolColProps.offset = 24 - toolColProps.span!
+        } else {
+          toolColProps.offset =
+            24 - (toolColProps.offset! % 24) - toolColProps.span!
+        }
+      }
+    }
 
     // 计算 tools col props
     const toolsColProps = props.renderTools
       ? computed(() => {
-          function aaa(
-            colProps: NormalizeColProps,
-            toolColProps: NormalizeColProps
-          ) {
-            if (hasOwn(toolColProps, 'span')) {
-              if (
-                hasOwn(toolColProps, 'offset') &&
-                24 - (toolColProps.offset! % 24) < colProps.span!
-              ) {
-                toolColProps.offset ||= 0
-                toolColProps.offset! += 24 - toolColProps.offset!
-              }
-
-              toolColProps.offset ||= 0
-
-              toolColProps.offset! +=
-                (colProps.span || 0) + (colProps.offset || 0)
-            }
-          }
-
-          /**
-           *
-           * @param toolColProps
-           */
-          function bbb(toolColProps: NormalizeColProps) {
-            if (hasOwn(toolColProps, 'offset')) {
-              if ((toolColProps.offset! % 24) + toolColProps.span! > 24) {
-                toolColProps.offset = 24 - toolColProps.span!
-              } else {
-                toolColProps.offset =
-                  24 - (toolColProps.offset! % 24) - toolColProps.span!
-              }
-            }
-          }
-
-          // 初始化 tools 的 col span，有限取 toolsCol，如果没有则使用 ProForm 的 col 配置
+          // 初始化 tools 的 col span，优先取 toolsCol，如果没有则使用 ProForm 的 col 配置
           const toolColProps: NormalizeColProps = Object.create(null)
           normalizeFormCol(props.toolsCol || props.col, toolColProps)
 
@@ -173,11 +191,12 @@ export const ProForm = defineComponent({
             // 获取 ProFormItem 的 col
             const colProps = formItemCols[prop]
             // 累加每一个 ProFormItem 的位置（包括 span + offset）
-            aaa(colProps, toolColProps)
+            accumulProFormItemCol(colProps, toolColProps)
 
+            // 遍历处理响应式的布局，同样累加在 toolColProps 中
             colRanges.forEach(range => {
               if (hasOwn(colProps, range)) {
-                aaa(
+                accumulProFormItemCol(
                   colProps[range]!,
                   (toolColProps[range] ||= Object.create(null))
                 )
@@ -185,15 +204,14 @@ export const ProForm = defineComponent({
             })
           }
 
+          // 确保 tool 始终在一行的最右侧
+          // 包括响应式的布局以及普通布局
           colRanges.forEach(range => {
             if (hasOwn(toolColProps, range)) {
-              bbb(toolColProps[range]!)
+              ensureToolRowRight(toolColProps[range]!)
             }
           })
-          // 如果 tools 的偏移和宽度已经超出一行，则换行
-          // 否则重新计算 tools 的偏移，总宽度 - 偏移 - 宽度
-
-          bbb(toolColProps)
+          ensureToolRowRight(toolColProps)
 
           return toolColProps
         })
@@ -201,7 +219,16 @@ export const ProForm = defineComponent({
 
     const handleClickSubmit = async () => {
       if (formRef.value) {
-        const validated = await formRef.value.validate()
+        try {
+          const validated = await formRef.value.validate()
+          console.log('validated: ', validated)
+          if (validated) {
+            // debugger
+            emit('submit', formState)
+          }
+        } catch (e) {
+          console.log('e: ', e)
+        }
       }
     }
 
@@ -216,8 +243,8 @@ export const ProForm = defineComponent({
                 {{
                   default: () => (
                     <>
-                      <ElButton onClick={handleClickSubmit}>
-                        {{ default: () => 'Submit' }}
+                      <ElButton type="primary" onClick={handleClickSubmit}>
+                        {{ default: () => 'Submit2' }}
                       </ElButton>
                       <ElButton>Reset</ElButton>
                     </>
@@ -230,7 +257,7 @@ export const ProForm = defineComponent({
       ) : null
 
       return (
-        <ElForm {...attrs} model={formState} ref="formRef">
+        <ElForm {...attrs} model={formState} ref={formRef}>
           {{
             default: () => (
               <ElRow>

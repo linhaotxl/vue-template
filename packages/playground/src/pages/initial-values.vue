@@ -8,6 +8,7 @@
     label-width="100px"
     :render-tools="true"
     :initial-values="initialValues"
+    @submit="handleSubmit"
   >
     <pro-form-item
       label="用户名"
@@ -69,5 +70,9 @@ const initialValues = reactive({
 
 const changeInitialValues = () => {
   initialValues.sex = 1
+}
+
+const handleSubmit = (values: unknown) => {
+  console.log('submit values: ', values)
 }
 </script>
