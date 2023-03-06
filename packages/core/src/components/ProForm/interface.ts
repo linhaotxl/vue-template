@@ -1,4 +1,4 @@
-import type { ColSize, ColSizeObject } from 'element-plus'
+import type { ColSize, ColSizeObject, ButtonProps } from 'element-plus'
 import type { ComputedRef } from 'vue'
 
 export type ElColProps = {
@@ -39,3 +39,21 @@ export type ProFormBusEventPayload =
   | ProFormItemPreservePayload
 
 export type ProFormBusEventType = 'colSize' | 'preserve'
+
+export interface Submitter {
+  submitButtonText: string
+
+  resetButtonText: string
+
+  submitButtonProps: ButtonProps | false
+
+  resetButtonProps: ButtonProps | false
+}
+
+export interface SubmitterSlotParams {
+  values: object
+
+  onSubmit: () => void
+
+  onReset: () => void
+}

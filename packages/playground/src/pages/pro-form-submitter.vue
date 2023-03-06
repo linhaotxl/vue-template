@@ -1,6 +1,6 @@
 <template>
   <!-- <el-space direction="vertical" alignment="flex-start"> -->
-  <pro-form label-width="100px" :render-tools="true">
+  <pro-form label-width="100px" :render-tools="true" :submitter="submiter">
     <pro-form-item
       label="用户名"
       prop="userName"
@@ -54,9 +54,20 @@ const changeUserName = (value: string) => {
   console.log('value is ', value)
 }
 
-// const formCol= ref(6)
-// const formCol = ref({ span: 6, offset: 2 })
-const formCol = ref(6)
-const userNameCol = ref(4)
-const sexCol = 12
+const submiter = ref({
+  submitButtonText: 'OK',
+
+  resetButtonText: 'CANCEL',
+
+  submitButtonProps: {
+    type: 'primary',
+    onClick: () => {
+      console.log(11111)
+    },
+  },
+
+  resetButtonProps: {
+    type: 'danger',
+  },
+})
 </script>

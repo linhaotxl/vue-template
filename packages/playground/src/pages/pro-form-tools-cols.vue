@@ -1,6 +1,11 @@
 <template>
   <!-- <el-space direction="vertical" alignment="flex-start"> -->
-  <pro-form label-width="100px" :col="formCol" :render-tools="true">
+  <pro-form
+    label-width="100px"
+    :render-tools="true"
+    :col="formCol"
+    :tools-col="toolsCol"
+  >
     <pro-form-item
       label="用户名"
       prop="userName"
@@ -30,13 +35,13 @@
       prop="sex"
       required
       value-type="select"
+      :col="sexCol"
       :value-enum="[
         { label: '男', value: 1 },
         { label: '女', value: 2 },
         { label: '自定义', value: 3 },
       ]"
       :field-props="{ placeholder: '请选择性别' }"
-      :col="sexCol"
     >
     </pro-form-item>
 
@@ -57,6 +62,7 @@ const changeUserName = (value: string) => {
 }
 
 const formCol = ref(10)
-const userNameCol = ref(4)
+const userNameCol = ref({ lg: 6 })
+const toolsCol = ref({ lg: 24 })
 const sexCol = 12
 </script>

@@ -1,13 +1,17 @@
 <template>
   <!-- <el-space direction="vertical" alignment="flex-start"> -->
-  <pro-form label-width="100px" :col="formCol" :render-tools="true">
+  <pro-form
+    label-width="100px"
+    :render-tools="true"
+    @finish="handleSubmit"
+    @finish-faild="handleFinishFailed"
+  >
     <pro-form-item
       label="用户名"
       prop="userName"
       label-width="100px"
       required
       value-type="text"
-      :col="userNameCol"
       :field-props="{
         placeholder: '请输入用户名',
         maxlength: 20,
@@ -36,7 +40,6 @@
         { label: '自定义', value: 3 },
       ]"
       :field-props="{ placeholder: '请选择性别' }"
-      :col="sexCol"
     >
     </pro-form-item>
 
@@ -47,6 +50,11 @@
         prop="customSex"
       />
     </pro-form-item>
+
+    <template #submitter="{ onSubmit, onReset }">
+      <el-button type="primary" @click="onSubmit">提交</el-button>
+      <el-button type="default" @click="onReset">恢复</el-button>
+    </template>
   </pro-form>
   <!-- </el-space> -->
 </template>
@@ -56,7 +64,11 @@ const changeUserName = (value: string) => {
   console.log('value is ', value)
 }
 
-const formCol = ref({ lg: 10 })
-const userNameCol = ref({ lg: 4 })
-const sexCol = { lg: 12 }
+const handleSubmit = (values: unknown) => {
+  console.log('submit: ', values)
+}
+
+const handleFinishFailed = ({ values, errorFields }: any) => {
+  console.log('failed: ', values, errorFields)
+}
 </script>
