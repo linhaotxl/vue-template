@@ -173,38 +173,42 @@ export const ProForm = defineComponent({
       : undefined
 
     return () => {
-      console.log(slots)
       const children = slots.default?.()
-      // const customSubmitter = slots.submitter?.()
-      const submitterValue = submitter.value
 
-      const $submitter = slots.submitter ? (
-        <ElCol {...toolsColProps.value}>
-          <ElFormItem>{slots.submitter(submitterSlotParams)}</ElFormItem>
-        </ElCol>
-      ) : submitterValue ? (
-        <ElCol {...toolsColProps.value}>
-          <ElFormItem>
-            {submitterValue.submitProps !== false ? (
-              <ElButton
-                {...submitterValue.submitProps}
-                onClick={handleClickSubmit}
-              >
-                {submitterValue.submitText}
-              </ElButton>
-            ) : null}
+      // 渲染提交栏
+      let submitterValue
+      let $submitter = null
+      if (slots.submitter) {
+        $submitter = (
+          <ElCol {...toolsColProps.value}>
+            <ElFormItem>{slots.submitter(submitterSlotParams)}</ElFormItem>
+          </ElCol>
+        )
+      } else if ((submitterValue = submitter.value)) {
+        $submitter = (
+          <ElCol {...toolsColProps.value}>
+            <ElFormItem>
+              {submitterValue.submitProps !== false ? (
+                <ElButton
+                  {...submitterValue.submitProps}
+                  onClick={handleClickSubmit}
+                >
+                  {submitterValue.submitText}
+                </ElButton>
+              ) : null}
 
-            {submitterValue.resetProps !== false ? (
-              <ElButton
-                {...submitterValue.resetProps}
-                onClick={handleClickReset}
-              >
-                {submitterValue.resetText}
-              </ElButton>
-            ) : null}
-          </ElFormItem>
-        </ElCol>
-      ) : null
+              {submitterValue.resetProps !== false ? (
+                <ElButton
+                  {...submitterValue.resetProps}
+                  onClick={handleClickReset}
+                >
+                  {submitterValue.resetText}
+                </ElButton>
+              ) : null}
+            </ElFormItem>
+          </ElCol>
+        )
+      }
 
       return (
         <ElForm {...attrs} model={formState} ref={formRef}>
