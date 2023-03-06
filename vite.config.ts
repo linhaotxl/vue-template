@@ -4,17 +4,19 @@ import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
 import unocss from 'unocss/vite'
 import AutoImport from 'unplugin-auto-import/vite'
+import { FileSystemIconLoader } from 'unplugin-icons/loaders'
+import IconsResolver from 'unplugin-icons/resolver'
+import Icons from 'unplugin-icons/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 import Components from 'unplugin-vue-components/vite'
 import { defineConfig } from 'vite'
-import {
-  createStyleImportPlugin,
-  ElementPlusResolve as StyleElementPlusResolve,
-} from 'vite-plugin-style-import'
 import setupExtend from 'vite-plugin-vue-setup-extend'
 
 const root = __dirname
 const resolve = (...p: string[]) => path.resolve(root, ...p)
+
+// icon 前缀
+const ICON_PREFIX = 'i'
 
 export default defineConfig({
   resolve: {
@@ -44,9 +46,8 @@ export default defineConfig({
       include: [/\.vue$/, /\.[tj]sx?$/],
 
       resolvers: [
-        ElementPlusResolver({
-          importStyle: 'sass',
-        }),
+        // 自动导入组件
+        ElementPlusResolver(),
       ],
 
       imports: ['vue', 'vue/macros', 'vue-router', '@vueuse/core'],
@@ -70,9 +71,16 @@ export default defineConfig({
 
     Components({
       dirs: ['./src/components'],
-      resolvers: ElementPlusResolver({
-        importStyle: 'sass',
-      }),
+      resolvers: [
+        // 自动注册图标组件
+        IconsResolver({
+          prefix: ICON_PREFIX,
+          enabledCollections: ['ep', 'vis', 'ic'],
+        }),
+
+        // 自动注册组件
+        ElementPlusResolver(),
+      ],
       include: [/\.vue$/, /\.vue\?vue/, /\.md$/],
 
       extensions: ['vue', 'tsx'],
@@ -81,8 +89,18 @@ export default defineConfig({
         path.endsWith('.tsx') ? path.slice(0, -4) : path,
     }),
 
-    createStyleImportPlugin({
-      resolves: [StyleElementPlusResolve()],
+    Icons({
+      compiler: 'vue3',
+      autoInstall: true,
+      webComponents: {
+        iconPrefix: ICON_PREFIX,
+      },
+      // 自定义 icon 集合
+      customCollections: {
+        vis: FileSystemIconLoader('src/assets/icons', svg =>
+          svg.replace(/^<svg /, '<svg fill="currentColor" ')
+        ),
+      },
     }),
   ],
 

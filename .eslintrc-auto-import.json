@@ -9,6 +9,7 @@
     "$toRef": true,
     "EffectScope": true,
     "ElMessage": true,
+    "ElMessageBox": true,
     "TextCompTsx": true,
     "asyncComputed": true,
     "autoResetRef": true,
