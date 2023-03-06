@@ -39,13 +39,13 @@
 ## 两种书写方法
 
 1. 写在 `class` 内
-   
+
    ```html
    <div class="box flex justify-center items-center"></div>
    ```
 
 2. 作为标签属性
-   
+
    ```html
    <div class="box" flex justify-center items-center></div>
    ```
@@ -60,7 +60,7 @@ export default defineConfig({
   theme: {
     color: {
       primary: 'var(--primary-color)'
-    }  
+    }
   }
 })
 ```
@@ -74,14 +74,14 @@ export default defineConfig({
 
 更多可扩展的主题参考 [主题配置](https://www.tailwindcss.cn/docs/theme)
 
-# 
+#
 
 # setup 语法
 
 要是想在 `setup` 语法内定义 `name` 或 `inheritAttrs` 等属性，可以使用以下方法
 
 1. 同时使用 `script` 和 `script setup`
-   
+
    ```html
    <script>
    export default {
@@ -89,23 +89,23 @@ export default defineConfig({
      inheritAttrs: false
    }
    </script>
-   
+
    <script setup lang="ts">
    // ...
    </script>
    ```
 
 2. 在 `script` 标签上定义 `name`
-   
+
    这种方法只能定义 `name` ，需要使用 `vite-plugin-vue-setup-extend` 插件，已经集成进来了。
-   
+
    注意，要是想定义其他属性，只能使用第1种方法
-   
+
    ```html
    <script setup lang="ts" name="Comp"></script>
    ```
 
-# 
+#
 
 # 自动引入api
 
@@ -168,14 +168,14 @@ const count = ref(1)
 
 ```html
 <el-icon :size="50">
-  <i-ic-baseline-5g />
+  <i-ic-baseline5g />
 </el-icon>
 ```
 
 #### 通过 unocss 形式使用
 
 ```html
-<i class="w-50 h-50 i-ic-baseline-5g" />
+<i class="w-50 h-50 i-ic-baseline5g" />
 ```
 
 

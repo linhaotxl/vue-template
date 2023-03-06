@@ -9,10 +9,10 @@
   </el-icon>
 
   <el-icon :size="50">
-    <i-ic-baseline-5g />
+    <i-ic-baseline5g />
   </el-icon>
 
-  <div class="w-50 h-50 i-ic-baseline-5g"></div>
+  <div class="w-50 h-50 i-ic-baseline5g"></div>
 </template>
 
 <script lang="ts" setup name="LoginPage">
