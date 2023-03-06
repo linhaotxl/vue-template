@@ -23,7 +23,7 @@ export default defineConfig({
     },
   },
 
-  cacheDir: resolve('.vite'),
+  // cacheDir: resolve('.vite'),
 
   css: {
     preprocessorOptions: {
