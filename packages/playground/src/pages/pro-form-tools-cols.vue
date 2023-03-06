@@ -45,9 +45,9 @@
     >
     </pro-form-item>
 
-    <pro-form-item v-slot="{ form }">
+    <pro-form-item v-slot="{ values }">
       <pro-form-item
-        v-if="form.sex === 3"
+        v-if="values.sex === 3"
         label="自定义性别"
         prop="customSex"
       />

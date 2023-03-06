@@ -22,7 +22,13 @@ import {
 } from './utils'
 import { valueTypeMap, ValueTypes } from './valueTypes'
 
-import type { ElColProps, NormalizeColProps, ProFormContext } from './interface'
+import type {
+  ElColProps,
+  NormalizeColProps,
+  ProFormContext,
+  ProFormItemDefaultSlotParams,
+  ProFormItemFieldSlotParams,
+} from './interface'
 import type { PropType } from 'vue'
 
 const props = {
@@ -105,13 +111,18 @@ export const ProFormItem = defineComponent({
     })
 
     return () => {
-      const defaultChildren = slots.default?.({ form: formState })
-
+      // 如果存在默认插槽，则交由默认插槽渲染
+      const defaultChildren = slots.default?.({
+        values: formState,
+      } as ProFormItemDefaultSlotParams)
       if (defaultChildren) {
         return defaultChildren
       }
 
-      const children = valueTypeMap[props.valueType]({ formState, props })
+      // 根据 valueType 获取渲染的子节点
+      const children =
+        slots.field?.({ values: formState } as ProFormItemFieldSlotParams) ??
+        valueTypeMap[props.valueType]({ formState, props })
 
       return (
         <ElCol {...proFormItemCol.value}>

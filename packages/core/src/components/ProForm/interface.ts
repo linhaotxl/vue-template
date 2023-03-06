@@ -57,3 +57,11 @@ export interface SubmitterSlotParams {
 
   onReset: () => void
 }
+
+export interface ProFormItemDefaultSlotParams {
+  values: object
+}
+
+export interface ProFormItemFieldSlotParams {
+  values: object
+}
