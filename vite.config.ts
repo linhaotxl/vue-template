@@ -25,13 +25,11 @@ export default defineConfig({
 
   // cacheDir: resolve('.vite'),
 
-  css: {
-    preprocessorOptions: {
-      scss: {
-        additionalData: `@use "~/styles/element/index.scss" as *;`,
-      },
-    },
-  },
+  // css: {
+  //   preprocessorOptions: {
+  //     scss: {},
+  //   },
+  // },
 
   plugins: [
     vue(),

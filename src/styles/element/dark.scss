@@ -1,7 +1,4 @@
-@forward "element-plus/theme-chalk/src/dark/var.scss" with (
-  $colors:  (
-    "primary": (
-      "base": #ff9999,
-    ),
-  )
-);
+html.dark #app {
+  // 暗黑模式主题 CSS VARS
+  --el-color-primary: green;
+}

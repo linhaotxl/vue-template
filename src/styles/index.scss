@@ -1,10 +1,14 @@
-// 如果需要，引入暗黑模式需要的变量
-// @use "element-plus/theme-chalk/src/dark/css-vars.scss" as *;
+// 引入 ElementPlus 暗黑模式 CSS 变量
+@use "element-plus/theme-chalk/src/dark/css-vars.scss" as *;
 
-:root {
-  --primary-color: #316c72;
-  --dark-bg: #18181c;
-}
+// 引入 ElementPlus 亮色模式重写 CSS 变量
+@use "./element/light.scss" as *;
+
+// 引入 ElementPlus 暗黑模式重写 CSS 变量
+@use "./element/dark.scss" as *;
+
+// 引入业务 CSS VARS
+@use "./variables.scss" as *;
 
 html,
 body {
@@ -14,8 +18,4 @@ body {
 html {
   height: 100%;
   font-size: 4px;
-}
-
-html.dark {
-  background: var(--dark-bg);
 }
