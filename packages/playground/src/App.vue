@@ -25,6 +25,7 @@ const routes = router.getRoutes()
   display: flex;
   gap: 8px;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .root {

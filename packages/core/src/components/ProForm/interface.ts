@@ -65,3 +65,6 @@ export interface ProFormItemDefaultSlotParams {
 export interface ProFormItemFieldSlotParams {
   values: object
 }
+
+export type ProFormEventTypes = ['finish', 'reset', 'finishFaild']
+export type ProFormEventType = ProFormEventTypes[number]

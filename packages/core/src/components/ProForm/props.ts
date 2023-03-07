@@ -1,4 +1,4 @@
-import type { ElColProps, Submitter } from './interface'
+import type { ElColProps, ProFormEventTypes, Submitter } from './interface'
 import type { PropType } from 'vue'
 
 export const commonProps = {
@@ -37,3 +37,5 @@ export const commonProps = {
       } as Submitter),
   },
 }
+
+export const commonEmits: ProFormEventTypes = ['finish', 'reset', 'finishFaild']

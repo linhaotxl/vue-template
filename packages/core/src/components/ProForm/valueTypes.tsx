@@ -38,3 +38,9 @@ export const valueTypeMap: Record<ValueTypes, RenderValueType> = {
     </ElSelect>
   ),
 }
+
+export const valueType2ComponentName: Record<string, string> = {
+  [ValueTypes.Text]: 'el-input',
+  [ValueTypes.Password]: 'el-input',
+  [ValueTypes.Select]: 'el-select',
+}

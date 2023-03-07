@@ -7,7 +7,7 @@ import './style.css'
 /** 引入uno.css，不引入不生效 */
 import 'uno.css'
 
-import { ProForm, ProFormItem } from 'element-plus-pro-components'
+import { ProForm, ProFormItem, QueryFilter } from 'element-plus-pro-components'
 import { createApp } from 'vue'
 
 import App from './App.vue'
@@ -16,6 +16,7 @@ import { router } from './router'
 const app = createApp(App)
 
 app.component(ProForm.name, ProForm)
+app.component(QueryFilter.name, QueryFilter)
 app.component(ProFormItem.name, ProFormItem)
 
 app.use(router)

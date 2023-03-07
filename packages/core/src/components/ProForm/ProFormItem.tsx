@@ -1,4 +1,4 @@
-import { ElCol, ElFormItem } from 'element-plus'
+import { ElCol, ElFormItem, ElInput, ElOption, ElSelect } from 'element-plus'
 import {
   defineComponent,
   inject,
@@ -6,6 +6,7 @@ import {
   watch,
   onBeforeUnmount,
   h,
+  resolveComponent,
 } from 'vue'
 
 import {
@@ -20,7 +21,7 @@ import {
   normalizeCol,
   normalizeFormCol,
 } from './utils'
-import { valueTypeMap, ValueTypes } from './valueTypes'
+import { valueType2ComponentName, valueTypeMap, ValueTypes } from './valueTypes'
 
 import type {
   ElColProps,

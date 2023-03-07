@@ -1,1 +1,1 @@
-export { ProForm, ProFormItem } from './src/components/ProForm'
+export { ProForm, ProFormItem, QueryFilter } from './src/components/ProForm'
