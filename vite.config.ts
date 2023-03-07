@@ -70,7 +70,7 @@ export default defineConfig({
     }),
 
     Components({
-      dirs: ['./src/components'],
+      dirs: ['./src/components', './src/layouts'],
       resolvers: [
         // 自动注册图标组件
         IconsResolver({

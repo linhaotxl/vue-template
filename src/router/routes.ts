@@ -1,8 +1,8 @@
 import type { RouteRecordRaw } from 'vue-router'
 
-const Layouts = import.meta.glob('../layouts/**')
+const Layouts = import.meta.glob('../layouts/**/*.{vue,jsx,tsx}')
 const Routes: Record<string, { default: RouteRecordRaw | RouteRecordRaw[] }> =
-  import.meta.glob('./routes/**', { eager: true })
+  import.meta.glob('./routes/**/*.{js,ts}', { eager: true })
 
 const normalizeLayoutName = (name: string) =>
   name[0].toUpperCase() +
@@ -11,23 +11,30 @@ const normalizeLayoutName = (name: string) =>
 const LayoutImportMap = Object.entries(Layouts).reduce<
   Record<string, () => Promise<unknown>>
 >((prev, [layoutPath, layoutImport]) => {
-  const layoutMatch = layoutPath.match(
-    /layouts\/(\w+)\.(?:vue|(?:m|c)?(?:j|t)sx?)/
+  let layoutName
+  let layoutMatch = layoutPath.match(
+    /layouts\/([^/]+)\/index\.(?:vue|(?:j|t)sx)/
   )
   if (layoutMatch) {
-    const layoutName = normalizeLayoutName(layoutMatch[1])
+    layoutName = normalizeLayoutName(layoutMatch[1])
+  } else if (
+    (layoutMatch = layoutPath.match(/layouts\/([\w-]+)\.(?:vue|(?:j|t)sx)/))
+  ) {
+    layoutName = normalizeLayoutName(layoutMatch[1])
+  }
+
+  if (layoutName) {
     prev[layoutName] = layoutImport
   }
   return prev
 }, {})
 
 const scanRoutes = Object.entries(Routes).reduce<RouteRecordRaw[]>(
-  (prev, [routePath, routeModule]) => {
+  (prev, [routePath, { default: routeDefault }]) => {
     const layoutMatch = routePath.match(
       /routes\/(.+)\/(?:.+\.(?:m|c)?(?:j|t)sx?)/
     )
 
-    const routeDefault = routeModule.default
     const routeChildren = Array.isArray(routeDefault)
       ? routeDefault
       : [routeDefault]

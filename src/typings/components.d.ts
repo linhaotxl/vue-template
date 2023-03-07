@@ -7,10 +7,18 @@ export {}
 
 declare module '@vue/runtime-core' {
   export interface GlobalComponents {
+    BasicLayout: typeof import('./../layouts/BasicLayout/index.vue')['default']
+    ElAside: typeof import('element-plus/es')['ElAside']
     ElButton: typeof import('element-plus/es')['ElButton']
+    ElContainer: typeof import('element-plus/es')['ElContainer']
     ElDatePicker: typeof import('element-plus/es')['ElDatePicker']
     ElEpEdit: typeof import('element-plus/es')['ElEpEdit']
+    ElHeader: typeof import('element-plus/es')['ElHeader']
     ElIcon: typeof import('element-plus/es')['ElIcon']
+    ElMain: typeof import('element-plus/es')['ElMain']
+    ElMenu: typeof import('element-plus/es')['ElMenu']
+    ElMenuItem: typeof import('element-plus/es')['ElMenuItem']
+    ElSubMenu: typeof import('element-plus/es')['ElSubMenu']
     HelloWorld: typeof import('./../components/HelloWorld.vue')['default']
     IconEpEdit: typeof import('~icons/ep/edit')['default']
     IconEpMinus: typeof import('~icons/ep/minus')['default']
@@ -19,8 +27,10 @@ declare module '@vue/runtime-core' {
     IEpMinus: typeof import('~icons/ep/minus')['default']
     IIcBaseline5g: typeof import('~icons/ic/baseline5g')['default']
     IVisVue: typeof import('~icons/vis/vue')['default']
+    RecursionMenu: typeof import('./../layouts/BasicLayout/RecursionMenu.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     TestCompTsx: typeof import('./../components/TestCompTsx')['default']
+    UserLayout: typeof import('./../layouts/UserLayout')['default']
   }
 }
