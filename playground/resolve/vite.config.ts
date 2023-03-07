@@ -36,7 +36,6 @@ export default {
               document.querySelector(selector).textContent = text
             }
 
-            ${code.join('\n')}
           `.trim()
         }
       },

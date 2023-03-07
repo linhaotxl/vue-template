@@ -10,3 +10,6 @@ export const DEFAULT_CONFIG_FILES = [
 
 // 查找 npm 包入口时使用的文件扩展列表
 export const DEFAULT_EXTENSIONS = ['.mjs', '.js', '.mts', '.ts', '.jsx', '.tsx']
+
+// 当解析 import  的路径不是一个浏览器可以解析的路径时，需要加这个前缀使其有效
+export const VALID_ID_PREFIX = '/@id/'

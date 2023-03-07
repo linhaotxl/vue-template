@@ -3,7 +3,7 @@ import { parse as parseJS } from 'acorn'
 import { init, parse as parseImport } from 'es-module-lexer'
 import MagicString from 'magic-string'
 
-import { injectQuery, isJSRequest, joinUrlSegments } from '../utils'
+import { injectQuery, isJSRequest, joinUrlSegments, wrapId } from '../utils'
 
 import type { ResolvedConfig } from '../config'
 import type { Plugin } from '../plugin'
@@ -143,6 +143,7 @@ export function importAnalysisPlugin(config: ResolvedConfig): Plugin {
       const str = () => s || (s = new MagicString(code))
 
       // TODO: parse 出错
+      console.log('code: ', code)
       const [imports, exports] = parseImport(code)
       // console.log('imports: ', imports)
 
@@ -167,9 +168,15 @@ export function importAnalysisPlugin(config: ResolvedConfig): Plugin {
 
       function normalizeUrl(url: string): [string] {
         // console.log('before: ', url)
-        url = joinUrlSegments(base, url)
+        // url = joinUrlSegments(base, url)
         // console.log('after: ', url)
 
+        // 如果 url 不是浏览器能解析的路径，则加入前缀
+        if (!(url.startsWith('.') || url.startsWith('/'))) {
+          url = wrapId(url)
+        }
+
+        // 标记 url 是通过 import 导入的资源，需要被 transform middleware 处理
         url = markExpilicitImport(url)
 
         return [url]

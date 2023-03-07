@@ -6,7 +6,7 @@ import { URL } from 'node:url'
 
 import { sync } from 'resolve'
 
-import { DEFAULT_EXTENSIONS } from './constants'
+import { DEFAULT_EXTENSIONS, VALID_ID_PREFIX } from './constants'
 
 import type { PathLike } from 'node:fs'
 
@@ -214,3 +214,9 @@ export const injectQuery = (url: string, query: string) => {
 }
 
 export const removeImportQuery = (url: string) => url.replace(importQueryRE, '')
+
+export const wrapId = (id: string) =>
+  id.startsWith(VALID_ID_PREFIX) ? id : `${VALID_ID_PREFIX}${id}`
+
+export const unwrapId = (id: string) =>
+  id.startsWith(VALID_ID_PREFIX) ? id.slice(VALID_ID_PREFIX.length) : id
