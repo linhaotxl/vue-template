@@ -51,9 +51,10 @@
       />
     </pro-form-item>
 
-    <template #submitter="{ onSubmit, onReset }">
+    <template #submitter="{ onSubmit, onReset, values }">
       <el-button type="primary" @click="onSubmit">提交</el-button>
       <el-button type="default" @click="onReset">恢复</el-button>
+      <pre>{{ values }}</pre>
     </template>
   </pro-form>
   <!-- </el-space> -->

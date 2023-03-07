@@ -1,6 +1,11 @@
 <template>
   <!-- <el-space direction="vertical" alignment="flex-start"> -->
-  <pro-form label-width="100px" :render-tools="true" :preserve="false">
+  <pro-form
+    label-width="100px"
+    :render-tools="true"
+    :preserve="true"
+    @finish="handleSubmit"
+  >
     <pro-form-item
       label="用户名"
       prop="userName"
@@ -52,6 +57,10 @@
 <script lang="ts" setup name="BasicPage">
 const changeUserName = (value: string) => {
   console.log('value is ', value)
+}
+
+const handleSubmit = (values: object) => {
+  console.log('finish: ', values)
 }
 
 // preserve 的触发时机

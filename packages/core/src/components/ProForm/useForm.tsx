@@ -4,58 +4,31 @@ import { computed, provide, reactive, ref } from 'vue'
 import { proFormBus, ProFormProvideKey } from './constant'
 
 import type {
-  ElColProps,
   NormalizeColProps,
   ProFormBusEventPayload,
   ProFormBusEventType,
   ProFormContext,
   ProFormEventType,
-  ProFormEventTypes,
   ProFormItemColSizePayload,
   ProFormItemPreservePayload,
-  Submitter,
   SubmitterSlotParams,
 } from './interface'
 import type { commonProps } from './props'
 import type { FormInstance } from 'element-plus'
 import type { Slot, ComputedRef, ExtractPropTypes } from 'vue'
 
-export interface UserFormOptions<T = object> {
-  // col: number | ElColProps
-
+export interface UserFormOptions {
   props: ExtractPropTypes<typeof commonProps>
 
-  // initialValues: T
-
-  // preserve: boolean
-
-  // submitter: Submitter | false
+  toolsColProps: ComputedRef<NormalizeColProps>
 
   submitterSlot: Slot | undefined
 
   emit: (type: ProFormEventType, ...args: unknown[]) => void
-
-  toolsColProps: ComputedRef<NormalizeColProps>
 }
 
-const defaultSubbmitter: Submitter = {
-  submitButtonText: '确认',
-  resetButtonText: '重置',
-  submitButtonProps: { type: 'primary' },
-  resetButtonProps: {},
-} as Submitter
-
 export function useForm(options: UserFormOptions) {
-  const {
-    // col,
-    // initialValues,
-    // preserve = true,
-    toolsColProps,
-    props,
-    // submitter = defaultSubbmitter,
-    submitterSlot,
-    emit,
-  } = options
+  const { toolsColProps, props, submitterSlot, emit } = options
 
   const { initialValues } = props
 
