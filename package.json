@@ -7,8 +7,8 @@
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
-    "lint:js": "eslint --fix --ext .js,.jsx,.ts,.tsx,.vue src/",
-    "lint:style": "stylelint --fix \"src/**/*.{css,less,scss,sass,vue}\"",
+    "lint:js": "eslint --fix --ext .js,.jsx,.ts,.tsx,.vue",
+    "lint:style": "stylelint --fix",
     "prepare": "husky install"
   },
   "dependencies": {
