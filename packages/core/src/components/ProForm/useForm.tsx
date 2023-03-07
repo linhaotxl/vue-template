@@ -15,12 +15,12 @@ import type {
 } from './interface'
 import type { commonProps } from './props'
 import type { FormInstance } from 'element-plus'
-import type { Slot, ComputedRef, ExtractPropTypes } from 'vue'
+import type { Slot, ExtractPropTypes } from 'vue'
 
 export interface UserFormOptions {
   props: ExtractPropTypes<typeof commonProps>
 
-  toolsColProps: ComputedRef<NormalizeColProps>
+  // toolsColProps: ComputedRef<NormalizeColProps>
 
   submitterSlot: Slot | undefined
 
@@ -28,7 +28,7 @@ export interface UserFormOptions {
 }
 
 export function useForm(options: UserFormOptions) {
-  const { toolsColProps, props, submitterSlot, emit } = options
+  const { props, submitterSlot, emit } = options
 
   const { initialValues } = props
 
@@ -142,19 +142,19 @@ export function useForm(options: UserFormOptions) {
       }
     : undefined
 
-  const renderSubmitter = () => {
+  const renderSubmitter = (colProps: NormalizeColProps) => {
     // 渲染提交栏
     let submitterValue
     let $submitter = null
     if (submitterSlot) {
       $submitter = (
-        <ElCol {...toolsColProps.value}>
+        <ElCol {...colProps}>
           <ElFormItem>{submitterSlot(submitterSlotParams)}</ElFormItem>
         </ElCol>
       )
     } else if ((submitterValue = submitterOptions.value)) {
       $submitter = (
-        <ElCol {...toolsColProps.value}>
+        <ElCol {...colProps}>
           <ElFormItem>
             {submitterValue.submitProps !== false ? (
               <ElButton

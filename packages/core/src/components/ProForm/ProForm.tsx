@@ -33,7 +33,6 @@ export const ProForm = defineComponent({
 
     const { values, formRef, renderSubmitter } = useForm({
       props,
-      toolsColProps,
       submitterSlot: slots.submitter,
       emit,
     })
@@ -46,7 +45,7 @@ export const ProForm = defineComponent({
           <ElRow>
             <>
               {children}
-              {renderSubmitter()}
+              {renderSubmitter(toolsColProps.value)}
             </>
           </ElRow>
         </ElForm>

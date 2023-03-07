@@ -1,7 +1,8 @@
-import { computed, defineComponent, reactive, h } from 'vue'
+import { ElForm, ElRow } from 'element-plus'
+import { computed, defineComponent } from 'vue'
 
-import { ProForm } from './ProForm'
-import { commonProps } from './props'
+import { commonEmits, commonProps } from './props'
+import { useForm } from './useForm'
 import { colRanges, hasOwn, normalizeFormCol } from './utils'
 
 import type { NormalizeColProps } from './interface'
@@ -13,8 +14,50 @@ export const QueryFilter = defineComponent({
 
   props,
 
-  setup(props, { slots }) {
-    const formItemCols = reactive<Record<string, NormalizeColProps>>({})
+  emits: [...commonEmits],
+
+  setup(props, { slots, emit, attrs }) {
+    const { values, formRef, formItemCols, renderSubmitter } = useForm({
+      props,
+      submitterSlot: slots.submitter,
+      emit,
+    })
+
+    // 计算 tools col props
+    const toolsColProps = computed(() => {
+      // 初始化 tools 的 col span，优先取 toolsCol，如果没有则使用 ProForm 的 col 配置
+      const toolColProps: NormalizeColProps = Object.create(null)
+      normalizeFormCol(props.col, toolColProps)
+
+      // 遍历所有的 ProFormItem，累加每一个 ProFormItem 的占位
+      for (const prop in formItemCols) {
+        // 获取 ProFormItem 的 col
+        const colProps = formItemCols[prop]
+        // 累加每一个 ProFormItem 的位置（包括 span + offset）
+        accumulProFormItemCol(colProps, toolColProps)
+
+        // 遍历处理响应式的布局，同样累加在 toolColProps 中
+        colRanges.forEach(range => {
+          if (hasOwn(colProps, range)) {
+            accumulProFormItemCol(
+              colProps[range]!,
+              (toolColProps[range] ||= Object.create(null))
+            )
+          }
+        })
+      }
+
+      // 确保 tool 始终在一行的最右侧
+      // 包括响应式的布局以及普通布局
+      colRanges.forEach(range => {
+        if (hasOwn(toolColProps, range)) {
+          ensureToolRowRight(toolColProps[range]!)
+        }
+      })
+      ensureToolRowRight(toolColProps)
+
+      return toolColProps
+    })
 
     /**
      * 累加每一个 ProFormItem 的 col，最终计算在 toolColProps
@@ -57,51 +100,18 @@ export const QueryFilter = defineComponent({
       }
     }
 
-    // 计算 tools col props
-    const toolsColProps = props.renderTools
-      ? computed(() => {
-          // 初始化 tools 的 col span，优先取 toolsCol，如果没有则使用 ProForm 的 col 配置
-          const toolColProps: NormalizeColProps = Object.create(null)
-          normalizeFormCol(props.col, toolColProps)
-
-          // 遍历所有的 ProFormItem，累加每一个 ProFormItem 的占位
-          for (const prop in formItemCols) {
-            // 获取 ProFormItem 的 col
-            const colProps = formItemCols[prop]
-            // 累加每一个 ProFormItem 的位置（包括 span + offset）
-            accumulProFormItemCol(colProps, toolColProps)
-
-            // 遍历处理响应式的布局，同样累加在 toolColProps 中
-            colRanges.forEach(range => {
-              if (hasOwn(colProps, range)) {
-                accumulProFormItemCol(
-                  colProps[range]!,
-                  (toolColProps[range] ||= Object.create(null))
-                )
-              }
-            })
-          }
-
-          // 确保 tool 始终在一行的最右侧
-          // 包括响应式的布局以及普通布局
-          colRanges.forEach(range => {
-            if (hasOwn(toolColProps, range)) {
-              ensureToolRowRight(toolColProps[range]!)
-            }
-          })
-          ensureToolRowRight(toolColProps)
-
-          return toolColProps
-        })
-      : undefined
-
     return () => {
       const children = slots.default?.()
 
       return (
-        <ProForm {...props} toolsCol={toolsColProps?.value}>
-          {children}
-        </ProForm>
+        <ElForm {...attrs} model={values} ref={formRef}>
+          <ElRow>
+            <>
+              {children}
+              {renderSubmitter(toolsColProps.value)}
+            </>
+          </ElRow>
+        </ElForm>
       )
     }
   },
