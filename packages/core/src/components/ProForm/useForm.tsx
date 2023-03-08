@@ -184,6 +184,8 @@ export function useForm(options: UserFormOptions) {
   provide<ProFormContext>(ProFormProvideKey, {
     formState,
     formCol: computed(() => props.col),
+    submitOnChange: props.submitOnChange,
+    onSubmit: handleClickSubmit,
   })
 
   return {

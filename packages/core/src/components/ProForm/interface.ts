@@ -25,6 +25,10 @@ export interface ProFormContext {
   formState: Record<string, unknown>
 
   formCol: ComputedRef<number | ElColProps | undefined>
+
+  submitOnChange: boolean
+
+  onSubmit: () => Promise<void>
 }
 
 export interface ProFormItemColSizePayload {

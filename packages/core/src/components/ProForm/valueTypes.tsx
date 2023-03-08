@@ -49,8 +49,9 @@ export const enum ValueTypes {
 type RenderValueTypeParams = {
   formState: Record<string, unknown>
   props: {
-    [key: string]: any
-
+    // [key: string]: any
+    prop: string
+    fieldProps?: Record<string, unknown>
     valueEnum?: { label: string; value: any }[]
   }
 }

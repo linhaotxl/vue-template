@@ -36,6 +36,14 @@ export const commonProps = {
         resetButtonProps: {},
       } as Submitter),
   },
+
+  /**
+   * 当修改表单项时自动提交表单
+   */
+  submitOnChange: {
+    type: Boolean as PropType<boolean>,
+    default: false,
+  },
 }
 
 export const commonEmits: ProFormEventTypes = ['finish', 'reset', 'finishFaild']

@@ -52,10 +52,8 @@ export const ProFormItem = defineComponent({
   props,
 
   setup(props, { attrs, slots }) {
-    const { formState, formCol } = inject<ProFormContext>(
-      ProFormProvideKey,
-      defaultProFormContext()
-    )
+    const { formState, formCol, submitOnChange, onSubmit } =
+      inject<ProFormContext>(ProFormProvideKey, defaultProFormContext())
 
     // el-col props
     // 如果 ProFormItem 传递了 col，则对其格式化，否则使用 ProForm 上的 col
@@ -121,9 +119,25 @@ export const ProFormItem = defineComponent({
       }
 
       // 根据 valueType 获取渲染的子节点
+      const fieldProps = props.fieldProps
       const children =
         slots.field?.({ values: formState } as ProFormItemFieldSlotParams) ??
-        valueTypeMap[props.valueType]({ formState, props })
+        valueTypeMap[props.valueType]({
+          formState,
+          props: {
+            prop: props.prop!,
+            fieldProps: submitOnChange
+              ? {
+                  ...fieldProps,
+                  async onChange(...args: unknown[]) {
+                    await (fieldProps as any)?.onChange?.(...args)
+                    onSubmit()
+                  },
+                }
+              : fieldProps,
+            valueEnum: props.valueEnum,
+          },
+        })
 
       return (
         <ElCol {...proFormItemCol.value}>
