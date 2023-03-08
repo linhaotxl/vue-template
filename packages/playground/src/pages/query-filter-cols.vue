@@ -46,13 +46,13 @@
     >
     </pro-form-item>
 
-    <!-- <pro-form-item v-slot="{ values }">
+    <pro-form-item v-slot="{ values }">
       <pro-form-item
         v-if="values.sex === 3"
         label="自定义性别"
         prop="customSex"
       />
-    </pro-form-item> -->
+    </pro-form-item>
   </query-filter>
   <!-- </el-space> -->
 </template>
@@ -70,7 +70,7 @@ const handleFinishFailed = ({ values, errorFields }: any) => {
   console.log('failed: ', values, errorFields)
 }
 
-const formCol = ref(6)
-const userNameCol = ref({ lg: 6 })
-const sexCol = 12
+const formCol = ref({ span: 6, lg: 4 })
+const userNameCol = ref({ span: 12, lg: 10 })
+const sexCol = { span: 6, lg: 12 }
 </script>

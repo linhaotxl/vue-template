@@ -23,79 +23,69 @@ export const QueryFilter = defineComponent({
       emit,
     })
 
-    // 计算 tools col props
+    // 计算 submitter col props
     const toolsColProps = computed(() => {
-      // 初始化 tools 的 col span，优先取 toolsCol，如果没有则使用 ProForm 的 col 配置
-      const toolColProps: NormalizeColProps = Object.create(null)
-      normalizeFormCol(props.col, toolColProps)
+      // 格式化 QueryFilter 的 props.col
+      const formCol: NormalizeColProps = Object.create(null)
+      normalizeFormCol(props.col, formCol)
+
+      // 创建最终 submitter 的 col props 对象
+      const submitterColProps: NormalizeColProps = Object.create(null)
 
       // 遍历所有的 ProFormItem，累加每一个 ProFormItem 的占位
       for (const prop in formItemCols) {
         // 获取 ProFormItem 的 col
         const colProps = formItemCols[prop]
+
         // 累加每一个 ProFormItem 的位置（包括 span + offset）
-        accumulProFormItemCol(colProps, toolColProps)
+        accumulProFormItemCol(formCol, colProps, submitterColProps)
 
         // 遍历处理响应式的布局，同样累加在 toolColProps 中
         colRanges.forEach(range => {
           if (hasOwn(colProps, range)) {
             accumulProFormItemCol(
+              formCol[range]!,
               colProps[range]!,
-              (toolColProps[range] ||= Object.create(null))
+              (submitterColProps[range] ||= Object.create(null))
             )
           }
         })
       }
 
-      // 确保 tool 始终在一行的最右侧
-      // 包括响应式的布局以及普通布局
-      colRanges.forEach(range => {
-        if (hasOwn(toolColProps, range)) {
-          ensureToolRowRight(toolColProps[range]!)
-        }
-      })
-      ensureToolRowRight(toolColProps)
-
-      return toolColProps
+      return submitterColProps
     })
 
     /**
      * 累加每一个 ProFormItem 的 col，最终计算在 toolColProps
-     * @param colProps
-     * @param toolColProps
+     * @param formCol QueryFilter 的 col
+     * @param colProps ProFormItem 的 col
+     * @param submitterColProps submitter 的 col
      */
     function accumulProFormItemCol(
+      formCol: NormalizeColProps,
       colProps: NormalizeColProps,
-      toolColProps: NormalizeColProps
+      submitterColProps: NormalizeColProps
     ) {
-      if (hasOwn(toolColProps, 'span')) {
-        // 如果 tool 偏移的格子已经不够在放下 ProFormItem，那么会将 tool 放在新的一行最右边
-        if (
-          hasOwn(toolColProps, 'offset') &&
-          24 - (toolColProps.offset! % 24) < colProps.span!
-        ) {
-          toolColProps.offset ||= 0
-          toolColProps.offset! += 24 - toolColProps.offset!
-        }
-
-        toolColProps.offset ||= 0
-
-        // toolColProps 的偏移是每个 ProFormItem 的 span + offset
-        toolColProps.offset! += (colProps.span || 0) + (colProps.offset || 0)
+      // submitter 的宽度是 form 上的 col 设置的宽度
+      submitterColProps.span = formCol.span || 0
+      // submitter 偏移最开始是一行宽度 - 自身宽度
+      if (typeof submitterColProps.offset !== 'number') {
+        submitterColProps.offset ||= 24 - submitterColProps.span
       }
-    }
 
-    /**
-     * 确保 tool 始终在一行的最右侧
-     * @param toolColProps
-     */
-    function ensureToolRowRight(toolColProps: NormalizeColProps) {
-      if (hasOwn(toolColProps, 'offset')) {
-        if ((toolColProps.offset! % 24) + toolColProps.span! > 24) {
-          toolColProps.offset = 24 - toolColProps.span!
+      // 获取 ProFormItem 的宽度，此时已经是格式化好的，可以直接获取
+      const colSpan = colProps.span || 0
+
+      // 上一次剩余的偏移数 - 当前宽度
+      submitterColProps.offset = submitterColProps.offset - colSpan
+
+      if (submitterColProps.offset < 0) {
+        if (Math.abs(submitterColProps.offset) > submitterColProps.span) {
+          // 不需要换新行，可以在当前行挤挤：一行宽度 - item 宽度 - 提交栏自身宽度
+          submitterColProps.offset = 24 - colSpan - submitterColProps.span
         } else {
-          toolColProps.offset =
-            24 - (toolColProps.offset! % 24) - toolColProps.span!
+          // 换新行：偏移就是一行宽度 - 提交栏自身宽度
+          submitterColProps.offset = 24 - submitterColProps.span
         }
       }
     }

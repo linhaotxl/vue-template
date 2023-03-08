@@ -1,4 +1,4 @@
-import { ElCol, ElFormItem, ElInput, ElOption, ElSelect } from 'element-plus'
+import { ElCol, ElFormItem } from 'element-plus'
 import {
   defineComponent,
   inject,
@@ -6,7 +6,6 @@ import {
   watch,
   onBeforeUnmount,
   h,
-  resolveComponent,
 } from 'vue'
 
 import {
@@ -21,7 +20,7 @@ import {
   normalizeCol,
   normalizeFormCol,
 } from './utils'
-import { valueType2ComponentName, valueTypeMap, ValueTypes } from './valueTypes'
+import { valueTypeMap, ValueTypes } from './valueTypes'
 
 import type {
   ElColProps,
@@ -86,6 +85,7 @@ export const ProFormItem = defineComponent({
           normalizeFormCol(col, colProps)
         }
 
+        // console.log(111)
         // col 发生变化时，需要通知 ProForm
         proFormBus.emit('colSize', {
           prop: props.prop as string,
