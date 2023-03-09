@@ -1,11 +1,21 @@
-import { ElTable } from 'element-plus'
-import { defineComponent, ref } from 'vue'
+import { ElPagination, ElSpace, ElTable, vLoading } from 'element-plus'
+import { defineComponent, ref, watch } from 'vue'
 
+import { ElTableMethods } from './constants'
+import { useLoading } from './useLoading'
 import { useTable } from './useTable'
+import {
+  collectComponentMethods,
+  collectSlots,
+  toPropBooleanValue,
+} from './utils'
 
-import type { ProTableRequest } from './interface'
-import type { PaginationProps } from 'element-plus'
-import type { PropType } from 'vue'
+import { ProFormItem, QueryFilter } from '../ProForm'
+
+import type { ProTablePostDataFn, ProTableRequest } from './interface'
+import type { QueryFilterProps } from '../ProForm'
+import type { PaginationProps, TableInstance, SpaceProps } from 'element-plus'
+import type { PropType, VNode } from 'vue'
 
 const props = {
   request: Function as PropType<ProTableRequest>,
@@ -27,6 +37,24 @@ const props = {
    * 表格数据，推荐使用 request 来获取数据
    */
   data: Array as PropType<object[]>,
+
+  /**
+   * 搜索表单配置
+   */
+  search: {
+    type: [Boolean, Object] as PropType<false | QueryFilterProps>,
+    default: () => ({}),
+  },
+
+  /**
+   * 高级搜索栏 - Table - 分页之间的间距
+   */
+  space: [String, Number] as PropType<SpaceProps['size']>,
+
+  /**
+   * 对通过 request 获取的数据进行处理
+   */
+  postData: Function as PropType<ProTablePostDataFn>,
 }
 
 export const ProTable = defineComponent({
@@ -34,22 +62,131 @@ export const ProTable = defineComponent({
 
   props,
 
-  setup(props, { slots, attrs }) {
-    const { dataSource } = useTable({
-      request: props.request,
-      data: props.data,
-      params: props.params,
-      pageSize: 10,
+  expose: [...ElTableMethods],
+
+  emits: ['load', 'requestError'],
+
+  setup(props, { slots, attrs, emit }) {
+    const { dataSource, pageNum, pageSize, totalPage, updateParams } = useTable(
+      {
+        request: props.request,
+        postData: props.postData,
+        data: props.data,
+        params: props.params,
+        pageSize: 10,
+        onError(err) {
+          emit('requestError', err)
+        },
+      }
+    )
+
+    // 每次数据加载完成后，执行 load 事件
+    watch(dataSource, ds => {
+      if (props.request) {
+        emit('load', ds)
+      }
     })
 
-    return () => {
-      const children = slots.default?.()
+    const tableRef = ref<TableInstance>()
 
-      return (
-        <ElTable {...attrs} data={dataSource.value}>
-          {children}
-        </ElTable>
+    const handleSubmitSearch = (values: object) => {
+      updateParams({ ...values })
+    }
+
+    const methodsMap = collectComponentMethods(ElTableMethods, tableRef)
+
+    // const aaa = () => {}
+
+    // const { open, close } = useLoading({
+    //   target: tableRef,
+    // })
+
+    // watch(
+    //   loading,
+    //   load => {
+    //     console.log('load: ', load)
+    //     load ? open() : close()
+    //   },
+    //   { immediate: true, flush: 'post' }
+    // )
+
+    // const instance = ElLoading.service({})
+
+    return {
+      ...methodsMap,
+      tableRef,
+      totalPage,
+      pageNum,
+      pageSize,
+      dataSource,
+      handleSubmitSearch,
+    }
+  },
+
+  render() {
+    const children = this.$slots.default?.()
+    let tableChildren: VNode[] | undefined
+    let formChildren: VNode[] | undefined
+
+    if (children) {
+      ;[tableChildren, formChildren] = children.reduce<[VNode[], VNode[]]>(
+        (prev, child) => {
+          if (child.props) {
+            const hideInTable = toPropBooleanValue(child.props, 'hide-in-table')
+            const hideInSearch = toPropBooleanValue(
+              child.props,
+              'hide-in-search'
+            )
+
+            if (hideInSearch) {
+              prev[0].push(child)
+            } else if (hideInTable) {
+              prev[1].push(child)
+            } else {
+              prev[0].push(child)
+              prev[1].push(child)
+            }
+          }
+          return prev
+        },
+        [[], []]
       )
     }
+
+    const $search =
+      this.search !== false ? (
+        <QueryFilter {...props.search} onFinish={this.handleSubmitSearch}>
+          {formChildren?.map(child => (
+            <ProFormItem {...child.props} />
+          ))}
+        </QueryFilter>
+      ) : null
+
+    const tableSlots = collectSlots(this.$slots, ['append', 'empty'])
+    if (tableChildren) {
+      tableSlots.default = () => tableChildren!
+    }
+
+    const $pagination =
+      this.pagination !== false ? (
+        <ElPagination
+          {...props.pagination}
+          total={this.totalPage}
+          v-model:currentPage={this.pageNum}
+          v-model:pageSize={this.pageSize}
+        />
+      ) : null
+
+    return (
+      <ElSpace style="width: 100%;" size={this.space} fill direction="vertical">
+        {$search}
+
+        <ElTable {...this.$attrs} data={this.dataSource} ref="tableRef">
+          {tableSlots}
+        </ElTable>
+
+        {$pagination}
+      </ElSpace>
+    )
   },
 })

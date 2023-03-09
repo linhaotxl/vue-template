@@ -4,12 +4,18 @@ export type ProTableRequestParams = {
   [name: string]: unknown
 }
 
-export type ProTableRequestResult = {
+export type ProTableRequestResult<T> = {
   total: number
-  data: object[]
+  data: T[]
   hasMore: boolean
 }
 
-export type ProTableRequest = (
-  params: ProTableRequestParams
-) => Promise<ProTableRequestResult>
+export interface ProTableRequest<T = object> {
+  (params: ProTableRequestParams): Promise<ProTableRequestResult<T>>
+}
+
+export interface ProTablePostDataFn<T = object> {
+  (dataSource: T[]): T[]
+}
+
+// export type ProTablePostDataFn = <T>() => T[]
