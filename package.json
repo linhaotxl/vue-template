@@ -10,7 +10,6 @@
     "prepare": "husky install",
     "test": "pnpm -r --filter=element-plus-pro-components-playground run dev"
   },
-  "dependencies": {},
   "devDependencies": {
     "@commitlint/cli": "^17.1.2",
     "@commitlint/config-conventional": "^17.1.0",
@@ -22,9 +21,11 @@
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-vue": "^9.6.0",
     "husky": "^8.0.0",
     "lint-staged": "^13.0.3",
     "prettier": "^2.7.1",
-    "typescript": "^4.6.4"
+    "typescript": "^4.6.4",
+    "vue-eslint-parser": "^9.1.0"
   }
 }
