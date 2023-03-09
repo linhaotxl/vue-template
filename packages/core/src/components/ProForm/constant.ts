@@ -12,6 +12,7 @@ export const ProFormProvideKey = Symbol()
 export const defaultProFormContext = (): ProFormContext => ({
   formState: {},
   formCol: computed(() => 24),
+  submitOnChange: false,
 })
 
 export const proFormBus = useEventBus<

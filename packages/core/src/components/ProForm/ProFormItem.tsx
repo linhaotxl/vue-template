@@ -131,7 +131,7 @@ export const ProFormItem = defineComponent({
                   ...fieldProps,
                   async onChange(...args: unknown[]) {
                     await (fieldProps as any)?.onChange?.(...args)
-                    onSubmit()
+                    onSubmit?.()
                   },
                 }
               : fieldProps,

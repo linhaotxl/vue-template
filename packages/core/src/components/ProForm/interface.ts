@@ -28,7 +28,7 @@ export interface ProFormContext {
 
   submitOnChange: boolean
 
-  onSubmit: () => Promise<void>
+  onSubmit?: () => Promise<void>
 }
 
 export interface ProFormItemColSizePayload {
