@@ -2,15 +2,6 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "sourceMap": true,
-    "rootDir": "./",
-    "noEmit": false,
-    "declaration": true
   },
-  "include": [
-    "./**/*.ts",
-    "./**/*.d.ts",
-    "./**/*.tsx",
-    // "./**/*.vue"
-  ]
+  "exclude": ["node_modules/**/*"]
 }
