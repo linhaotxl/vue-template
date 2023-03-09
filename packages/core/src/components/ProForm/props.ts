@@ -1,4 +1,9 @@
-import type { ElColProps, ProFormEventTypes, Submitter } from './interface'
+import type {
+  ElColProps,
+  ProFormEventTypes,
+  ProFormValues,
+  Submitter,
+} from './interface'
 import type { PropType } from 'vue'
 
 export const commonProps = {
@@ -14,7 +19,7 @@ export const commonProps = {
    * 初始值
    */
   initialValues: {
-    type: Object as PropType<Record<string, unknown>>,
+    type: Object as PropType<ProFormValues>,
     default: () => ({}),
   },
 

@@ -5,9 +5,22 @@ import { commonEmits, commonProps } from './props'
 import { useForm } from './useForm'
 import { colRanges, hasOwn, normalizeFormCol } from './utils'
 
-import type { NormalizeColProps } from './interface'
+import type { ElColProps, NormalizeColProps } from './interface'
+import type { ExtractPropTypes, PropType } from 'vue'
 
-const props = { ...commonProps }
+const props = {
+  ...commonProps,
+
+  /**
+   * 每个 ProFormItem 所在的 col
+   */
+  col: {
+    type: [Number, Object] as PropType<number | ElColProps>,
+    default: 4,
+  },
+}
+
+export type QueryFilterProps = ExtractPropTypes<typeof props>
 
 export const QueryFilter = defineComponent({
   name: 'QueryFilter',

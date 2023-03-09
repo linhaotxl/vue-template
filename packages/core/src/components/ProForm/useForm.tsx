@@ -4,6 +4,7 @@ import { computed, provide, reactive, ref } from 'vue'
 import { proFormBus, ProFormProvideKey } from './constant'
 
 import type {
+  BeforeSearchSubmit,
   NormalizeColProps,
   ProFormBusEventPayload,
   ProFormBusEventType,
@@ -11,29 +12,32 @@ import type {
   ProFormEventType,
   ProFormItemColSizePayload,
   ProFormItemPreservePayload,
+  ProFormValues,
   SubmitterSlotParams,
 } from './interface'
 import type { commonProps } from './props'
 import type { FormInstance } from 'element-plus'
 import type { Slot, ExtractPropTypes } from 'vue'
 
-export interface UserFormOptions {
+export interface UserFormOptions<T extends ProFormValues = ProFormValues> {
   props: ExtractPropTypes<typeof commonProps>
 
-  // toolsColProps: ComputedRef<NormalizeColProps>
+  beforeSearchSubmit?: BeforeSearchSubmit<T>
 
   submitterSlot: Slot | undefined
 
   emit: (type: ProFormEventType, ...args: unknown[]) => void
 }
 
-export function useForm(options: UserFormOptions) {
-  const { props, submitterSlot, emit } = options
+export function useForm<T extends ProFormValues = ProFormValues>(
+  options: UserFormOptions<T>
+) {
+  const { props, submitterSlot, emit, beforeSearchSubmit } = options
 
   const { initialValues } = props
 
   // TODO: deep clone
-  const formState = reactive<Record<string, unknown>>(
+  const formState = reactive<ProFormValues>(
     JSON.parse(JSON.stringify(initialValues))
   )
   const formRef = ref<FormInstance | null>(null)
@@ -115,7 +119,7 @@ export function useForm(options: UserFormOptions) {
       try {
         const validated = await formRef.value.validate()
         if (validated) {
-          emit('finish', formState)
+          emit('finish', beforeSearchSubmit?.(formState as any) ?? formState)
         }
       } catch (e) {
         emit('finishFaild', { values: formState, errorFields: e })

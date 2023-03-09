@@ -72,3 +72,11 @@ export interface ProFormItemFieldSlotParams {
 
 export type ProFormEventTypes = ['finish', 'reset', 'finishFaild']
 export type ProFormEventType = ProFormEventTypes[number]
+
+export interface BeforeSearchSubmit<T extends ProFormValues = ProFormValues> {
+  (values: T): T
+}
+
+export interface ProFormValues {
+  [name: string]: unknown
+}
