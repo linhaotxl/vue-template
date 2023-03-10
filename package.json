@@ -5,18 +5,20 @@
   "type": "module",
   "scripts": {
     "watch:core": "pnpm -r --filter=element-plus-pro-components run watch",
-    "lint:js": "pnpm -r --filter=./packages/* run lint:js",
-    "lint:style": "pnpm -r --filter=./packages/* run lint:style",
+    "lint:js": "eslint --fix --ext .js,.jsx,.ts,.tsx,.vue",
+    "lint:style": "stylelint --fix",
     "prepare": "husky install",
     "test": "pnpm -r --filter=element-plus-pro-components-playground run dev"
   },
   "devDependencies": {
     "@commitlint/cli": "^17.1.2",
     "@commitlint/config-conventional": "^17.1.0",
+    "@rollup/plugin-node-resolve": "^15.0.1",
     "@types/node": "^18.11.3",
     "@typescript-eslint/eslint-plugin": "^5.40.1",
     "@typescript-eslint/parser": "^5.40.1",
     "cz-git": "^1.3.12",
+    "esbuild": "^0.17.11",
     "eslint": "^8.26.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-import": "^2.26.0",
@@ -25,6 +27,9 @@
     "husky": "^8.0.0",
     "lint-staged": "^13.0.3",
     "prettier": "^2.7.1",
+    "rollup": "^3.19.0",
+    "rollup-plugin-dts": "^5.2.0",
+    "rollup-plugin-esbuild": "^5.0.0",
     "typescript": "^4.6.4",
     "vue-eslint-parser": "^9.1.0"
   }
