@@ -17,7 +17,7 @@ export default defineConfig({
   plugins: [
     vue(),
 
-    vueJsx(),
+    // vueJsx(),
 
     unocss(),
 

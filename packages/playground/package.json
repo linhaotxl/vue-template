@@ -7,17 +7,14 @@
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
-    "lint:js": "eslint --fix --ext .js,.jsx,.ts,.tsx,.vue src/",
-    "lint:style": "stylelint --fix \"src/**/*.{css,less,scss,sass,vue}\""
+    "lint:js": "eslint --fix --ext .js,.jsx,.ts,.tsx,.vue",
+    "lint:style": "stylelint --fix"
   },
   "dependencies": {
     "@iconify/json": "^2.1.126",
     "@unocss/reset": "^0.45.30",
-    "@vueuse/core": "^9.3.1",
-    "element-plus": "^2.2.22",
     "element-plus-pro-components": "workspace:*",
     "unocss": "^0.45.30",
-    "vue": "^3.2.37",
     "vue-router": "^4.1.6"
   },
   "devDependencies": {

@@ -1,10 +1,11 @@
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { nodeResolve } from '@rollup/plugin-node-resolve'
+import resolve from '@rollup/plugin-node-resolve'
 import { defineConfig } from 'rollup'
 import dts from 'rollup-plugin-dts'
 import esbuild from 'rollup-plugin-esbuild'
+import vueJsx from 'unplugin-vue-jsx/rollup'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const root = __dirname
@@ -22,7 +23,9 @@ const componentsConfig = defineConfig({
   external: ['vue', 'element-plus', '@vueuse/core'],
 
   plugins: [
-    nodeResolve(),
+    resolve({ mainFields: ['module', 'main', 'browser'] }),
+
+    vueJsx(),
 
     esbuild({
       include: /\.[jt]sx?$/,
