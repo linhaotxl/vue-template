@@ -22,7 +22,7 @@ export interface NormalizeColProps extends ColSizeObject {
 }
 
 export interface ProFormContext {
-  formState: Record<string, unknown>
+  formState: Record<string, any>
 
   formCol: ComputedRef<number | ElColProps | undefined>
 

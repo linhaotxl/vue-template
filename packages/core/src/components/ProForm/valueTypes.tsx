@@ -19,7 +19,9 @@ import {
 } from 'element-plus'
 import { h } from 'vue'
 
-import type { VNode } from 'vue'
+import { ProFormList } from './ProFormList'
+
+import type { VNode, Slots } from 'vue'
 
 export const enum ValueTypes {
   Text = 'text',
@@ -46,10 +48,12 @@ export const enum ValueTypes {
   Rate = 'rate',
   Slider = 'slider',
   Switch = 'switch',
+  List = 'list',
 }
 
 type RenderValueTypeParams = {
   formState: Record<string, unknown>
+  slots: Slots
   props: {
     // [key: string]: any
     prop: string
@@ -231,5 +235,13 @@ export const valueTypeMap: Record<ValueTypes, RenderValueType> = {
 
   [ValueTypes.Switch]: ({ formState, props }) => (
     <ElSwitch {...props.fieldProps} v-model={formState[props.prop]} />
+  ),
+
+  [ValueTypes.List]: ({ formState, props, slots }) => (
+    <ProFormList v-model={formState[props.prop]}>
+      {{
+        default: (...args: unknown[]) => slots.default?.(...args),
+      }}
+    </ProFormList>
   ),
 }
