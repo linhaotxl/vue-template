@@ -3,12 +3,12 @@ import { defineComponent, ref, watch, h } from 'vue'
 
 import { ElTableMethods } from './constants'
 import { useTable } from './useTable'
+
 import {
   collectComponentMethods,
   collectSlots,
   toPropBooleanValue,
-} from './utils'
-
+} from '../../utils'
 import { ProFormItem, QueryFilter } from '../ProForm'
 
 import type { ProTablePostDataFn, ProTableRequest } from './interface'
@@ -96,6 +96,7 @@ export const ProTable = defineComponent({
 
     return {
       ...methodsMap,
+      tableRef,
       totalPage,
       pageNum,
       pageSize,

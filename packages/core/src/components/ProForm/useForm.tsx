@@ -1,7 +1,9 @@
 import { ElButton, ElCol, ElFormItem } from 'element-plus'
 import { computed, provide, reactive, h } from 'vue'
 
-import { proFormBus, ProFormProvideKey } from './constant'
+import { ElFormMethods, proFormBus, ProFormProvideKey } from './constant'
+
+import { collectComponentMethods } from '../../utils'
 
 import type {
   BeforeSearchSubmit,
@@ -185,6 +187,9 @@ export function useForm<T extends ProFormValues = ProFormValues>(
     return $submitter
   }
 
+  // 收集 ElForm 上的方法
+  const methodsMap = collectComponentMethods(ElFormMethods, formRef)
+
   provide<ProFormContext>(ProFormProvideKey, {
     formState,
     formCol: computed(() => props.col),
@@ -193,6 +198,7 @@ export function useForm<T extends ProFormValues = ProFormValues>(
   })
 
   return {
+    methodsMap,
     values: formState,
     formItemCols,
     renderSubmitter,

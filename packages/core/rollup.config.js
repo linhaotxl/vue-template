@@ -13,7 +13,7 @@ const root = __dirname
 const resolveRoot = (...p) => path.resolve(root, ...p)
 
 const componentsConfig = defineConfig({
-  input: resolveRoot('./src/components/index.ts'),
+  input: resolveRoot('./src/index.ts'),
 
   output: {
     file: resolveRoot('./dist/index.js'),
@@ -39,7 +39,7 @@ const componentsConfig = defineConfig({
 })
 
 const dtsConfig = defineConfig({
-  input: resolveRoot('./src/components/index.ts'),
+  input: resolveRoot('./src/index.ts'),
 
   output: {
     file: resolveRoot('./dist/index.d.ts'),

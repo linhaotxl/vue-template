@@ -1,7 +1,7 @@
 import { ElTableColumn } from 'element-plus'
 import { defineComponent, h } from 'vue'
 
-import { collectSlots } from './utils'
+import { collectSlots } from '../../utils'
 
 import type { PropType } from 'vue'
 

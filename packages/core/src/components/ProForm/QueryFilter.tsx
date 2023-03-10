@@ -1,6 +1,7 @@
 import { ElForm, ElRow } from 'element-plus'
-import { computed, defineComponent, h, Fragment, ref } from 'vue'
+import { computed, defineComponent, h, ref } from 'vue'
 
+import { ElFormMethods } from './constant'
 import { commonEmits, commonProps } from './props'
 import { useForm } from './useForm'
 import { colRanges, hasOwn, normalizeFormCol } from './utils'
@@ -30,9 +31,11 @@ export const QueryFilter = defineComponent({
 
   emits: [...commonEmits],
 
-  setup(props, { slots, emit, attrs }) {
+  expose: [...ElFormMethods],
+
+  setup(props, { slots, emit }) {
     const formRef = ref<FormInstance>()
-    const { values, formItemCols, renderSubmitter } = useForm({
+    const { values, formItemCols, methodsMap, renderSubmitter } = useForm({
       formRef,
       props,
       submitterSlot: slots.submitter,
@@ -106,19 +109,25 @@ export const QueryFilter = defineComponent({
       }
     }
 
-    return () => {
-      const children = slots.default?.()
-
-      return (
-        <ElForm {...attrs} model={values} ref={formRef}>
-          <ElRow>
-            <>
-              {children}
-              {renderSubmitter(toolsColProps.value)}
-            </>
-          </ElRow>
-        </ElForm>
-      )
+    return {
+      ...methodsMap,
+      values,
+      formRef,
+      toolsColProps,
+      renderSubmitter,
     }
+  },
+
+  render() {
+    const children = this.$slots.default?.()
+
+    return (
+      <ElForm {...this.$attrs} model={this.values} ref="formRef">
+        <ElRow>
+          {children}
+          {this.renderSubmitter(this.toolsColProps)}
+        </ElRow>
+      </ElForm>
+    )
   },
 })

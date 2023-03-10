@@ -19,3 +19,20 @@ export const proFormBus = useEventBus<
   ProFormBusEventType,
   ProFormBusEventPayload
 >('ProForm')
+
+export const ElFormMethods: string[] = [
+  'validate',
+  'validateField',
+  'resetFields',
+  'scrollToField',
+  'clearValidate',
+]
+
+export const ElFormItemMethods: string[] = [
+  // 'size',
+  // 'validateMessage',
+  // 'validateState',
+  'validate',
+  'resetField',
+  'clearValidate',
+]

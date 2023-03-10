@@ -6,12 +6,14 @@ import {
   watch,
   onBeforeUnmount,
   h,
+  ref,
 } from 'vue'
 
 import {
   proFormBus,
   defaultProFormContext,
   ProFormProvideKey,
+  ElFormItemMethods,
 } from './constant'
 import {
   isNumber,
@@ -22,6 +24,8 @@ import {
 } from './utils'
 import { valueTypeMap, ValueTypes } from './valueTypes'
 
+import { collectComponentMethods, collectSlots } from '../../utils'
+
 import type {
   ElColProps,
   NormalizeColProps,
@@ -29,7 +33,8 @@ import type {
   ProFormItemDefaultSlotParams,
   ProFormItemFieldSlotParams,
 } from './interface'
-import type { PropType } from 'vue'
+import type { FormItemInstance } from 'element-plus'
+import type { PropType, VNode } from 'vue'
 
 const props = {
   valueType: {
@@ -51,9 +56,13 @@ export const ProFormItem = defineComponent({
 
   props,
 
-  setup(props, { attrs, slots }) {
+  expose: [...ElFormItemMethods],
+
+  setup(props, { slots }) {
     const { formState, formCol, submitOnChange, onSubmit } =
       inject<ProFormContext>(ProFormProvideKey, defaultProFormContext())
+
+    const formItemRef = ref<FormItemInstance>()
 
     // el-col props
     // 如果 ProFormItem 传递了 col，则对其格式化，否则使用 ProForm 上的 col
@@ -109,44 +118,74 @@ export const ProFormItem = defineComponent({
       proFormBus.emit('preserve', props.prop)
     })
 
-    return () => {
-      // 如果存在默认插槽，则交由默认插槽渲染
-      const defaultChildren = slots.default?.({
-        values: formState,
-      } as ProFormItemDefaultSlotParams)
-      if (defaultChildren) {
-        return defaultChildren
-      }
+    const methods = collectComponentMethods(ElFormItemMethods, formItemRef)
 
-      // 根据 valueType 获取渲染的子节点
-      const fieldProps = props.fieldProps
-      const children =
-        slots.field?.({ values: formState } as ProFormItemFieldSlotParams) ??
-        valueTypeMap[props.valueType]({
-          formState,
-          props: {
-            prop: props.prop!,
-            fieldProps: submitOnChange
-              ? {
-                  ...fieldProps,
-                  async onChange(...args: unknown[]) {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    await (fieldProps as any)?.onChange?.(...args)
-                    onSubmit?.()
-                  },
-                }
-              : fieldProps,
-            valueEnum: props.valueEnum,
-          },
-        })
-
-      return (
-        <ElCol {...proFormItemCol.value}>
-          <ElFormItem {...attrs} prop={props.prop}>
-            {children}
-          </ElFormItem>
-        </ElCol>
-      )
+    return {
+      ...methods,
+      formItemRef,
+      values: formState,
+      submitOnChange,
+      proFormItemCol,
+      onSubmit,
     }
+  },
+
+  render() {
+    const {
+      values,
+      valueType,
+      valueEnum,
+      prop,
+      submitOnChange,
+      fieldProps,
+      proFormItemCol,
+      onSubmit,
+      $slots: slots,
+      $attrs: attrs,
+    } = this
+
+    // 如果存在默认插槽，则交由默认插槽渲染
+    const defaultChildren = slots.default?.({
+      values,
+    } as ProFormItemDefaultSlotParams)
+    if (defaultChildren) {
+      return defaultChildren
+    }
+
+    // 根据 valueType 获取渲染的子节点
+    // const fieldProps = fieldProps
+    const children =
+      slots.field?.({
+        values,
+      } as ProFormItemFieldSlotParams) ??
+      valueTypeMap[valueType]({
+        formState: values,
+        props: {
+          prop: prop!,
+          fieldProps: submitOnChange
+            ? {
+                ...fieldProps,
+                async onChange(...args: unknown[]) {
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  await (fieldProps as any)?.onChange?.(...args)
+                  onSubmit?.()
+                },
+              }
+            : fieldProps,
+          valueEnum: valueEnum,
+        },
+      })
+
+    // 收集 ElFormItem 插槽
+    const childrenSlots = collectSlots(slots, ['label', 'error'])
+    childrenSlots.default = () => children as VNode[]
+
+    return (
+      <ElCol {...proFormItemCol}>
+        <ElFormItem {...attrs} prop={prop} ref="formItemRef">
+          {childrenSlots}
+        </ElFormItem>
+      </ElCol>
+    )
   },
 })
