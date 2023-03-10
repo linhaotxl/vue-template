@@ -1,5 +1,3 @@
-
-
 # vscode 插件
 
 1. `ESlint`
@@ -14,15 +12,11 @@
 
 6. `UnoCSS`
 
-
-
 # 官方文档
 
 1. [Vue3](https://cn.vuejs.org/)
 
 2. [Vite](https://cn.vitejs.dev/)
-
-
 
 # 已完成清单
 
@@ -36,8 +30,6 @@
 
 5. 继承 `ElementPlus`，按需引入
 
-
-
 # unocss 配置
 
 [官方文档](https://github.com/unocss/unocss)
@@ -47,13 +39,11 @@
 ## 两种书写方法
 
 1. 写在 `class` 内
-   
    ```html
    <div class="box flex justify-center items-center"></div>
    ```
 
 2. 作为标签属性
-   
    ```html
    <div class="box" flex justify-center items-center></div>
    ```
@@ -68,7 +58,7 @@ export default defineConfig({
   theme: {
     color: {
       primary: 'var(--primary-color)'
-    }  
+    }
   }
 })
 ```
@@ -82,14 +72,13 @@ export default defineConfig({
 
 更多可扩展的主题参考 [主题配置](https://www.tailwindcss.cn/docs/theme)
 
-# 
+#
 
 # setup 语法
 
 要是想在 `setup` 语法内定义 `name` 或 `inheritAttrs` 等属性，可以使用以下方法
 
 1. 同时使用 `script` 和 `script setup`
-   
    ```html
    <script>
    export default {
@@ -97,23 +86,22 @@ export default defineConfig({
      inheritAttrs: false
    }
    </script>
-   
    <script setup lang="ts">
    // ...
    </script>
    ```
 
 2. 在 `script` 标签上定义 `name`
-   
+
    这种方法只能定义 `name` ，需要使用 `vite-plugin-vue-setup-extend` 插件，已经集成进来了。
-   
+
    注意，要是想定义其他属性，只能使用第1种方法
-   
+
    ```html
    <script setup lang="ts" name="Comp"></script>
    ```
 
-# 
+#
 
 # 自动引入api
 
@@ -132,8 +120,6 @@ const count = ref(1)
 
 注意，自动引入成功后，会生成 `auto-imports.d.ts` （用于 `ts`）和 `eslintrc-auto-import.json`（用于 `eslint`）。如果在某个文件(`login.vue`)中使用了 `ElMessage`，如果不打开 `login` 页面，那么自动引入的文件中可能不存在 `ElMessage` 全局变量，此时必须打开 `login` 页面即可。这是由于 `Vite` 的机制决定的。后期优化
 
-
-
 # 自动导入组件
 
 常规导入足迹按需要两步，`setup` 语法只有第一步
@@ -145,6 +131,48 @@ const count = ref(1)
 使用 `unplugin-vue-components` 插件可以帮助我们自动导入组件，无需再进行上述两个步骤，具体配置参考 `vite.config.ts` 中的 `Components`
 
 同时会生成 `components.d.ts` 文件，`Volar` 会读取这个文件中的内容，实现组件的跳转和参数校验
+
+
+
+# 图标库
+
+### ElementPlus 使用
+
+```html
+<el-icon :size="50" color="red">
+  <i-ep-plus />
+</el-icon>
+```
+
+### 自定义 icon
+
+1. 将 `svg` 文件放入 `src/assets/svg` 中
+
+2. ```html
+    <el-icon :size="50">
+      <i-vis-vue />
+    </el-icon>
+   ```
+
+`vis` 是在 `vite.config.ts` 中通过 `unplugin-icons/vite` 插件配置的集合名
+
+### 使用 iconify 图标库
+
+使用 `iconify` 首先需要在 `vite.config.ts`  中通过 `unplugin-icons/resolver` 插件设置使用 `icon` 的集合名
+
+#### 通过组件形式使用
+
+```html
+<el-icon :size="50">
+  <i-ic-baseline5g />
+</el-icon>
+```
+
+#### 通过 unocss 形式使用
+
+```html
+<i class="w-50 h-50 i-ic-baseline5g" />
+```
 
 
 

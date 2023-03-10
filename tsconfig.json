@@ -15,8 +15,9 @@
     "jsxFactory": "h",
     "jsxFragmentFactory": "Fragment",
     "paths": {
-      "@/*": ["./src/*"]
-    }
+      "~/*": ["./src/*"]
+    },
+    "types": ["element-plus/global"]
   },
   "include": [
     "./src/**/*.ts",

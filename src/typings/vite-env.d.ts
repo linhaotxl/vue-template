@@ -1,6 +1,4 @@
 /// <reference types="vite/client" />
-/// <reference types="vite-plugin-pages/client" />
-/// <reference types="vite-plugin-vue-layouts/client" />
 
 declare module '*.vue' {
   import type { DefineComponent } from 'vue'
@@ -10,7 +8,7 @@ declare module '*.vue' {
 }
 
 /**
- * 扩展 env
+ * 扩展自定义 env
  */
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface ImportMetaEnv {
