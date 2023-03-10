@@ -1,8 +1,7 @@
-import { ElPagination, ElSpace, ElTable, vLoading } from 'element-plus'
-import { defineComponent, ref, watch } from 'vue'
+import { ElPagination, ElSpace, ElTable } from 'element-plus'
+import { defineComponent, ref, watch, h } from 'vue'
 
 import { ElTableMethods } from './constants'
-import { useLoading } from './useLoading'
 import { useTable } from './useTable'
 import {
   collectComponentMethods,
@@ -66,7 +65,7 @@ export const ProTable = defineComponent({
 
   emits: ['load', 'requestError'],
 
-  setup(props, { slots, attrs, emit }) {
+  setup(props, { emit }) {
     const { dataSource, pageNum, pageSize, totalPage, updateParams } = useTable(
       {
         request: props.request,
@@ -80,6 +79,8 @@ export const ProTable = defineComponent({
       }
     )
 
+    const tableRef = ref<TableInstance | null>(null)
+
     // 每次数据加载完成后，执行 load 事件
     watch(dataSource, ds => {
       if (props.request) {
@@ -87,34 +88,14 @@ export const ProTable = defineComponent({
       }
     })
 
-    const tableRef = ref<TableInstance>()
-
     const handleSubmitSearch = (values: object) => {
       updateParams({ ...values })
     }
 
     const methodsMap = collectComponentMethods(ElTableMethods, tableRef)
 
-    // const aaa = () => {}
-
-    // const { open, close } = useLoading({
-    //   target: tableRef,
-    // })
-
-    // watch(
-    //   loading,
-    //   load => {
-    //     console.log('load: ', load)
-    //     load ? open() : close()
-    //   },
-    //   { immediate: true, flush: 'post' }
-    // )
-
-    // const instance = ElLoading.service({})
-
     return {
       ...methodsMap,
-      tableRef,
       totalPage,
       pageNum,
       pageSize,

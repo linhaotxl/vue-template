@@ -1,11 +1,12 @@
 import { ElForm, ElRow } from 'element-plus'
-import { defineComponent, computed } from 'vue'
+import { defineComponent, computed, h, Fragment, ref } from 'vue'
 
 import { commonEmits, commonProps } from './props'
 import { useForm } from './useForm'
 import { normalizeFormCol } from './utils'
 
 import type { NormalizeColProps, ElColProps } from './interface'
+import type { FormInstance } from 'element-plus'
 import type { PropType } from 'vue'
 
 const props = {
@@ -31,7 +32,9 @@ export const ProForm = defineComponent({
       return toolColProps
     })
 
-    const { values, formRef, renderSubmitter } = useForm({
+    const formRef = ref<FormInstance>()
+    const { values, renderSubmitter } = useForm({
+      formRef,
       props,
       submitterSlot: slots.submitter,
       emit,

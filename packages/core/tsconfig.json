@@ -1,7 +1,11 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "outDir": "./dist",
+    "jsx": "react",
+    "jsxFactory": "h",
+    "jsxFragmentFactory": "Fragment",
+    "noImplicitAny": false,
+    "allowSyntheticDefaultImports": true,
   },
-  "exclude": ["node_modules/**/*"]
+  "exclude": ["node_modules"],
 }

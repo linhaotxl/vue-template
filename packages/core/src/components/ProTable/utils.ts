@@ -18,6 +18,7 @@ export function collectComponentMethods<T>(methods: string[], ref: Ref<T>) {
 
   for (const method of methods) {
     methodsMap[method] = function (...args) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return (ref.value as any)[method](...args)
     }
   }

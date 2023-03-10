@@ -1,11 +1,12 @@
 import { ElForm, ElRow } from 'element-plus'
-import { computed, defineComponent } from 'vue'
+import { computed, defineComponent, h, Fragment, ref } from 'vue'
 
 import { commonEmits, commonProps } from './props'
 import { useForm } from './useForm'
 import { colRanges, hasOwn, normalizeFormCol } from './utils'
 
 import type { ElColProps, NormalizeColProps } from './interface'
+import type { FormInstance } from 'element-plus'
 import type { ExtractPropTypes, PropType } from 'vue'
 
 const props = {
@@ -30,7 +31,9 @@ export const QueryFilter = defineComponent({
   emits: [...commonEmits],
 
   setup(props, { slots, emit, attrs }) {
-    const { values, formRef, formItemCols, renderSubmitter } = useForm({
+    const formRef = ref<FormInstance>()
+    const { values, formItemCols, renderSubmitter } = useForm({
+      formRef,
       props,
       submitterSlot: slots.submitter,
       emit,

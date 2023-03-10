@@ -19,6 +19,8 @@ import {
 } from 'element-plus'
 import { h } from 'vue'
 
+import type { VNode } from 'vue'
+
 export const enum ValueTypes {
   Text = 'text',
   Textarea = 'textarea',
@@ -52,10 +54,11 @@ type RenderValueTypeParams = {
     // [key: string]: any
     prop: string
     fieldProps?: Record<string, unknown>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     valueEnum?: { label: string; value: any }[]
   }
 }
-type RenderValueType = (params: RenderValueTypeParams) => any
+type RenderValueType = (params: RenderValueTypeParams) => VNode
 
 export const valueTypeMap: Record<ValueTypes, RenderValueType> = {
   [ValueTypes.Text]: ({ formState, props }) => (

@@ -1,9 +1,9 @@
 import { ElTableColumn } from 'element-plus'
-import { defineComponent } from 'vue'
+import { defineComponent, h } from 'vue'
 
 import { collectSlots } from './utils'
 
-import type { PropType, Slot } from 'vue'
+import type { PropType } from 'vue'
 
 const ProTableColumnProps = {
   prop: String,

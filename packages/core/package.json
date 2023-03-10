@@ -3,8 +3,14 @@
   "version": "0.0.1",
   "type": "module",
   "types": "./dist/index.d.ts",
+  "main": "./dist/index.js",
+  "files": [
+    "./index.js",
+    "./dist"
+  ],
   "scripts": {
     "watch": "tsc -b --force -w tsconfig.esm.json",
+    "build": "rollup -c rollup.config.js",
     "lint:js": "eslint --fix --ext .js,.jsx,.ts,.tsx,.vue src/",
     "lint:style": "stylelint --fix \"src/**/*.{css,less,scss,sass,vue}\""
   },

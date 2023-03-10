@@ -1,5 +1,5 @@
 import { ElButton, ElCol, ElFormItem } from 'element-plus'
-import { computed, provide, reactive, ref } from 'vue'
+import { computed, provide, reactive, h } from 'vue'
 
 import { proFormBus, ProFormProvideKey } from './constant'
 
@@ -17,11 +17,11 @@ import type {
 } from './interface'
 import type { commonProps } from './props'
 import type { FormInstance } from 'element-plus'
-import type { Slot, ExtractPropTypes } from 'vue'
+import type { Slot, ExtractPropTypes, VNode, Ref } from 'vue'
 
 export interface UserFormOptions<T extends ProFormValues = ProFormValues> {
   props: ExtractPropTypes<typeof commonProps>
-
+  formRef: Ref<FormInstance | null | undefined>
   beforeSearchSubmit?: BeforeSearchSubmit<T>
 
   submitterSlot: Slot | undefined
@@ -32,7 +32,7 @@ export interface UserFormOptions<T extends ProFormValues = ProFormValues> {
 export function useForm<T extends ProFormValues = ProFormValues>(
   options: UserFormOptions<T>
 ) {
-  const { props, submitterSlot, emit, beforeSearchSubmit } = options
+  const { props, formRef, submitterSlot, emit, beforeSearchSubmit } = options
 
   const { initialValues } = props
 
@@ -40,7 +40,6 @@ export function useForm<T extends ProFormValues = ProFormValues>(
   const formState = reactive<ProFormValues>(
     JSON.parse(JSON.stringify(initialValues))
   )
-  const formRef = ref<FormInstance | null>(null)
   const formItemCols = reactive<Record<string, NormalizeColProps>>({})
 
   /**
@@ -119,6 +118,7 @@ export function useForm<T extends ProFormValues = ProFormValues>(
       try {
         const validated = await formRef.value.validate()
         if (validated) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           emit('finish', beforeSearchSubmit?.(formState as any) ?? formState)
         }
       } catch (e) {
@@ -149,7 +149,7 @@ export function useForm<T extends ProFormValues = ProFormValues>(
   const renderSubmitter = (colProps: NormalizeColProps) => {
     // 渲染提交栏
     let submitterValue
-    let $submitter = null
+    let $submitter: null | VNode = null
     if (submitterSlot) {
       $submitter = (
         <ElCol {...colProps}>
@@ -194,7 +194,6 @@ export function useForm<T extends ProFormValues = ProFormValues>(
 
   return {
     values: formState,
-    formRef,
     formItemCols,
     renderSubmitter,
   }

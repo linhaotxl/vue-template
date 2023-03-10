@@ -130,6 +130,7 @@ export const ProFormItem = defineComponent({
               ? {
                   ...fieldProps,
                   async onChange(...args: unknown[]) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     await (fieldProps as any)?.onChange?.(...args)
                     onSubmit?.()
                   },
