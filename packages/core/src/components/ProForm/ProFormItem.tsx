@@ -46,7 +46,11 @@ const props = {
 
   prop: String as PropType<string>,
 
-  fieldProps: Object as PropType<Record<string, unknown>>,
+  fieldProps: Object as PropType<
+    Record<string, unknown> & {
+      onChange?: (...args: unknown[]) => Promise<void> | void
+    }
+  >,
 
   col: [Number, Object] as PropType<number | ElColProps>,
 }
@@ -144,8 +148,8 @@ export const ProFormItem = defineComponent({
       $attrs: attrs,
     } = this
 
-    // 如果存在默认插槽，则交由默认插槽渲染
-    const defaultChildren = slots.default?.({
+    // 如果存在 hidden 插槽，则交由 hidden 插槽渲染
+    const defaultChildren = slots.hidden?.({
       values,
     } as ProFormItemDefaultSlotParams)
     if (defaultChildren) {
@@ -160,14 +164,14 @@ export const ProFormItem = defineComponent({
       } as ProFormItemFieldSlotParams) ??
       valueTypeMap[valueType]({
         formState: values,
+        slots,
         props: {
           prop: prop!,
           fieldProps: submitOnChange
             ? {
                 ...fieldProps,
                 async onChange(...args: unknown[]) {
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  await (fieldProps as any)?.onChange?.(...args)
+                  await fieldProps?.onChange?.(...args)
                   onSubmit?.()
                 },
               }
