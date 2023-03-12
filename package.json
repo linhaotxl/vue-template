@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "watch:core": "pnpm -r --filter=element-plus-pro-components run watch",
+    "build:core": "pnpm -r --filter=element-plus-pro-components run build",
     "lint:js": "eslint --fix --ext .js,.jsx,.ts,.tsx,.vue",
     "lint:style": "stylelint --fix",
     "prepare": "husky install",
