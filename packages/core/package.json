@@ -1,12 +1,16 @@
 {
   "name": "element-plus-pro-components",
-  "version": "0.0.1",
+  "version": "0.0.4",
   "type": "module",
   "types": "./dist/index.d.ts",
   "main": "./dist/index.js",
   "files": [
-    "./index.js",
-    "./dist"
+    "index.js",
+    "dist/*"
+  ],
+  "keywords": [
+    "vue3",
+    "element-plus"
   ],
   "scripts": {
     "watch": "rollup -c rollup.config.js -w",
@@ -14,5 +18,10 @@
     "lint:js": "eslint --fix --ext .js,.jsx,.ts,.tsx,.vue",
     "lint:style": "stylelint --fix"
   },
-  "devDependencies": {}
+  "devDependencies": {},
+  "peerDependencies": {
+    "vue": ">=3.0.0",
+    "element-plus": "*",
+    "@vueuse/core": "*"
+  }
 }
