@@ -7,7 +7,6 @@ import { useForm } from './useForm'
 import { normalizeFormCol } from './utils'
 
 import type { NormalizeColProps, ElColProps } from './interface'
-import type { FormInstance } from 'element-plus'
 import type { PropType } from 'vue'
 
 const props = {
@@ -34,15 +33,13 @@ export const ProForm = defineComponent({
       normalizeFormCol(props.toolsCol || props.col, toolColProps)
       return toolColProps
     })
-
-    const formRef = ref<FormInstance>()
+    const formRef = ref()
     const { values, methodsMap, renderSubmitter } = useForm({
       formRef,
       props,
       submitterSlot: slots.submitter,
       emit,
     })
-
     return {
       ...methodsMap,
       values,

@@ -7,7 +7,6 @@ import { useForm } from './useForm'
 import { colRanges, hasOwn, normalizeFormCol } from './utils'
 
 import type { ElColProps, NormalizeColProps } from './interface'
-import type { FormInstance } from 'element-plus'
 import type { ExtractPropTypes, PropType } from 'vue'
 
 const props = {
@@ -34,7 +33,7 @@ export const QueryFilter = defineComponent({
   expose: [...ElFormMethods],
 
   setup(props, { slots, emit }) {
-    const formRef = ref<FormInstance>()
+    const formRef = ref()
     const { values, formItemCols, methodsMap, renderSubmitter } = useForm({
       formRef,
       props,

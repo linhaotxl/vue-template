@@ -33,7 +33,6 @@ import type {
   ProFormItemDefaultSlotParams,
   ProFormItemFieldSlotParams,
 } from './interface'
-import type { FormItemInstance } from 'element-plus'
 import type { PropType, VNode } from 'vue'
 
 const props = {
@@ -66,7 +65,7 @@ export const ProFormItem = defineComponent({
     const { formState, formCol, submitOnChange, onSubmit } =
       inject<ProFormContext>(ProFormProvideKey, defaultProFormContext())
 
-    const formItemRef = ref<FormItemInstance>()
+    const formItemRef = ref()
 
     // el-col props
     // 如果 ProFormItem 传递了 col，则对其格式化，否则使用 ProForm 上的 col

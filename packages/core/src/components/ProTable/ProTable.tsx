@@ -13,7 +13,7 @@ import { ProFormItem, QueryFilter } from '../ProForm'
 
 import type { ProTablePostDataFn, ProTableRequest } from './interface'
 import type { QueryFilterProps } from '../ProForm'
-import type { PaginationProps, TableInstance, SpaceProps } from 'element-plus'
+import type { PaginationProps, SpaceProps } from 'element-plus'
 import type { PropType, VNode } from 'vue'
 
 const props = {
@@ -79,7 +79,7 @@ export const ProTable = defineComponent({
       }
     )
 
-    const tableRef = ref<TableInstance | null>(null)
+    const tableRef = ref()
 
     // 每次数据加载完成后，执行 load 事件
     watch(dataSource, ds => {
