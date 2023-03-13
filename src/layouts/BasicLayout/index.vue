@@ -1,5 +1,5 @@
 <template>
-  <el-container class="overflow-auto">
+  <el-container class="overflow-auto h-full">
     <el-header> Header </el-header>
 
     <el-container class="overflow-auto">
