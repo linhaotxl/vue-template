@@ -1,11 +1,12 @@
 {
   "name": "element-plus-pro-components",
-  "version": "0.0.4",
+  "version": "0.0.6",
   "type": "module",
-  "types": "./dist/index.d.ts",
-  "main": "./dist/index.js",
+  "types": "./index.d.ts",
+  "main": "./index.js",
   "files": [
     "index.js",
+    "index.d.ts",
     "dist/*"
   ],
   "keywords": [
