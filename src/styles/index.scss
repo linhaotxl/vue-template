@@ -11,7 +11,8 @@
 @use "./variables.scss" as *;
 
 html,
-body {
+body,
+#root {
   height: 100%;
 }
 
