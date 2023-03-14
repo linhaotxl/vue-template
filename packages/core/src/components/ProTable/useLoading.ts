@@ -9,23 +9,25 @@ export type UseLoadingOptions = Omit<
   'target'
 > & {
   target: Ref<TableInstance | undefined>
+
+  loading: Ref<boolean>
 }
 
 export function useLoading(options: UseLoadingOptions) {
-  const { target, ...rest } = options
+  const { target, loading, ...rest } = options
   let instance: ReturnType<typeof ElLoading.service> | undefined
   let $el: HTMLElement
 
-  watch(target, el => {
+  watch([target, loading], ([el, loading]) => {
     if (el) {
-      console.log('el')
       $el = el.$el
     }
+
+    loading ? open() : close()
   })
 
   function open() {
     if (!instance && $el) {
-      console.log('open loading')
       instance = ElLoading.service({ ...rest, target: $el })
     }
   }

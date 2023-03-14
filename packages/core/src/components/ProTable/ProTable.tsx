@@ -2,6 +2,7 @@ import { ElPagination, ElSpace, ElTable } from 'element-plus'
 import { defineComponent, ref, watch, h } from 'vue'
 
 import { ElTableMethods } from './constants'
+import { useLoading } from './useLoading'
 import { useTable } from './useTable'
 
 import {
@@ -106,8 +107,8 @@ export const ProTable = defineComponent({
   emits: ['load', 'requestError'],
 
   setup(props, { emit }) {
-    const { dataSource, pageNum, pageSize, totalPage, updateParams } = useTable(
-      {
+    const { dataSource, pageNum, pageSize, totalPage, loading, updateParams } =
+      useTable({
         request: props.request,
         postData: props.postData,
         data: props.data,
@@ -116,8 +117,7 @@ export const ProTable = defineComponent({
         onError(err) {
           emit('requestError', err)
         },
-      }
-    )
+      })
 
     const tableRef = ref()
 
@@ -127,6 +127,9 @@ export const ProTable = defineComponent({
         emit('load', ds)
       }
     })
+
+    // 自动注入 loading
+    useLoading({ target: tableRef, loading })
 
     const handleSubmitSearch = (values: object) => {
       updateParams({ ...values })
