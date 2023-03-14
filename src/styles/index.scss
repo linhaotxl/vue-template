@@ -11,7 +11,9 @@
 @use "./variables.scss" as *;
 
 html,
-body {
+body,
+#root {
+  overflow: hidden;
   height: 100%;
 }
 
