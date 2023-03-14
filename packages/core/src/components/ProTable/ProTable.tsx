@@ -14,7 +14,7 @@ import { ProFormItem, QueryFilter } from '../ProForm'
 import type { ProTablePostDataFn, ProTableRequest } from './interface'
 import type { QueryFilterProps } from '../ProForm'
 import type { PaginationProps, SpaceProps } from 'element-plus'
-import type { PropType, VNode } from 'vue'
+import type { PropType, VNode, CSSProperties } from 'vue'
 
 const props = {
   request: Function as PropType<ProTableRequest>,
@@ -46,9 +46,47 @@ const props = {
   },
 
   /**
-   * 高级搜索栏 - Table - 分页之间的间距
+   * space 的 props
+   *
+   * @default
+   * {
+   *   wrap: false,
+   *   alignment: 'normal',
+   * }
    */
-  space: [String, Number] as PropType<SpaceProps['size']>,
+  spaceProps: {
+    type: Object as PropType<SpaceProps>,
+    default: () => ({
+      wrap: false,
+      alignment: 'normal',
+    }),
+  },
+
+  /**
+   * space 的 className
+   */
+  spaceClass: String as PropType<string>,
+
+  /**
+   * space 的 style 样式集合
+   *
+   * @default
+   * {
+   *   height: '100%',
+   *   overflow: 'auto',
+   *   display: 'flex',
+   *   flexWrap: 'nowrap'
+   * }
+   */
+  spaceStyle: {
+    type: Object as PropType<CSSProperties>,
+    default: () => ({
+      height: '100%',
+      overflow: 'auto',
+      display: 'flex',
+      flexWrap: 'nowrap',
+    }),
+  },
 
   /**
    * 对通过 request 获取的数据进行处理
@@ -58,6 +96,8 @@ const props = {
 
 export const ProTable = defineComponent({
   name: 'ProTable',
+
+  inheritAttrs: false,
 
   props,
 
@@ -137,7 +177,7 @@ export const ProTable = defineComponent({
 
     const $search =
       this.search !== false ? (
-        <QueryFilter {...props.search} onFinish={this.handleSubmitSearch}>
+        <QueryFilter {...this.search} onFinish={this.handleSubmitSearch}>
           {formChildren?.map(child => (
             <ProFormItem {...child.props} />
           ))}
@@ -152,7 +192,7 @@ export const ProTable = defineComponent({
     const $pagination =
       this.pagination !== false ? (
         <ElPagination
-          {...props.pagination}
+          {...this.pagination}
           total={this.totalPage}
           v-model:currentPage={this.pageNum}
           v-model:pageSize={this.pageSize}
@@ -160,7 +200,12 @@ export const ProTable = defineComponent({
       ) : null
 
     return (
-      <ElSpace style="width: 100%;" size={this.space} fill direction="vertical">
+      <ElSpace
+        {...this.spaceProps}
+        class={this.spaceClass}
+        style={this.spaceStyle}
+        direction="vertical"
+      >
         {$search}
 
         <ElTable {...this.$attrs} data={this.dataSource} ref="tableRef">

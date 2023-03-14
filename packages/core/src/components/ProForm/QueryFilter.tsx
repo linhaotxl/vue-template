@@ -21,7 +21,7 @@ const props = {
   },
 }
 
-export type QueryFilterProps = ExtractPropTypes<typeof props>
+export type QueryFilterProps = Partial<ExtractPropTypes<typeof props>>
 
 export const QueryFilter = defineComponent({
   name: 'QueryFilter',

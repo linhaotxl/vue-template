@@ -7,6 +7,7 @@ import vueJsx from '@vitejs/plugin-vue-jsx'
 import { defineConfig } from 'rollup'
 import dts from 'rollup-plugin-dts'
 import esbuild from 'rollup-plugin-esbuild'
+// import postcss from 'rollup-plugin-postcss'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const root = __dirname
@@ -26,6 +27,8 @@ const componentPlugins = [
   resolve({ mainFields: ['module', 'main', 'browser'] }),
 
   vueJsx(),
+
+  // postcss(),
 
   esbuild({
     include: /\.[jt]sx?$/,

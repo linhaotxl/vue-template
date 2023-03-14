@@ -1,6 +1,6 @@
 {
   "name": "element-plus-pro-components",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "type": "module",
   "types": "./index.d.ts",
   "main": "./index.js",
@@ -14,8 +14,8 @@
     "element-plus"
   ],
   "scripts": {
-    "watch": "rollup -c rollup.config.js -w",
-    "build": "rollup -c rollup.config.js",
+    "watch": "set NODE_OPTIONS=--max-old-space-size=4096 && rollup -c rollup.config.js -w",
+    "build": "set NODE_OPTIONS=--max-old-space-size=4096 && rollup -c rollup.config.js",
     "lint:js": "eslint --fix --ext .js,.jsx,.ts,.tsx,.vue",
     "lint:style": "stylelint --fix"
   },
