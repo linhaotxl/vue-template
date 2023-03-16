@@ -114,9 +114,9 @@ export const ProTable = defineComponent({
         data: props.data,
         params: props.params,
         pageSize: 10,
-        onError(err) {
-          emit('requestError', err)
-        },
+        // onError(err) {
+        //   emit('requestError', err)
+        // },
       })
 
     const tableRef = ref()

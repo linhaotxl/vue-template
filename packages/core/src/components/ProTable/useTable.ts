@@ -6,7 +6,6 @@ import type { Ref } from 'vue'
 export interface UseTableOptions<T> {
   request?: ProTableRequest<T>
   postData?: ProTablePostDataFn<T>
-  onError?: (err: Error) => void
   data?: T[]
 
   pageSize: number
@@ -18,7 +17,6 @@ export function useTable<T>(options: UseTableOptions<T>) {
   const {
     request,
     postData,
-    onError,
     data,
     params: paramsValue,
     pageSize: pageSizeValue,
@@ -31,14 +29,6 @@ export function useTable<T>(options: UseTableOptions<T>) {
   const loading = ref(false)
   const params = ref(paramsValue)
 
-  watch(
-    params,
-    () => {
-      goToPage(1)
-    },
-    { immediate: true }
-  )
-
   // 观察 pageSize 和 pageNumber 的变化，修改时需要发起请求获取数据
   // 这里刷新的时机为 post，当 pageNum 和 pageSize 同时变化时
   // 如果为 pre，那么在 render 前刷新 pre 队列时是不会去重的，所以会触发两次
@@ -46,45 +36,32 @@ export function useTable<T>(options: UseTableOptions<T>) {
   watch(
     [pageNum, pageSize],
     ([currentPage, currentPageSize]) => {
-      console.log('change pageNum: ', currentPage, currentPageSize)
       fetchTableData(currentPage, currentPageSize)
     },
-    { flush: 'post' }
+    { immediate: true }
   )
-
-  // watch(
-  //   loading,
-  //   newLoading => {
-  //     console.log('newLoading: ', newLoading)
-  //   },
-  //   { immediate: true }
-  // )
 
   /**
    * 请求 Table 数据
    */
   function fetchTableData(currentPage: number, currentPageSize: number) {
-    pageNum.value = currentPage
-    pageSize.value = currentPageSize
+    if (loading.value) return
 
     if (request) {
       loading.value = true
 
-      request({
+      const response = request({
         ...params.value,
         pageNum: currentPage,
         pageSize: currentPageSize,
       })
-        .then(result => {
-          dataSource.value = postData?.(result.data) ?? result.data
-          totalPage.value = result.total
-        })
-        .catch(e => {
-          onError?.(e instanceof Error ? e : new Error(e))
-        })
-        .finally(() => {
-          loading.value = false
-        })
+
+      watch(response, _response => {
+        loading.value = false
+        const data = _response.data ?? []
+        dataSource.value = postData?.(data) ?? data
+        totalPage.value = _response.total ?? 1
+      })
     } else if (data) {
       dataSource.value = data
     }
@@ -98,17 +75,12 @@ export function useTable<T>(options: UseTableOptions<T>) {
   }
 
   /**
-   * 获取指定页数 Table 数据
-   */
-  async function goToPage(currentPage: number) {
-    return await fetchTableData(currentPage, pageSize.value)
-  }
-
-  /**
    * 更新 params 重新发起请求
    */
   function updateParams(newParams: object) {
+    pageNum.value = 1
     params.value = newParams
+    reload()
   }
 
   return {
@@ -119,7 +91,6 @@ export function useTable<T>(options: UseTableOptions<T>) {
     totalPage,
     fetchTableData,
     reload,
-    goToPage,
     updateParams,
   }
 }
