@@ -58,6 +58,8 @@ type RenderValueTypeParams = {
     // [key: string]: any
     prop: string
     fieldProps?: Record<string, unknown>
+    optionLabel: string
+    optionValue: string
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     valueEnum?: { label: string; value: any }[]
   }
@@ -92,7 +94,10 @@ export const valueTypeMap: Record<ValueTypes, RenderValueType> = {
   [ValueTypes.Select]: ({ formState, props }) => (
     <ElSelect {...props.fieldProps} v-model={formState[props.prop]}>
       {props.valueEnum?.map(item => (
-        <ElOption label={item.label} value={item.value} />
+        <ElOption
+          label={item[props.optionLabel]}
+          value={item[props.optionValue]}
+        />
       ))}
     </ElSelect>
   ),
@@ -100,7 +105,9 @@ export const valueTypeMap: Record<ValueTypes, RenderValueType> = {
   [ValueTypes.Checkbox]: ({ props, formState }) => (
     <ElCheckboxGroup {...props.fieldProps} v-model={formState[props.prop]}>
       {props.valueEnum?.map(item => (
-        <ElCheckbox label={item.value}>{item.label}</ElCheckbox>
+        <ElCheckbox label={item[props.optionValue]}>
+          {item[props.optionLabel]}
+        </ElCheckbox>
       ))}
     </ElCheckboxGroup>
   ),
@@ -108,7 +115,9 @@ export const valueTypeMap: Record<ValueTypes, RenderValueType> = {
   [ValueTypes.CheckboxButton]: ({ props, formState }) => (
     <ElCheckboxGroup {...props.fieldProps} v-model={formState[props.prop]}>
       {props.valueEnum?.map(item => (
-        <ElCheckboxButton label={item.value}>{item.label}</ElCheckboxButton>
+        <ElCheckboxButton label={item[props.optionValue]}>
+          {item[props.optionLabel]}
+        </ElCheckboxButton>
       ))}
     </ElCheckboxGroup>
   ),
@@ -116,7 +125,9 @@ export const valueTypeMap: Record<ValueTypes, RenderValueType> = {
   [ValueTypes.Radio]: ({ props, formState }) => (
     <ElRadioGroup {...props.fieldProps} v-model={formState[props.prop]}>
       {props.valueEnum?.map(item => (
-        <ElRadio label={item.value}>{item.label}</ElRadio>
+        <ElRadio label={item[props.optionValue]}>
+          {item[props.optionLabel]}
+        </ElRadio>
       ))}
     </ElRadioGroup>
   ),
@@ -124,7 +135,9 @@ export const valueTypeMap: Record<ValueTypes, RenderValueType> = {
   [ValueTypes.RadioButton]: ({ props, formState }) => (
     <ElRadioGroup {...props.fieldProps} v-model={formState[props.prop]}>
       {props.valueEnum?.map(item => (
-        <ElRadioButton label={item.value}>{item.label}</ElRadioButton>
+        <ElRadioButton label={item[props.optionValue]}>
+          {item[props.optionLabel]}
+        </ElRadioButton>
       ))}
     </ElRadioGroup>
   ),

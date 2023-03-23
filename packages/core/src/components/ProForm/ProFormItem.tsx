@@ -52,6 +52,16 @@ const props = {
   >,
 
   col: [Number, Object] as PropType<number | ElColProps>,
+
+  optionLabel: {
+    type: String as PropType<string>,
+    default: 'label',
+  },
+
+  optionValue: {
+    type: String as PropType<string>,
+    default: 'value',
+  },
 }
 
 export const ProFormItem = defineComponent({
@@ -129,6 +139,8 @@ export const ProFormItem = defineComponent({
       values: formState,
       submitOnChange,
       proFormItemCol,
+      optionLabel: props.optionLabel,
+      optinoValue: props.optionValue,
       onSubmit,
     }
   },
@@ -176,6 +188,8 @@ export const ProFormItem = defineComponent({
               }
             : fieldProps,
           valueEnum: valueEnum,
+          optionLabel: this.optionLabel,
+          optionValue: this.optinoValue,
         },
       })
 
