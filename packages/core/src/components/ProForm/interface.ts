@@ -49,9 +49,9 @@ export interface Submitter {
 
   resetButtonText: string
 
-  submitButtonProps: ButtonProps | false
+  submitButtonProps: Partial<ButtonProps> | false
 
-  resetButtonProps: ButtonProps | false
+  resetButtonProps: Partial<ButtonProps> | false
 }
 
 export interface SubmitterSlotParams {
