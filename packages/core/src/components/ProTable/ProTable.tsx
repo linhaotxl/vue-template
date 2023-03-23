@@ -24,14 +24,14 @@ const props = {
    * 分页配置，为 false 不展示
    */
   pagination: {
-    type: [Boolean, Object] as PropType<false | PaginationProps>,
+    type: [Boolean, Object] as PropType<false | Partial<PaginationProps>>,
     default: () => ({}),
   },
 
   /**
    * 用于 request 查询的额外参数，一旦变化会触发重新加载
    */
-  params: Object as PropType<object>,
+  params: Object as PropType<any>,
 
   /**
    * 表格数据，推荐使用 request 来获取数据
@@ -181,9 +181,11 @@ export const ProTable = defineComponent({
     const $search =
       this.search !== false ? (
         <QueryFilter {...this.search} onFinish={this.handleSubmitSearch}>
-          {formChildren?.map(child => (
-            <ProFormItem {...child.props} />
-          ))}
+          {{
+            default: () =>
+              formChildren?.map(child => <ProFormItem {...child.props} />),
+            submitter: (args: unknown) => this.$slots.submitter?.(args),
+          }}
         </QueryFilter>
       ) : null
 
