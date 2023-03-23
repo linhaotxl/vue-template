@@ -62,10 +62,16 @@ export function useTable<T>(options: UseTableOptions<T>) {
         dataSource.value = postData?.(data) ?? data
         totalPage.value = _response.total ?? 1
       })
-    } else if (data) {
-      dataSource.value = data
     }
   }
+
+  watch(
+    () => data,
+    ds => {
+      ds && (dataSource.value = ds)
+    },
+    { immediate: true }
+  )
 
   /**
    * 刷新 Table
