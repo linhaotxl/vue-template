@@ -19,6 +19,14 @@ const props = {
     type: [Number, Object] as PropType<number | ElColProps>,
     default: 4,
   },
+
+  /**
+   * 每个 col 的间距
+   */
+  gutter: {
+    type: Number as PropType<number>,
+    default: 16,
+  },
 }
 
 export type QueryFilterProps = Partial<ExtractPropTypes<typeof props>>
@@ -110,6 +118,7 @@ export const QueryFilter = defineComponent({
 
     return {
       ...methodsMap,
+      gutter: props.gutter,
       values,
       formRef,
       toolsColProps,
@@ -122,7 +131,7 @@ export const QueryFilter = defineComponent({
 
     return (
       <ElForm {...this.$attrs} model={this.values} ref="formRef">
-        <ElRow>
+        <ElRow gutter={this.gutter}>
           {children}
           {this.renderSubmitter(this.toolsColProps)}
         </ElRow>
