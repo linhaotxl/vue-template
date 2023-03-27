@@ -11,7 +11,7 @@ export type ProTableRequestResult<T> = Ref<{
   data: T[]
 }>
 
-export interface ProTableRequest<T = object> {
+export interface ProTableRequest<T = any> {
   (params: ProTableRequestParams): ProTableRequestResult<T>
 }
 
