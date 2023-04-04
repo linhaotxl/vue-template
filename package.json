@@ -1,9 +1,10 @@
 {
-  "name": "auto-import",
+  "name": "auto-import-mon",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "dev": "pnpm run --parallel dev --filter='./packages/*'",
     "lint:js": "eslint --fix --ext .js,.jsx,.ts,.tsx,.vue",
     "prepare": "husky install"
   },

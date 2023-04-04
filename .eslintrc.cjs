@@ -10,7 +10,7 @@ module.exports = {
 
   overrides: [
     {
-      files: ['vite.config.ts', 'unocss.config.ts'],
+      files: 'packages/**/*',
       env: {
         node: true,
         browser: false,
@@ -20,38 +20,13 @@ module.exports = {
         'plugin:@typescript-eslint/recommended',
         'plugin:prettier/recommended',
       ],
-      plugins: ['@typescript-eslint'],
+      plugins: ['@typescript-eslint', 'import'],
       rules: {
         '@typescript-eslint/no-empty-function': 'off',
         'no-undef': 'error',
+        '@typescript-eslint/no-explicit-any': 'off',
+        "@typescript-eslint/ban-ts-comment": 'off'
       }
-    },
-
-    {
-      files: 'src/**/*.{js,jsx,ts,tsx,vue}',
-      env: {
-        node: false,
-        browser: true,
-        'vue/setup-compiler-macros': true,
-      },
-      extends: [
-        'eslint:recommended',
-        'plugin:vue/vue3-recommended',
-        'plugin:@typescript-eslint/recommended',
-        'plugin:prettier/recommended',
-        './.eslintrc-auto-import.json',
-      ],
-      plugins: ['vue', '@typescript-eslint', 'import'],
-      parser: 'vue-eslint-parser',
-      parserOptions: {
-        ecmaVersion: 'latest',
-        parser: '@typescript-eslint/parser',
-        sourceType: 'module',
-      },
-      rules: {
-        'no-undef': 'error',
-        'vue/multi-word-component-names': 'off',
-      },
     },
   ],
 
