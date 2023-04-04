@@ -107,17 +107,24 @@ export const ProTable = defineComponent({
   emits: ['load', 'requestError'],
 
   setup(props, { emit }) {
-    const { dataSource, pageNum, pageSize, totalPage, loading, updateParams } =
-      useTable({
-        request: props.request,
-        postData: props.postData,
-        data: props.data,
-        params: props.params,
-        pageSize: 10,
-        // onError(err) {
-        //   emit('requestError', err)
-        // },
-      })
+    const {
+      dataSource,
+      pageNum,
+      pageSize,
+      totalPage,
+      loading,
+      updateParams,
+      reload,
+    } = useTable({
+      request: props.request,
+      postData: props.postData,
+      data: props.data,
+      params: props.params,
+      pageSize: 10,
+      // onError(err) {
+      //   emit('requestError', err)
+      // },
+    })
 
     const tableRef = ref()
 
@@ -145,6 +152,7 @@ export const ProTable = defineComponent({
       pageSize,
       dataSource,
       handleSubmitSearch,
+      reload,
     }
   },
 
