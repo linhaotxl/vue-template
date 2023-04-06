@@ -1,6 +1,6 @@
 {
   "name": "element-plus-pro-components",
-  "version": "0.0.15",
+  "version": "0.0.20",
   "type": "module",
   "types": "./index.d.ts",
   "main": "./index.js",
