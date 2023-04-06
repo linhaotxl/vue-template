@@ -3,3 +3,5 @@ export { ProFormItem } from './ProFormItem'
 export { QueryFilter } from './QueryFilter'
 
 export type { QueryFilterProps } from './QueryFilter'
+
+export * from './interface'

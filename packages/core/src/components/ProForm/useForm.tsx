@@ -190,6 +190,15 @@ export function useForm<T extends ProFormValues = ProFormValues>(
   // 收集 ElForm 上的方法
   const methodsMap = collectComponentMethods(ElFormMethods, formRef)
 
+  /**
+   * 修改表单字段
+   */
+  function setFieldValues(values: ProFormValues) {
+    for (const attr in values) {
+      formState[attr] = values[attr]
+    }
+  }
+
   provide<ProFormContext>(ProFormProvideKey, {
     formState,
     formCol: computed(() => props.col),
@@ -202,5 +211,6 @@ export function useForm<T extends ProFormValues = ProFormValues>(
     values: formState,
     formItemCols,
     renderSubmitter,
+    setFieldValues,
   }
 }

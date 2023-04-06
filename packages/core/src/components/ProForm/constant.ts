@@ -36,3 +36,5 @@ export const ElFormItemMethods: string[] = [
   'resetField',
   'clearValidate',
 ]
+
+export const ProFormMethhods: string[] = [...ElFormMethods, 'setFieldValues']

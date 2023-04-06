@@ -1,4 +1,9 @@
-import type { ColSize, ColSizeObject, ButtonProps } from 'element-plus'
+import type {
+  ColSize,
+  ColSizeObject,
+  ButtonProps,
+  FormInstance,
+} from 'element-plus'
 import type { ComputedRef } from 'vue'
 
 export type ElColProps = {
@@ -79,4 +84,8 @@ export interface BeforeSearchSubmit<T extends ProFormValues = ProFormValues> {
 
 export interface ProFormValues {
   [name: string]: unknown
+}
+
+export interface ProFormInstance extends FormInstance {
+  setFieldValues(values: ProFormValues): void
 }

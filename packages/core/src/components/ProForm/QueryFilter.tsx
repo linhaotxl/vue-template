@@ -1,7 +1,7 @@
 import { ElForm, ElRow } from 'element-plus'
 import { computed, defineComponent, h, ref } from 'vue'
 
-import { ElFormMethods } from './constant'
+import { ProFormMethhods } from './constant'
 import { commonEmits, commonProps } from './props'
 import { useForm } from './useForm'
 import { colRanges, hasOwn, normalizeFormCol } from './utils'
@@ -38,11 +38,17 @@ export const QueryFilter = defineComponent({
 
   emits: [...commonEmits],
 
-  expose: [...ElFormMethods],
+  expose: [...ProFormMethhods],
 
   setup(props, { slots, emit }) {
     const formRef = ref()
-    const { values, formItemCols, methodsMap, renderSubmitter } = useForm({
+    const {
+      values,
+      formItemCols,
+      methodsMap,
+      renderSubmitter,
+      setFieldValues,
+    } = useForm({
       formRef,
       props,
       submitterSlot: slots.submitter,
@@ -123,6 +129,7 @@ export const QueryFilter = defineComponent({
       formRef,
       toolsColProps,
       renderSubmitter,
+      setFieldValues,
     }
   },
 

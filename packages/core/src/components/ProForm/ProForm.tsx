@@ -1,7 +1,7 @@
 import { ElForm, ElRow } from 'element-plus'
 import { defineComponent, computed, h, ref } from 'vue'
 
-import { ElFormMethods } from './constant'
+import { ProFormMethhods } from './constant'
 import { commonEmits, commonProps } from './props'
 import { useForm } from './useForm'
 import { normalizeFormCol } from './utils'
@@ -25,7 +25,7 @@ export const ProForm = defineComponent({
 
   emits: [...commonEmits],
 
-  expose: [...ElFormMethods],
+  expose: [...ProFormMethhods],
 
   setup(props, { slots, emit }) {
     const toolsColProps = computed(() => {
@@ -34,7 +34,7 @@ export const ProForm = defineComponent({
       return toolColProps
     })
     const formRef = ref()
-    const { values, methodsMap, renderSubmitter } = useForm({
+    const { values, methodsMap, renderSubmitter, setFieldValues } = useForm({
       formRef,
       props,
       submitterSlot: slots.submitter,
@@ -46,6 +46,7 @@ export const ProForm = defineComponent({
       formRef,
       toolsColProps,
       renderSubmitter,
+      setFieldValues,
     }
   },
 
