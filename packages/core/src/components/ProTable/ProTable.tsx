@@ -102,7 +102,7 @@ export const ProTable = defineComponent({
 
   props,
 
-  expose: [...ElTableMethods],
+  expose: [...ElTableMethods, 'reload'],
 
   emits: ['load', 'requestError'],
 

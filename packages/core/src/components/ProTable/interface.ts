@@ -1,3 +1,4 @@
+import type { TableInstance } from 'element-plus'
 import type { Ref } from 'vue'
 
 export type ProTableRequestParams = {
@@ -17,4 +18,8 @@ export interface ProTableRequest<T = any> {
 
 export interface ProTablePostDataFn<T = object> {
   (dataSource: T[]): T[]
+}
+
+export interface ProTableInstance extends TableInstance {
+  reload: () => void
 }
