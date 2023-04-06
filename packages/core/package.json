@@ -1,6 +1,6 @@
 {
   "name": "element-plus-pro-components",
-  "version": "0.0.20",
+  "version": "0.0.21",
   "type": "module",
   "types": "./index.d.ts",
   "main": "./index.js",
@@ -19,7 +19,9 @@
     "lint:js": "eslint --fix --ext .js,.jsx,.ts,.tsx,.vue",
     "lint:style": "stylelint --fix"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "type-fest": "^3.8.0"
+  },
   "peerDependencies": {
     "vue": ">=3.0.0",
     "element-plus": "*",

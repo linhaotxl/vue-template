@@ -21,6 +21,7 @@ import { h } from 'vue'
 
 import { ProFormList } from './ProFormList'
 
+import type { KebabCase } from 'type-fest'
 import type { VNode, Slots } from 'vue'
 
 export const enum ValueTypes {
@@ -50,6 +51,8 @@ export const enum ValueTypes {
   Switch = 'switch',
   List = 'list',
 }
+
+export type ValueTypeKey = KebabCase<keyof typeof ValueTypes>
 
 type RenderValueTypeParams = {
   formState: Record<string, unknown>

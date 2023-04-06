@@ -33,11 +33,12 @@ import type {
   ProFormItemDefaultSlotParams,
   ProFormItemFieldSlotParams,
 } from './interface'
+import type { ValueTypeKey } from './valueTypes'
 import type { PropType, VNode } from 'vue'
 
 const props = {
   valueType: {
-    type: String as PropType<ValueTypes>,
+    type: String as PropType<ValueTypeKey>,
     default: ValueTypes.Text,
   },
 
