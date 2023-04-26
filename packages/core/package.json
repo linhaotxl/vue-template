@@ -1,6 +1,6 @@
 {
   "name": "auto-import",
-  "version": "0.0.1",
+  "version": "0.2.8",
   "type": "module",
   "scripts": {
     "test": "vitest",
@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@antfu/utils": "^0.7.2",
-    "@rollup/pluginutils": "^5.0.2"
+    "@rollup/pluginutils": "^5.0.2",
+    "auto-import-shared": "0.2.8"
   }
 }

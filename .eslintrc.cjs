@@ -10,7 +10,7 @@ module.exports = {
 
   overrides: [
     {
-      files: 'packages/**/*',
+      files:[ 'packages/**/*', 'scripts/**/*'],
       env: {
         node: true,
         browser: false,

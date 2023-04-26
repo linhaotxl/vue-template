@@ -1,0 +1,7 @@
+{
+  "name": "auto-import-shared",
+  "version": "0.2.8",
+  "dependencies": {
+    "@antfu/utils": "^0.7.2"
+  }
+}
