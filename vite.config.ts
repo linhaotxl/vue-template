@@ -106,6 +106,8 @@ export default defineConfig({
 
   server: {
     proxy: {},
+
+    port: 2000,
   },
 
   build: {

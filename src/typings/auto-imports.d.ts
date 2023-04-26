@@ -9,9 +9,6 @@ declare global {
   const $shallowRef: typeof import('vue/macros')['$shallowRef']
   const $toRef: typeof import('vue/macros')['$toRef']
   const EffectScope: typeof import('vue')['EffectScope']
-  const ElMessage: typeof import('element-plus/es')['ElMessage']
-  const ElMessageBox: typeof import('element-plus/es')['ElMessageBox']
-  const TextCompTsx: typeof import('../components/TextCompTsx')['TextCompTsx']
   const asyncComputed: typeof import('@vueuse/core')['asyncComputed']
   const autoResetRef: typeof import('@vueuse/core')['autoResetRef']
   const computed: typeof import('vue')['computed']
@@ -95,7 +92,6 @@ declare global {
   const syncRefs: typeof import('@vueuse/core')['syncRefs']
   const templateRef: typeof import('@vueuse/core')['templateRef']
   const testCompTsx: typeof import('../components/TestCompTsx')['default']
-  const textCompTsx: typeof import('../components/TextCompTsx')['default']
   const throttledRef: typeof import('@vueuse/core')['throttledRef']
   const throttledWatch: typeof import('@vueuse/core')['throttledWatch']
   const toRaw: typeof import('vue')['toRaw']
@@ -295,9 +291,6 @@ declare module 'vue' {
     readonly $shallowRef: UnwrapRef<typeof import('vue/macros')['$shallowRef']>
     readonly $toRef: UnwrapRef<typeof import('vue/macros')['$toRef']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
-    readonly ElMessage: UnwrapRef<typeof import('element-plus/es')['ElMessage']>
-    readonly ElMessageBox: UnwrapRef<typeof import('element-plus/es')['ElMessageBox']>
-    readonly TextCompTsx: UnwrapRef<typeof import('../components/TextCompTsx')['TextCompTsx']>
     readonly asyncComputed: UnwrapRef<typeof import('@vueuse/core')['asyncComputed']>
     readonly autoResetRef: UnwrapRef<typeof import('@vueuse/core')['autoResetRef']>
     readonly computed: UnwrapRef<typeof import('vue')['computed']>
@@ -381,7 +374,6 @@ declare module 'vue' {
     readonly syncRefs: UnwrapRef<typeof import('@vueuse/core')['syncRefs']>
     readonly templateRef: UnwrapRef<typeof import('@vueuse/core')['templateRef']>
     readonly testCompTsx: UnwrapRef<typeof import('../components/TestCompTsx')['default']>
-    readonly textCompTsx: UnwrapRef<typeof import('../components/TextCompTsx')['default']>
     readonly throttledRef: UnwrapRef<typeof import('@vueuse/core')['throttledRef']>
     readonly throttledWatch: UnwrapRef<typeof import('@vueuse/core')['throttledWatch']>
     readonly toRaw: UnwrapRef<typeof import('vue')['toRaw']>
