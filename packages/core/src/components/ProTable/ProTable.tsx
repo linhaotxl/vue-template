@@ -1,5 +1,5 @@
 import { ElPagination, ElSpace, ElTable } from 'element-plus'
-import { defineComponent, ref, watch, h } from 'vue'
+import { defineComponent, ref, watch, h, Fragment, isVNode } from 'vue'
 
 import { ElTableMethods } from './constants'
 import { useLoading } from './useLoading'
@@ -164,22 +164,16 @@ export const ProTable = defineComponent({
     if (children) {
       ;[tableChildren, formChildren] = children.reduce<[VNode[], VNode[]]>(
         (prev, child) => {
-          if (child.props) {
-            const hideInTable = toPropBooleanValue(child.props, 'hide-in-table')
-            const hideInSearch = toPropBooleanValue(
-              child.props,
-              'hide-in-search'
-            )
-
-            if (hideInSearch) {
-              prev[0].push(child)
-            } else if (hideInTable) {
-              prev[1].push(child)
-            } else {
-              prev[0].push(child)
-              prev[1].push(child)
-            }
+          if (child.type === Fragment && Array.isArray(child.children)) {
+            child.children.forEach(item => {
+              if (isVNode(item)) {
+                extractFormAndColumn(item, prev)
+              }
+            })
+          } else {
+            extractFormAndColumn(child, prev)
           }
+
           return prev
         },
         [[], []]
@@ -230,3 +224,19 @@ export const ProTable = defineComponent({
     )
   },
 })
+
+function extractFormAndColumn(child: VNode, prev: [VNode[], VNode[]]) {
+  if (child.props) {
+    const hideInTable = toPropBooleanValue(child.props, 'hide-in-table')
+    const hideInSearch = toPropBooleanValue(child.props, 'hide-in-search')
+
+    if (hideInSearch) {
+      prev[0].push(child)
+    } else if (hideInTable) {
+      prev[1].push(child)
+    } else {
+      prev[0].push(child)
+      prev[1].push(child)
+    }
+  }
+}
