@@ -13,3 +13,5 @@ export const ElTableMethods: string[] = [
   'setScrollTop',
   'setScrollLeft',
 ]
+
+export const ProTableMethods: string[] = ['reload']

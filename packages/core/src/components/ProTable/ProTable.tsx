@@ -1,7 +1,7 @@
 import { ElPagination, ElSpace, ElTable } from 'element-plus'
 import { defineComponent, ref, watch, h, Fragment, isVNode } from 'vue'
 
-import { ElTableMethods } from './constants'
+import { ElTableMethods, ProTableMethods } from './constants'
 import { useLoading } from './useLoading'
 import { useTable } from './useTable'
 
@@ -102,7 +102,7 @@ export const ProTable = defineComponent({
 
   props,
 
-  expose: [...ElTableMethods, 'reload'],
+  expose: [...ElTableMethods, ...ProTableMethods],
 
   emits: ['load', 'requestError'],
 
