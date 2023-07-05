@@ -1,5 +1,13 @@
 import { ElPagination, ElSpace, ElTable } from 'element-plus'
-import { defineComponent, ref, watch, h, Fragment, isVNode } from 'vue'
+import {
+  defineComponent,
+  ref,
+  watch,
+  h,
+  Fragment,
+  isVNode,
+  computed,
+} from 'vue'
 
 import { ElTableMethods, ProTableMethods } from './constants'
 import { useLoading } from './useLoading'
@@ -182,7 +190,11 @@ export const ProTable = defineComponent({
 
     const $search =
       this.search !== false ? (
-        <QueryFilter {...this.search} onFinish={this.handleSubmitSearch}>
+        <QueryFilter
+          class="pro-table-search"
+          {...this.search}
+          onFinish={this.handleSubmitSearch}
+        >
           {{
             default: () =>
               formChildren?.map(child => <ProFormItem {...child.props} />),
@@ -199,6 +211,7 @@ export const ProTable = defineComponent({
     const $pagination =
       this.pagination !== false ? (
         <ElPagination
+          class="pro-table-pagination"
           {...this.pagination}
           total={this.totalPage}
           v-model:currentPage={this.pageNum}
@@ -206,16 +219,32 @@ export const ProTable = defineComponent({
         />
       ) : null
 
+    const resolveClass = computed(() => {
+      const spaceClass = this.spaceClass
+      const result: Record<string, boolean> = { 'pro-table-space': true }
+
+      if (typeof spaceClass === 'string') {
+        result[spaceClass] = true
+      }
+
+      return result
+    })
+
     return (
       <ElSpace
         {...this.spaceProps}
-        class={this.spaceClass}
+        class={resolveClass.value}
         style={this.spaceStyle}
         direction="vertical"
       >
         {$search}
 
-        <ElTable {...this.$attrs} data={this.dataSource} ref="tableRef">
+        <ElTable
+          class="pro-table"
+          {...this.$attrs}
+          data={this.dataSource}
+          ref="tableRef"
+        >
           {tableSlots}
         </ElTable>
 
