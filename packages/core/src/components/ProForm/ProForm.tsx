@@ -7,7 +7,8 @@ import { useForm } from './useForm'
 import { normalizeFormCol } from './utils'
 
 import type { NormalizeColProps, ElColProps } from './interface'
-import type { PropType } from 'vue'
+import type { FormProps } from 'element-plus'
+import type { PropType, ExtractPropTypes } from 'vue'
 
 const props = {
   ...commonProps,
@@ -17,6 +18,8 @@ const props = {
    */
   toolsCol: [Number, Object] as PropType<number | ElColProps>,
 }
+
+export type ProFormProps = Partial<ExtractPropTypes<typeof props>> & FormProps
 
 export const ProForm = defineComponent({
   name: 'ProForm',

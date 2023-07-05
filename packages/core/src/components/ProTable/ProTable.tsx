@@ -22,8 +22,8 @@ import { ProFormItem, QueryFilter } from '../ProForm'
 
 import type { ProTablePostDataFn, ProTableRequest } from './interface'
 import type { QueryFilterProps } from '../ProForm'
-import type { PaginationProps, SpaceProps } from 'element-plus'
-import type { PropType, VNode, CSSProperties } from 'vue'
+import type { PaginationProps, SpaceProps, TableProps } from 'element-plus'
+import type { PropType, VNode, CSSProperties, ExtractPropTypes } from 'vue'
 
 const props = {
   request: Function as PropType<ProTableRequest>,
@@ -102,6 +102,9 @@ const props = {
    */
   postData: Function as PropType<ProTablePostDataFn>,
 }
+
+export type ProTableProps<T> = Partial<ExtractPropTypes<typeof props>> &
+  TableProps<T>
 
 export const ProTable = defineComponent({
   name: 'ProTable',

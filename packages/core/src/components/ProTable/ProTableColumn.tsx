@@ -3,9 +3,10 @@ import { defineComponent, h } from 'vue'
 
 import { collectSlots } from '../../utils'
 
-import type { PropType } from 'vue'
+import type { TableColumnCtx } from 'element-plus'
+import type { PropType, ExtractPropTypes } from 'vue'
 
-const ProTableColumnProps = {
+const props = {
   prop: String,
 
   hideInTable: {
@@ -19,10 +20,13 @@ const ProTableColumnProps = {
   },
 }
 
+export type ProTableColumnProps<T> = Partial<ExtractPropTypes<typeof props>> &
+  TableColumnCtx<T>
+
 export const ProTableColumn = defineComponent({
   name: 'ProTableColumn',
 
-  props: ProTableColumnProps,
+  props,
 
   setup(props, { attrs, slots }) {
     return () => {

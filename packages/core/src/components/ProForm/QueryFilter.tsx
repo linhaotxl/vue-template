@@ -7,6 +7,7 @@ import { useForm } from './useForm'
 import { colRanges, hasOwn, normalizeFormCol } from './utils'
 
 import type { ElColProps, NormalizeColProps } from './interface'
+import type { FormProps } from 'element-plus'
 import type { ExtractPropTypes, PropType } from 'vue'
 
 const props = {
@@ -29,7 +30,8 @@ const props = {
   },
 }
 
-export type QueryFilterProps = Partial<ExtractPropTypes<typeof props>>
+export type QueryFilterProps = Partial<ExtractPropTypes<typeof props>> &
+  FormProps
 
 export const QueryFilter = defineComponent({
   name: 'QueryFilter',

@@ -34,7 +34,8 @@ import type {
   ProFormItemFieldSlotParams,
 } from './interface'
 import type { ValueTypeKey } from './valueTypes'
-import type { PropType, VNode } from 'vue'
+import type { FormItemProps } from 'element-plus'
+import type { PropType, VNode, ExtractPropTypes } from 'vue'
 
 const props = {
   valueType: {
@@ -64,6 +65,9 @@ const props = {
     default: 'value',
   },
 }
+
+export type ProFormItemProps = Partial<ExtractPropTypes<typeof props>> &
+  FormItemProps
 
 export const ProFormItem = defineComponent({
   name: 'ProFormItem',
