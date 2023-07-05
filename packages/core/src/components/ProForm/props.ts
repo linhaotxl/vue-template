@@ -35,7 +35,7 @@ export const commonProps = {
     type: [Object, Boolean] as PropType<Submitter | false>,
     default: () =>
       ({
-        submitButtonText: '确认',
+        submitButtonText: '搜索',
         resetButtonText: '重置',
         submitButtonProps: { type: 'primary' },
         resetButtonProps: {},

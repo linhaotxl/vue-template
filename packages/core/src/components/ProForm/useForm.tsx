@@ -24,6 +24,7 @@ import type { Slot, ExtractPropTypes, VNode, Ref } from 'vue'
 export interface UserFormOptions<T extends ProFormValues = ProFormValues> {
   props: ExtractPropTypes<typeof commonProps>
   formRef: Ref<FormInstance | null | undefined>
+  submitterWrapClass?: string
   beforeSearchSubmit?: BeforeSearchSubmit<T>
 
   submitterSlot: Slot | undefined
@@ -34,7 +35,14 @@ export interface UserFormOptions<T extends ProFormValues = ProFormValues> {
 export function useForm<T extends ProFormValues = ProFormValues>(
   options: UserFormOptions<T>
 ) {
-  const { props, formRef, submitterSlot, emit, beforeSearchSubmit } = options
+  const {
+    props,
+    formRef,
+    submitterWrapClass,
+    submitterSlot,
+    emit,
+    beforeSearchSubmit,
+  } = options
 
   const { initialValues } = props
 
@@ -162,23 +170,25 @@ export function useForm<T extends ProFormValues = ProFormValues>(
       $submitter = (
         <ElCol {...colProps}>
           <ElFormItem>
-            {submitterValue.submitProps !== false ? (
-              <ElButton
-                {...submitterValue.submitProps}
-                onClick={handleClickSubmit}
-              >
-                {submitterValue.submitText}
-              </ElButton>
-            ) : null}
+            <div style={submitterWrapClass}>
+              {submitterValue.submitProps !== false ? (
+                <ElButton
+                  {...submitterValue.submitProps}
+                  onClick={handleClickSubmit}
+                >
+                  {submitterValue.submitText}
+                </ElButton>
+              ) : null}
 
-            {submitterValue.resetProps !== false ? (
-              <ElButton
-                {...submitterValue.resetProps}
-                onClick={handleClickReset}
-              >
-                {submitterValue.resetText}
-              </ElButton>
-            ) : null}
+              {submitterValue.resetProps !== false ? (
+                <ElButton
+                  {...submitterValue.resetProps}
+                  onClick={handleClickReset}
+                >
+                  {submitterValue.resetText}
+                </ElButton>
+              ) : null}
+            </div>
           </ElFormItem>
         </ElCol>
       )

@@ -51,6 +51,8 @@ export const QueryFilter = defineComponent({
     } = useForm({
       formRef,
       props,
+      submitterWrapClass:
+        'display: flex; justify-content: flex-end; width: 100%;',
       submitterSlot: slots.submitter,
       emit,
     })

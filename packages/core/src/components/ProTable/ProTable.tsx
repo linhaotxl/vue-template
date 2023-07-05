@@ -188,6 +188,10 @@ export const ProTable = defineComponent({
       )
     }
 
+    const searchSubmitterSlot = this.$slots.submitter
+      ? (args: unknown) => this.$slots.submitter!(args)
+      : undefined
+
     const $search =
       this.search !== false ? (
         <QueryFilter
@@ -198,7 +202,7 @@ export const ProTable = defineComponent({
           {{
             default: () =>
               formChildren?.map(child => <ProFormItem {...child.props} />),
-            submitter: (args: unknown) => this.$slots.submitter?.(args),
+            submitter: searchSubmitterSlot,
           }}
         </QueryFilter>
       ) : null
