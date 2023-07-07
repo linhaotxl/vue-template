@@ -6,7 +6,6 @@ import { ElFormMethods, proFormBus, ProFormProvideKey } from './constant'
 import { collectComponentMethods } from '../../utils'
 
 import type {
-  BeforeSearchSubmit,
   NormalizeColProps,
   ProFormBusEventPayload,
   ProFormBusEventType,
@@ -25,7 +24,6 @@ export interface UserFormOptions<T extends ProFormValues = ProFormValues> {
   props: ExtractPropTypes<typeof commonProps>
   formRef: Ref<FormInstance | null | undefined>
   submitterWrapClass?: string
-  beforeSearchSubmit?: BeforeSearchSubmit<T>
 
   submitterSlot: Slot | undefined
 
@@ -35,14 +33,9 @@ export interface UserFormOptions<T extends ProFormValues = ProFormValues> {
 export function useForm<T extends ProFormValues = ProFormValues>(
   options: UserFormOptions<T>
 ) {
-  const {
-    props,
-    formRef,
-    submitterWrapClass,
-    submitterSlot,
-    emit,
-    beforeSearchSubmit,
-  } = options
+  const { props, formRef, submitterWrapClass, submitterSlot, emit } = options
+
+  props
 
   const { initialValues } = props
 
@@ -129,7 +122,10 @@ export function useForm<T extends ProFormValues = ProFormValues>(
         const validated = await formRef.value.validate()
         if (validated) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          emit('finish', beforeSearchSubmit?.(formState as any) ?? formState)
+          emit(
+            'finish',
+            props.beforeSearchSubmit?.(formState as any) ?? formState
+          )
         }
       } catch (e) {
         emit('finishFaild', { values: formState, errorFields: e })

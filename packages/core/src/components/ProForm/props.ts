@@ -1,4 +1,5 @@
 import type {
+  BeforeSearchSubmit,
   ElColProps,
   ProFormEventTypes,
   ProFormValues,
@@ -49,6 +50,11 @@ export const commonProps = {
     type: Boolean as PropType<boolean>,
     default: false,
   },
+
+  /**
+   * 提交前修改数据
+   */
+  beforeSearchSubmit: Function as PropType<BeforeSearchSubmit<ProFormValues>>,
 }
 
 export const commonEmits: ProFormEventTypes = ['finish', 'reset', 'finishFaild']
