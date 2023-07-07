@@ -30,8 +30,9 @@ const props = {
   },
 }
 
-export type QueryFilterProps = Partial<ExtractPropTypes<typeof props>> &
-  FormProps
+export type QueryFilterProps = Partial<
+  ExtractPropTypes<typeof props> & FormProps
+>
 
 export const QueryFilter = defineComponent({
   name: 'QueryFilter',
